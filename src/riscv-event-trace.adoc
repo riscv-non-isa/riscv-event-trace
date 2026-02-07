@@ -1,9 +1,9 @@
-= RISC-V Example Specification Document (Zexmpl)
-Authors: Author 1, Author 2
+= RISC-V Event Trace Specification
+Authors: Bruce Ableidinger, MIPS
 include::../docs-resources/global-config.adoc[]
-:docgroup: RISC-V Task Group
-:description: RISC-V Example Specification Document (Zexmpl)
-:revdate: 1/2023
+:docgroup: RISC-V Event Trace Task Group
+:description: RISC-V Event Trace Specification
+:revdate: 1/2026
 :revnumber: 1.0
 :revremark: This document is under development. Expect potential changes. Visit http://riscv.org/spec-state for further details.
 :revinfo:
@@ -65,14 +65,16 @@ Attribution 4.0 International License (CC-BY 4.0). The full
 license text is available at
 https://creativecommons.org/licenses/by/4.0/.
 
-Copyright 2025 by RISC-V International.
+Copyright 2026 by RISC-V International.
 
 [preface]
 include::contributors.adoc[]
 
 include::intro.adoc[]
-include::chapter2.adoc[]
+include::body.adoc[]
+include::N-Trace-packets.adoc[]
+include::E-Trace-packets.adoc[]
 
 // The index must precede the bibliography
 include::index.adoc[]
-include::bibliography.adoc[]
+//include::bibliography.adoc[]

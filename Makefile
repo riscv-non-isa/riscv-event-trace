@@ -13,7 +13,7 @@
 # the Doc Template for RISC-V Extensions.
 
 DOCS := \
-	spec-sample.adoc
+	riscv-event-trace.adoc
 
 DATE ?= $(shell date +%Y-%m-%d)
 VERSION ?= v0.0.0

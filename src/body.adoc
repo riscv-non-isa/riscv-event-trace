@@ -36,4 +36,3 @@
 === Extensions to N-Trace General Messages (for all trace modes)
 
 ** MTIME_SYNC
-

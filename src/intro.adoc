@@ -11,8 +11,7 @@ The key features of Event Trace are:
 
 * filter events based on type, privilege level, operation system context, and user-instrumented commands to reduce the volume of trace data and focus on relevant information.
 
-* support for multiple event types which can be included or not included, 
+* support for multiple event types which can be included or not included,
 allowing control of the granularity of information traced.
 
 * utilize many of the capabilities and features of the existing RISC-V Instruction Trace thus ensuring compatibility to the existing Instruction Trace to reduce development costs and limit the hardware size of Event Trace extensions.
-

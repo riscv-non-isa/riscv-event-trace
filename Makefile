@@ -60,9 +60,13 @@ REQUIRES := --require=asciidoctor-bibtex \
 				--require=asciidoctor-lists \
             --require=asciidoctor-mathematical
 
-.PHONY: all build clean build-container build-no-container build-docs check-docs-resources
+.PHONY: all build clean build-container build-no-container build-docs check-docs-resources pdf html
 
 all: build
+
+pdf: check-docs-resources $(DOCS_PDF)
+
+html: check-docs-resources $(DOCS_HTML)
 
 build-docs: check-docs-resources $(DOCS_PDF) $(DOCS_HTML)
 

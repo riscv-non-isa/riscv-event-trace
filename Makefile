@@ -56,6 +56,7 @@ OPTIONS := --trace \
            $(XTRA_ADOC_OPTS) \
 		   -D build \
            --failure-level=ERROR
+		   -o $@ $<
 REQUIRES := --require=asciidoctor-bibtex \
             --require=asciidoctor-diagram \
 			--require=asciidoctor-lists \

@@ -1,3 +1,7 @@
 [[Trace Control Extensions for Event Trace]]
 == Trace Control Extensions for Event Trace
 This file defines the extensions required to support Event Trace.
+
+== Event Trace Mode Control Register Field
+
+== MTIME_SYNC

@@ -14,7 +14,7 @@
 
 === Event Trace External Events (Asynchronous Events)
 
-=== Event Trace Performance Counter Events
+=== Event Trace Performance Counter Selector Events
 
 == Event Trace Profiling Performance Counters
 
@@ -29,10 +29,13 @@
 
 == Event Trace Control Registers
 
+== Extensions to N-Trace General Messages (for all trace modes)
+Located in the file Trace-Control-Extensions.adoc
+
 == Event Trace N-Trace Messages
+Located in the file N-Trace-packets.adoc
 
 == Event Trace E-Trace Messages
+Located in the file E-Trace-packets.adoc
 
-=== Extensions to N-Trace General Messages (for all trace modes)
 
-** MTIME_SYNC

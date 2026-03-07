@@ -14,5 +14,7 @@ The key features of Event Trace are:
 * support for multiple event types which can be included or not included, 
 allowing control of the granularity of information traced.
 
+* external signals - an Event Trace event type (but not supported by Instruction Trace) - are signals which can be set up to be edge triggered to insert a trace packet with timestamp and the retired PC at the time of the event.  This allows for tracing of external events such as interrupts, I/O events, uncore signals, or SoC-based events outside of program execution and to time correlate them *with* program execution.
+
 * utilize many of the capabilities and features of the existing RISC-V Instruction Trace thus ensuring compatibility to the existing Instruction Trace to reduce development costs and limit the hardware size of Event Trace extensions.
 

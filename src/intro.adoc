@@ -5,4 +5,4 @@ Event Trace is an extension to the RISC-V Instruction Trace that provides hardwa
 
 Event Trace extends the existing Instruction Trace while also leveraging its common packet types and trace sink options.
   
-The Event Trace extension introduces new memory-mapped registers for setting up read-only contigurations, dynamically selecting the trace events to trace, submodes of operation, hardware filters, and its running status.
+The Event Trace extension introduces new memory-mapped registers for setting up read-only contigurations, dynamical selection of trace events to trace, submodes of operation, hardware filters, and accessing its running status.

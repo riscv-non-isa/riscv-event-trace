@@ -20,7 +20,6 @@
 
 * Utilize many of the capabilities and features of the existing RISC-V Instruction Trace thus ensuring compatibility to the existing Instruction Trace to reduce development costs and limit the hardware size of Event Trace extensions.
 
-
 == Event Types
 
 A summary of the events types that can be traced with Event Trace is shown in the table below.  Each type can be independently enabled or disabled for tracing.  

@@ -365,16 +365,16 @@ Below, the 'i' in trTeFilter**i**Control (and others) is reference to the index 
 .Privilege Level Filtering Registers
 [cols="1,1,2", options="header"]
 |===
-Register | Register Fields |Description |
-*trTeFilteriControl* | 
- *.trTeFilterEnable* +
- *.trTeFilterMatchPrivilege* |
+|Register |Register Fields |Description
+|*trTeFilteriControl*
+| *.trTeFilterEnable* +
+  *.trTeFilterMatchPrivilege*
+|  Set = 1 +
   Set = 1 +
-  Set = 1 +
-  All other fields set to 0 |   
-*trTeFilteriMatchInst* |
- *.trTeFilterMatchChoicePrivilege* |
-  [7:0] bits to match Privilege levels list in table below |
+  All other fields set to 0 
+|*trTeFilteriMatchInst*
+| *.trTeFilterMatchChoicePrivilege*
+|  [7:0] bits to match Privilege levels list in table below
 |===
 
 
@@ -400,24 +400,24 @@ The privilege level mappings (from RHTI spec) are:
 .Exception Cause (Ecause) Filtering 
 [cols="1,1,2", options="header"]
 |===
-Register | Register Fields |Description |
-*trTeFilteriControl* | 
- *.trTeFilterEnable* +
- *.trTeFilterMatchEcause* + |
-  Set = 1 +
+|Register | Register Fields |Description
+|  *trTeFilteriControl*
+|  *.trTeFilterEnable* +
+  *.trTeFilterMatchEcause* +
+| Set = 1 +
   Set = 1 (to compare Ecause value) +
-  All other fields set to 0 |   
-*trTeFilteriMatchInst* |
- *.trTeFilterValueInterrupt* +
- (Note the name doesn't match the comparison) |
-  [8:8] Set = 0 to match on exception (itype = 1) +
-  All other fields set to 0 |
-*trTeFilteriMatchEcauseLow* |
- *.trTeFilterMatchChoiceEcauseLow* |
- [31:0] bit mask; set bit(s) to 1 to match encoded value of Ecause|
-*trTeFilteriMatchEcauseHigh* |
- *.trTeFilterMatchChoiceEcauseHigh* |
-[63:32] bits of Ecause (high) value |
+  All other fields set to 0 
+|*trTeFilteriMatchInst*
+ |*.trTeFilterValueInterrupt* +
+ (Note the name doesn't match the comparison)
+ | [8:8] Set = 0 to match on exception (itype = 1) +
+  All other fields set to 0
+|*trTeFilteriMatchEcauseLow*
+| *.trTeFilterMatchChoiceEcauseLow*
+| [31:0] bit mask; set bit(s) to 1 to match encoded value of Ecause
+|*trTeFilteriMatchEcauseHigh*
+| *.trTeFilterMatchChoiceEcauseHigh*
+|[63:32] bits of Ecause (high) value
 |===
 
 Table of (encoded) Exception cause values (from RISC-V Instruction Set Manual: Vol II).
@@ -449,23 +449,23 @@ Note that several of the registers are "shared" with Ecause filtering, thus the 
 .Interrupt Cause Register Filtering
 [cols="1,1,2", options="header"]
 |===
-Register | Register Fields |Description |
-*trTeFilteriControl* | 
- *.trTeFilterEnable* +
- *.trTeFilterMatchInterrupt* |
-  Set = 1 +
+|Register | Register Fields |Description
+|*trTeFilteriControl*
+| *.trTeFilterEnable* +
+ *.trTeFilterMatchInterrupt*
+|  Set = 1 +
   Set = 1 (to compare Interrupt cause value) +
-  All other fields set to 0 |   
-*trTeFilteriMatchInst* |
-*.trTeFilterValueInterrupt* + |
-  [8:8] Set = 1 to match on interrupt (itype = 2) +
-  All other fields set to 0 |
-*trTeFilteriMatchEcauseLow* |
- *.trTeFilterMatchChoiceEcauseLow* |
-    [31:0] bit mask; set bit(s) to 1 to match encoded values 0 to 31 of Interrupt cause|
-*trTeFilteriMatchEcauseHigh* |
-    *.trTeFilterMatchChoiceEcauseHigh* |
-    [63:32] bit mask; set bit(s) to 1 to match encoded values 32 to 63 of Interrupt cause |
+  All other fields set to 0
+|*trTeFilteriMatchInst*
+|*.trTeFilterValueInterrupt*
+|  [8:8] Set = 1 to match on interrupt (itype = 2) +
+  All other fields set to 0
+|*trTeFilteriMatchEcauseLow*
+| *.trTeFilterMatchChoiceEcauseLow*
+|    [31:0] bit mask; set bit(s) to 1 to match encoded values 0 to 31 of Interrupt cause
+|*trTeFilteriMatchEcauseHigh*
+|  *.trTeFilterMatchChoiceEcauseHigh*
+|    [63:32] bit mask; set bit(s) to 1 to match encoded values 32 to 63 of Interrupt cause |
 |===
 
 The (encoded) Interrupt cause values (from the RISC-V Instruction Set Manual: Vol II) are located in Table 16 - mcause, Table 37 - scause, and Table 50 when the hypervisor extension is implemented.
@@ -478,38 +478,45 @@ For *trTeCompjControl* and *trTeCompjMatchLow* below, j=0 which defines the firs
 .Context ID Filtering
 [cols="1,1,2", options="header"]
 |===
-Register | Register Fields |Description |
-*trTeComp0Control* |
- *.trTeCompPInput*
-  *.trTeCompSInput*  | [1:0] Set = 1: context +
-                       [3:2] Set = 1: context|
- | *.trTeCompPFunction* +
-
-   *.trTeCompSFunction*  | [6:4] Set = 0: *equal to* trTeCompPMatch +
-                          [10:8] Set = 0:*equal to* trTeCompSMatch |
- | *.trTeCompMatchMode* | [13:12] Set = 0: *primary result true* |
- | *trTeCompPNotify* | Set = 1 to generate an Event Trace packet when primary comparator match occurs) |
- | All other fields set to 0 | |
-*trTeComp0MatchLow* | 
- *.trTeCompPMatchLow* | [31:0] Match value for  (i.e. primary comparator) |
+|Register | Register Fields |Description
+|*trTeComp0Control*
+| *.trTeCompPInput*
+  *.trTeCompSInput*
+| [1:0] Set = 1: context +
+  [3:2] Set = 1: context
+|
+| *.trTeCompPFunction* +
+  *.trTeCompSFunction*
+| [6:4] Set = 0: *equal to* trTeCompPMatch +
+  [10:8] Set = 0:*equal to* trTeCompSMatch
+|
+| *.trTeCompMatchMode*
+| [13:12] Set = 0: *primary result true*
+|
+| *trTeCompPNotify*
+| Set = 1 to generate an Event Trace packet when primary comparator match occurs)
+|
+| All other fields set to 0 |
+|*trTeComp0MatchLow*
+| *.trTeCompPMatchLow*
+| [31:0] Match value for  (i.e. primary comparator)
 |===
 
 (Secondary comparator is not needed for context ID filtering since it is only a single value match. It is unclear whether these 'S' fields are even needed, or even included in the hardware).
 
 === Event Trace-specific Hardware Filters
-
+(to-be-documented)
 
 
 === Leaf Function Filtering
-to-be-documented
+(to-be-documented)
 
 == Event Trace Control Registers
+(to-be-documented)
+
 
 //read-only fields that define implementation features
 //use hpmcounters for PPRs
-
-
-
 
 //== Extensions to N-Trace General Messages (for all trace modes)
 //Located in the file Trace-Control-Extensions.adoc

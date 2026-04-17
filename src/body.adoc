@@ -604,14 +604,14 @@ Note that a change in value will generate a trace-on or trace-off EVT message pa
 |0
 
 |11
-|trTeEventSContextIDEnable
+|trTeEventSContextPrivEnable
 |0: don’t trace; 1: trace when Supervisor Context (CSR 0x5a8) is written to. +
 Note: Context writes are also enabled when the *trTeControl.trTeContext* bit is set (only mentioned here).
 |WARL
 |0
 
 |12
-|trTeEventHContextIDEnable
+|trTeEventHContextPrivEnable
 |0: don’t trace; 1: trace when Hypervisor Context (CSR 0x6a8) is written to.
 |WARL
 |0
@@ -764,47 +764,85 @@ NOTE: The value of the field is always 0 if the feature is not implemented, thus
 |===
 ^|Bit ^|Field ^|Description ^|RW ^|Reset
 |0
-|trTeEventIntExcPPC
-|0: don't trace; 1: trace PPCs
+|trTeEventExcPPC
+|0: don't trace PPCs; 1: trace PPCs
 |WARL
-|1 (SD)
+|0
 
 |1
-|trTeEventCallRetPPC
-|0: don't trace; 1: trace PPCs
+|trTeEventIntPPC
+|0: don't trace PPCs; 1: trace PPCs
 |WARL
-|1 (SD)
+|0
 
 |2
-|trTeEventContextPrivPPC
-|0: don't trace; 1: trace PPCs
+|trTeEventCallRetPPC
+|0: don't trace PPCs; 1: trace PPCs
 |WARL
-|1 (SD)
+|0
 
 |3
-|trTeEventDbgTrigPPC
-|0: don't trace; 1: trace PPCs
+|trTeEventSContextPrivPPC
+|0: don't trace PPCs; 1: trace PPCs
 |WARL
-|1 (SD)
+|0
 
 |4
-|trTeEventPCSamplingPPC
-|0: don't trace; 1: trace PPCs
+|trTeEventHContextPrivPPC
+|0: don't trace PPCs; 1: trace PPCs
 |WARL
-|1 (SD)
+|0
 
 |5
-|trTeEventExtTrigPPC
-|0: don't trace; 1: trace PPCs
+|trTeEventTrapRetPPC
+|0: don't trace PPCs; 1: trace PPCs
 |WARL
-|1 (SD)
+|0
 
 |6
-|trTeEventPerfCounterSelectorPPC
-|0: don't trace; 1: trace PPCs
+|trTeEventDbgTrigPPC
+|0: don't trace PPCs; 1: trace PPCs
 |WARL
-|1 (SD)
+|0
+
+|7
+|trTeEventPCSamplingPPC
+|0: don't trace PPCs; 1: trace PPCs
+|WARL
+|0
+
+|8
+|trTeEventExtTrigPPC
+|0: don't trace PPCs; 1: trace PPCs
+|WARL
+|0
+
+|9
+|trTeEventPerfCounterSelectorPPC
+|0: don't trace PPCs; 1: trace PPCs
+|WARL
+|0
+
+
+|15:10
+|Reserved
 |---
+|
+|
+
+|19:16
+|trTeEventPPCNumTrace
+|0: turn off tracing of PPCs for all Event Types +
+1-15: Trace this number of PPCs.  If the value is greater than the number of PPCs implemented, then trace all PPCs.
+|WARL
+|0
+|===
+
+Add control for PPCeventX, requires low and high regs to specify which events to trace for each selector-based event.  This is only needed if the implementation of PPCs is based on independent counters and independent event selectors.  If the implementation of PPCs is based on hpmcounters and hpmeventX selectors, then no additional control registers are needed since the same hpmeventX selectors are used for both purposes.
+
+Add (MMIO) regs to read the PPCs for testing and DV purposes, and optionally for performance sampling by software.
+
+
 
 
 //== Extensions to N-Trace General Messages (for all trace modes)

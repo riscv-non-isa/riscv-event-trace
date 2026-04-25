@@ -8,19 +8,21 @@
 
 * A trace mode that turns off full instruction trace and turns on hardware filtering of instruction types and external interrupt events
 
-* Each event type is independently selectable to trace allowing control of the granularity of information traced
+* Event types that are independently traceable allowing control of the granularity of information captured
 
-* Event types include function calls and returns
+* Event types that include function calls and returns, exceptions, interrupts, and context changes
 
-* Each event type includes a timestamp based on a common fixed-frequency trace clock to provide precise timing information for an execution timeline and for performance analysis
+* Event types that include a timestamp based on a common fixed-frequency trace clock to provide precise timing information for an execution timeline and for performance analysis
 
-* Run-time filtering of events based on type, privilege level, operating system context, and user-instrumented directives in source code to reduce the volume of trace data and focus on relevant information.
+* Event types that can selectively include profiling performance counter (PPC) values to provide core performance information such as IPC (instructions per cycle) or cache misses, for the duration of the event
+
+* Run-time filtering of events based on type, privilege level, operating system context, and user-instrumented directives in source code to reduce the volume of trace data and focus on relevant information
 
 * External signals - edge-triggered signals that can insert a trace packet containing the closest retired PC at the time of the event, plus timestamp.  This enables tracing of external events such as interrupts, I/O events, DMA start-end markers, uncore signals, or SoC-based events outside of program execution, and to time correlate them *with* program execution.
 
-* Utilize many of the capabilities and features of the existing RISC-V Instruction Trace thus ensuring compatibility to the existing Instruction Trace to reduce development costs and limit the hardware size of Event Trace extensions.
+* Utilizes many of the capabilities and features of the existing RISC-V Instruction Trace thus ensuring compatibility to the existing Instruction Trace to reduce development costs and limit the hardware size of Event Trace extensions
 
-== Event Types
+=== Event Types
 
 A summary of the events types that can be traced with Event Trace is shown in the table below.  Each type can be independently enabled or disabled for tracing.  
 
@@ -61,18 +63,52 @@ The *Event Trace Timestamp* is the same timestamp timer used by Instruction Trac
 
 If the (optional) Timestamp Unit is included in the Instruction Trace, then:
 
-* Timestamp must be enabled by setting *trTsControl.trTsActive*, *trTsControl.trTsEnable*, and started by setting *trTsControl.trTsCount*.
+* *Timestamp enable*: must be enabled by setting *trTsControl.trTsActive*, *trTsControl.trTsEnable*, and started by setting *trTsControl.trTsCount*.
 
-* Timestamp can be turned off (for Instruction AND Event Trace) by clearing *trTsControl.trTsEnable* to save some trace bandwidth and storage.
+* *Timestamp off*:  turned off (for Instruction AND Event Trace) by clearing *trTsControl.trTsEnable* to save some trace bandwidth and storage.
 
-* The timestamp register can be reset by setting, then clearing *trTsControl.trTsReset*. This is recommended before starting a trace session since lower-values timestamps can benefit trace bandwidth and storage, because of leading-zero suppression.
+* *Timestamp reset*: timestamp register can be reset by setting, then clearing *trTsControl.trTsReset*. This is recommended before starting a trace session since lower-values timestamps can benefit trace bandwidth and storage, because of leading-zero suppression.
 
 It is highly recommended that the timestamp clock run at or a close ratio to cpu clock in order to accurately time short functions and point-to-point events such as hardware triggers.
 
-=== Recommendations for Implementations
+=== Event Trace PPCs - Profiling Performance Counters
+
+Event Trace can include the option of Profiling Performance Counters (PPCs) which are delta counters that are recorded at the time of an event, simultaneously reset to zero, then begin counting again. This is a requirement to keep the counter values smaller to reduce trace bandwidth and storage.  Post-processing of the trace data can reconstruct event counts across multiple event sequences to provide accumulated totals.  An example would be inclusive function call-return counts, where snippets of code execute in a function then more counts for functions that it calls.  "Self" or "exclusive" counts, i.e. only counts attributed to the code of the function itself would only accumulate counts from calls to other functions and from returns to calls of other functions.
+
+=== Event Trace Feature Matrix and Recommendations for Implementations
 
 All Event Trace features are optional, however, the minimal set of event types recommended are: call/returns, interrupts, exceptions and context ID + privilege level.
 
+.Event Trace Feature Matrix
+[cols="40%,60%", options="header"]
+//[%autowidth,align="left",float="left",options="header"]
+[%autowidth, options="header"]
+|===
+|Feature |Recommended
+
+|*Function Calls, Returns*
+|Yes
+|*Exceptions*
+|Yes
+|*Interrupts*
+|Yes
+|*PPCs - Profiling Performance Counters*
+|Yes
+|*Context + Privilege Level*
+|Yes
+|*Privilege, Context ID, and Exception and Interrupt Cause Filters*
+|Yes
+|*Debug trigger/watchpoints*
+|Optional
+|*Periodic PC Sampling*
+|Optional
+|*External "trigger" Events*
+|Optional
+|*Performance Counter Selector Events*
+|Optional
+|===
+
+== Event Trace Feature Details
 === Event Trace Non-function Events
 
 ==== Event Trace Message Fields
@@ -336,15 +372,15 @@ NOTE: *Counting cycles.* For IPC ratio calculations, the number of cycles betwee
 == Trace Operations
 
 * Event Trace can be started by native software writing to the Event Trace control registers. This can also be done with a JTAG command writing to the same registers.
-* Event Trace can be first enabled via (for example) a hardware trigger set up to match on a program instruction address then, when the program-to-be-traced starts executing and the trigger match occurs, it in turn sets *trTeEventControl.trTeEventTracing*, and event trace starts.
-* Once running, a hardware trigger previously set up to disable trace can, at the occurrence of a trigger match, turn Event Trace off which clears trTeEventControl.trTeEvtTracing. Similar actions are common with Instruction Trace.
-* An instrumented program can also clear or set trTeEventControl.trTeEvtTracing to disable or enable Event Trace.
-* Event Trace can be disabled by writing *trTeEventControl.trTeEnable* = 0. This does a flush to the trace system.
+* Event Trace can be first enabled via (for example) a hardware trigger set up to match on a program instruction address then, when the program-to-be-traced starts executing and the trigger match occurs, it in turn sets *trTeEvtControl.trTeEvtTracing*, and event trace starts.
+* Once running, a hardware trigger previously set up to disable trace can, at the occurrence of a trigger match, turn Event Trace off which clears trTeEvtControl.trTeEvtTracing. Similar actions are common with Instruction Trace.
+* An instrumented program can also clear or set trTeEvtControl.trTeEvtTracing to disable or enable Event Trace.
+* Event Trace can be disabled by writing *trTeEvtControl.trTeEnable* = 0. This does a flush to the trace system.
 * Trace can be set up to stop tracing on buffer full. When this occurs, Event Trace continues running, however no more trace messages are written to the trace buffer.
 * A self-hosted trace analysis program such as perf could control the starting and stopping of Event Trace.
 * Trace hardware supports on-the-fly switching between Event Trace and Instruction Trace. Memory-mapped (MMIO) hardware control registers allow a user program to change modes of trace so a trace recording can have both instruction trace messages intermixed with event trace messages. This feature allows the tracing of a portion of one program/process full execution while also tracing kernel-level events such as going in and out of kernel mode and running other processes. More details are in section "Operational Description & Message Rules".
 * Event Trace is a mode of the Trace Encoder which is set up with *trTeControl.trTeInstMode=4*. Then, trTeControl.trTeEnable is used to enable trace or disable and flush it, with trTeControl.trTeEmpty used to indicate when the flush has completed.
-* *trTeEventControl.trTeEventTracing* is both a control and status bit. Reading it indicates Event Trace is tracing or not. Writing to it enables native software to start or stop Event Trace dynamically such as turning it off at the beginning of a function and turning it back on at the end.
+* *trTeEvtControl.trTeEvtTracing* is both a control and status bit. Reading it indicates Event Trace is tracing or not. Writing to it enables native software to start or stop Event Trace dynamically such as turning it off at the beginning of a function and turning it back on at the end.
 
 == Event Trace Event Filters (Provided by Instruction Trace Hardware)
 
@@ -377,15 +413,11 @@ Below, the 'i' in trTeFilter**i**Control (and others) is reference to the index 
 |  [7:0] bits to match Privilege levels list in table below
 |===
 
-
-The privilege level mappings (from RHTI spec) are:
-
-.Privilege level encoding
-
-[%autowidth,align="center",float="center",cols="<,<",options="header"]
+.Privilege level encoding (from RHTI spec)
+[%autowidth,options="header"]
 |===
 | *Value* | *Description*
-| 0| U
+|0 | U
 |1 | S/HS
 |2 | reserved
 |3 | M
@@ -396,7 +428,6 @@ The privilege level mappings (from RHTI spec) are:
 |===
 
 === Exception Cause Register Filtering
-
 .Exception Cause (Ecause) Filtering 
 [cols="1,1,2", options="header"]
 |===
@@ -488,21 +519,21 @@ For *trTeCompjControl* and *trTeCompjMatchLow* below, j=0 which defines the firs
 | *.trTeCompPFunction* +
   *.trTeCompSFunction*
 | [6:4] Set = 0: *equal to* trTeCompPMatch +
-  [10:8] Set = 0:*equal to* trTeCompSMatch
+  [10:8] Set = 0: *equal to* trTeCompSMatch
 |
 | *.trTeCompMatchMode*
 | [13:12] Set = 0: *primary result true*
 |
 | *trTeCompPNotify*
-| Set = 1 to generate an Event Trace packet when primary comparator match occurs)
+| Set = 1 to generate an Event Trace packet when primary comparator match occurs
 |
 | All other fields set to 0 |
 |*trTeComp0MatchLow*
 | *.trTeCompPMatchLow*
-| [31:0] Match value for  (i.e. primary comparator)
+| [31:0] *Match value for*  (primary comparator)
 |===
 
-(Secondary comparator is not needed for context ID filtering since it is only a single value match. It is unclear whether these 'S' fields are even needed, or even included in the hardware).
+(Secondary comparator is not needed for context ID filtering since it is only a single value match. It is unclear whether these 'S' fields need to be included in the hardware).
 
 === Event Trace-specific Hardware Filtering
 (to-be-documented)
@@ -517,59 +548,90 @@ For *trTeCompjControl* and *trTeCompjMatchLow* below, j=0 which defines the firs
 
 Event Trace as a trace mode (separate from Instruction Trace) is set by software writing trTeControl.trTeInstMode=4 which is defined in the N-Trace spec as "Protocol defined trace mode".
 
-Event Trace register starting point is an offset from the Trace Encoder base address. The Event Trace allocates and uses addresses *0x100-0x17F*. Thus trTeEventBase = trBaseEncoder+0x100.
+Event Trace register starting point is an offset from the Trace Encoder base address. The Event Trace allocates and uses addresses *0x100-0x17F*. Thus trTeEvtBase = trBaseEncoder+0x100.
 
 .Event Trace Control Register (Summary)
 [cols="1,1,5", width="50%", options="header"]
 |===
 |Name |Offset |Description
 
-|trTeEventControl |0x0 |* EVT tracing status +
+|trTeEvtControl |0x0 |* EVT tracing status +
 * EVT trigger enable +
 * call/return modes +
 * Event per-type enables
-|trTeEventFeatures
+|trTeEvtFeatures
 |0x04
 |Defines which Event Trace features are implemented and sizes.
-|trTeEventPPCEnables
+|trTeEvtPPCEnables
 |0x08
 |Defines which Event Types output Profiling Performance Counter (PPC) values. +
 Sets the number of PPCs output with each Event Type enabled.
+|trTeEvtPPCControl
+|0x0C
+|Control register that, when written to, causes all PPCs to be latched. Software can then read out all the PPC values. Only active when Event Trace is disabled.
 |===
 
 === Event Trace Control Registers (Details)
 
-==== trTeEventControl: Event Trace Control Register (trTeBase+0x100)
+==== trTeEvtControl: Event Trace Control Register (trTeBase+0x100)
 
-.Event Trace Control Register - *trTeEventControl* (32b)
+.Event Trace Control Register *trTeEvtControl* (32b)
+[%unbreakable]
+[wavedrom, , svg]
+....
+{reg: [
+  {bits: 1, name:'trTeEvtImplemented'},
+  {bits: 1, name:'trTeEvtTracing'},
+  {bits: 1, name:'trTeEvtTrigEnable'},
+  {bits: 2, name:'trTeEvtCallMode'},
+  {bits: 2, name:'trTeEvtRetMode'},
+  {bits: 1, name:'Reserved',},
+  {bits: 1, name:'trTeEvtExceptionEnable'},
+  {bits: 1, name:'trTeEvtInterruptEnable'},
+  {bits: 1, name:'trTeEvtCallRetEnable'},
+  {bits: 1, name:'trTeEvtSContextPrivEnable'},
+  {bits: 1, name:'trTeEvtHContextPrivEnable'},
+  {bits: 1, name:'trTeEvtTrapReturnEnable'},
+  {bits: 1, name:'trTeEvtDbgTrigEnable',},
+  {bits: 1, name:'trTeEvtPCSamplingEnable',},
+  {bits: 1, name:'trTeEvtPCSamplingRandomizeEnable',},
+  {bits: 1, name:'trTeEvtExtTrigEnable',},
+  {bits: 1, name:'trTeEvtPerfCounterSelectorEnable',},
+  {bits: 5, name:'Reserved',},
+  {bits: 4, name:'trTeEvtSamplingDuration',},
+  {bits: 1, name:'trTeEvtSamplingRandomizeEnable',},
+  {bits: 3, name:'Reserved',},
+], config:{lanes: 8, hspace:1024}}
+....
+
+.Event Trace Control Register fields for *trTeEvtControl* (32b)
 [cols="1,1,6,1,1", options="header"]
 |===
-^|Bit ^|Field ^|Description ^|RW ^|Reset
-| |*Event Trace Controls* |||
+^|Bit(s) ^|Field ^|Description ^|RW ^|Reset
 |0
-|trTeEventImplemented
+|trTeEvtImplemented
 |Read as 1 if Event Trace is implemented
 |RO
-|1 (SD)
+|1
 
 |1
-|trTeEventTracing
+|trTeEvtTracing
 |(Read) EVT *status*: 0: not tracing; 1:event trace is running. HW triggers can enable or disable EVT. +
 (Write) EVT *control*: When *trTeEnableTracing* = 1, writing 0 will disable trace that then can be enabled with a HW trigger. For example, software can set up EVT disabled then program a HW trigger to match an executed address at the beginning of a program to start it. +
 Writing 1 will turn EVT on. +
 Note that a change in value will generate a trace-on or trace-off EVT message packet.
-|WARL
+|RW
 |0
 
 |2
-|trTeEventTrigEnable
-|1: Allows *trTeEventTracing* to be set or cleared by Trace-on and Trace-off signals generated by the corresponding trigger module.
-|WARL
+|trTeEvtTrigEnable
+|1: Allows *trTeEvtTracing* to be set or cleared by Trace-on and Trace-off signals generated by the corresponding trigger module.
+|RW
 |0
 
 |4:3
-|trTeEventCallMode
-|0: use messages that include both source and destination addresses for calls(CALL_SYNC, CALL_FULL). These generate more bytes (than modes 1, 2), however the decoder can determine the symbolic line # where calls are made and returned to without requiring a binary image. +
+|trTeEvtCallMode
+|0: use messages that include both source and destination addresses for calls(CALL_SYNC, CALL_FULL). These generate more bytes (than modes 1, 2), however the decoder can determine the symbolic line # where calls are made and returned to without requiring a binary image. (Required if Call/Ret implemented) +
 1: Generate CALL_DEST for both direct and indirect calls. +
 2: least bandwidth: use CALL_DEST for indirect calls, CALL_PC for direct (inferrable) calls. Most aggressive on saving bandwidth
 3: reserved
@@ -577,176 +639,181 @@ Note that a change in value will generate a trace-on or trace-off EVT message pa
 |0
 
 |6:5
-|trTeEventRetMode
-|0: use messages that include both source and destination addresses for returns (RET_FULL). These generate more bytes (than modes 1, 2), however the decoder can determine the symbolic line # where return is made and returned to without requiring a binary image. +
+|trTeEvtRetMode
+|0: use messages that include both source and destination addresses for returns (RET_FULL). These generate more bytes (than modes 1, 2), however the decoder can determine the symbolic line # where return is made and returned to without requiring a binary image. (Required if Call/Ret implemented) +
 1: generate RET_DEST for returns. +
 2: least bandwidth: use RET with no addresses when return address matches the call, otherwise RET_DEST. +
 3: reserved
 |WARL
 |0
 
+|7
+|Reserved
+|
+|
+|undef
+
 |8
-|trTeEventExceptionEnable
+|trTeEvtExceptionEnable
 |0: don't trace; 1: trace exceptions at the source.
-|WARL
+|RW
 |0
 
 |9
-|trTeEventInterruptEnable
+|trTeEvtInterruptEnable
 |0: don't trace; 1: trace interrupts at the source.
-|WARL
+|RW
 |0
 
 |10
-|trTeEventCallRetEnable
+|trTeEvtCallRetEnable
 |0: don't trace; 1: trace calls and returns
-|WARL
+|RW
 |0
 
 |11
-|trTeEventSContextPrivEnable
+|trTeEvtSContextPrivEnable
 |0: don’t trace; 1: trace when Supervisor Context (CSR 0x5a8) is written to. +
 Note: Context writes are also enabled when the *trTeControl.trTeContext* bit is set (only mentioned here).
-|WARL
+|RW
 |0
 
 |12
-|trTeEventHContextPrivEnable
+|trTeEvtHContextPrivEnable
 |0: don’t trace; 1: trace when Hypervisor Context (CSR 0x6a8) is written to.
-|WARL
+|RW
 |0
 
 |13
-|trTeEventTrapReturnEnable
+|trTeEvtTrapReturnEnable
 |0: don't trace; 1: trace interrupts and trap returns (hardware does not distinguish exception and interrupt returns)
-|WARL
+|RW
 |0
 
 |14
-|trTeEventDbgTrigEnable
+|trTeEvtDbgTrigEnable
 |0: don't trace; 1: trace debug trigger/watchpoints. The user sets up debugger hardware triggers with the Action value of 4 (Trace notify) that generates a trace message when the trigger/watchpoint matches. This control bit enables or disables the generation of these trace messages.
-|WARL
+|RW
 |0
 
 |15
-|trTeEventPCSamplingEnable
+|trTeEvtPCSamplingEnable
 |0: don't trace; 1: enable the tracing of periodic PC samples. The user sets up period of sampling and optionally the inclusion of randomizing the period.
-|WARL
+|RW
 |0
 
 |16
-|trTeEventPCSamplingRandomizeEnable
+|trTeEvtPCSamplingRandomizeEnable
 |0: do not enable randomizing of sample period; 1: enable randomizing of sample period. The random count is added to the powers-of-2 count down set by the user. An LFSR is used to generate the random count. The width of the random count is user selectable (recommended at 6 bits), but fixed at design time.
-|WARL
+|RW
 |0
 
 |17
-|trTeEventExtTrigEnable
+|trTeEvtExtTrigEnable
 |0: don't trace; 1: enable the tracing of external trigger signals. The user sets up which external signals to trace and the edge detection (rising, falling, or both) for each signal.
-|WARL
+|RW
 |0
 
 |18
-|trTeEventPerfCounterSelectorEnable
+|trTeEvtPerfCounterSelectorEnable
 |0: don't trace; 1: enable the tracing of performance counter selector outputs. The user first programs the hpmeventX registers that generate the outputs to trace. 
-|WARL
+|RW
 |0
 
 |23:19
 |Reserved
 |Reserved for future Event Type enables
-|--
-|0
+|
+|undef
 
 
 |27:24
-|trTeEventSamplingDuration
-|Periodic sample duration for PC sampling events. This is the power-of-2 count of cycles for the interval of periodic PC sampling. The actual count is 2^(trTeEventSamplingDuration+6). Thus, the interval range is from 2^6 to 2^21 (64 to ~2 million cycles). For a 1GHz clock, the range is from 64ns to 2ms.
+|trTeEvtSamplingDuration
+|Periodic sample duration for PC sampling events. Interval duration in cycles = 2^(trTeEvtSamplingDuration+6). i.e. range is 2^6 to 2^21 (64 to ~2 million cycles). For a 1GHz clock, the range is 64ns to 2ms.
 |WARL
 |0
 
 |28
-|trTeEventSamplingRandomizeEnable
+|trTeEvtSamplingRandomizeEnable
 |0: do not enable randomizing of sample period +
  1: enable randomizing of sample period. An LFSR is recommended to generate the random count.
-|WARL
+|RW
 |0
 
 |31:29
-|
 |Reserved
-|--
-|0
+|
+|
+|undef
 |===
 
 SD = System Dependent. Reset value of a field is dependent on the build.
 
-NOTE: For the setup of *trTeEventExceptionEnable* and *trTeEventInterruptEnable*, the return from these are common and called "trap return". Hardware tracing cannot distinguish between caused by an interrupt or an exception so if one is turned off with these control bits, all trap returns will still be generated as EVT packets. The Trace decoder must deal with trap returns that may not have an associated exception or interrupt event. Privilege level filtering can be used to selectively quash some of them.
+NOTE: For the setup of *trTeEvtExceptionEnable* and *trTeEvtInterruptEnable*, the return from an exception or interrupt are common and called a "trap return". Hardware tracing cannot distinguish between a return caused by an interrupt or an exception so if one or the other is turned off with these control bits, all trap returns will still be generated as EVT packets. The Trace decoder must deal with trap returns that may not have an associated exception or interrupt event. Privilege level filtering can be used to selectively quash some of them. The user may also choose to turn off the tracing of trap returns separately.
 
+==== trTeEvtFeatures: Event Trace Features RO Register (trTeBase+0x104)
 
-==== trTeEventFeatures: Event Trace Features Register (trTeBase+0x104)
-
-.Event Trace Features Read-only Register - *trTeEventFeatures* (32b)
+.Event Trace Features Read-only Register - *trTeEvtFeatures* (32b)
 [cols="1,1,6,1,1", options="header"]
 |===
 ^|Bit ^|Field ^|Description ^|RW ^|Reset
 |0
-|trTeEventIntExcImpl
+|trTeEvtIntExcImpl
 |Read as 1 if Interrupt and Exception event types are implemented
 |RO
 |1 (SD)
 
 |1
-|trTeEventCallRetImpl
+|trTeEvtCallRetImpl
 |Read as 1 if Call and Return eventtypes are implemented
 |RO
 |1 (SD)
 
 |2
-|trTeEventContextPrivImpl
+|trTeEvtContextPrivImpl
 |Read as 1 if Context and Privilege event types are implemented
 |RO
 |1 (SD)
 
 |3
-|trTeEventDbgTrigImpl
+|trTeEvtDbgTrigImpl
 |Read as 1 if Debug Trigger event types are implemented
 |RO
 |1 (SD)
 
 |4
-|trTeEventPCSamplingImpl
+|trTeEvtPCSamplingImpl
 |Read as 1 if PC Sampling is implemented
 |RO
 |1 (SD)
 
 |5
-|trTeEventExtTrigImpl
+|trTeEvtExtTrigImpl
 |Read as 1 if External Trigger event types are implemented
 |RO
 |1 (SD)
 
 |6
-|trTeEventPerfCounterSelectorImpl
+|trTeEvtPerfCounterSelectorImpl
 |Read as 1 if Performance Counter Selector event types are implemented
 |RO
 |1 (SD)
 
 |10:7
-|trTeEventPPCs
+|trTeEvtPPCs
 |Number of Profiling Performance Counters implemented (0-15)
 |RO
 |8 (SD)
 
 |11
-|trTeEventPPCtype
+|trTeEvtPPCtype
 |Type of Profiling Performance Counters implemented: +
  0: independent counters; 1: based on hpmcounters
 |RO
 |0 (SD)
 
 |12
-|trTeEventPPCtypeSelectors
+|trTeEvtPPCtypeSelectors
 |Type of Profiling Performance Counter selectors implemented: +
  0: independent selectors; 1: based on hpmeventX
 |RO
@@ -754,71 +821,73 @@ NOTE: For the setup of *trTeEventExceptionEnable* and *trTeEventInterruptEnable*
 |===
 
 
-==== trTeEventPPCEnables: Event Trace Profiling Performance Counter (PPC) Enable Register (trTeBase+0x108)
+==== trTeEvtPPCEnables: Event Trace Profiling Performance Counter (PPC) Enable Register (trTeBase+0x108)
 
-NOTE: The value of the field is always 0 if the feature is not implemented, thus the WARL values are 0 for all fields. The reset value is also 0 for all fields, which means that by default no Event Types will output PPC values until the user enables them.
+Each Event Type can be separately programmed to output PPC values when that Event Type is enabled.  This register defines the enable bit for each Event Type to output PPC values in a packet immediately after the event.
 
-.Event Trace PPC Enables Register - *trTeEventPPCEnables* (32b)
+NOTE: The value of the field is always 0 if the feature is not implemented, thus by writing 1 to each field, the WARL return value indicates if the feature is implemented. The reset value is also 0 for all fields which means that by default no Event Types will output PPC values until the user enables them.
+
+.Event Trace PPC Enables Register - *trTeEvtPPCEnables* (32b)
 
 [cols="1,1,6,1,1", options="header"]
 |===
 ^|Bit ^|Field ^|Description ^|RW ^|Reset
 |0
-|trTeEventExcPPC
+|trTeEvtExcPPC
 |0: don't trace PPCs; 1: trace PPCs
 |WARL
 |0
 
 |1
-|trTeEventIntPPC
+|trTeEvtIntPPC
 |0: don't trace PPCs; 1: trace PPCs
 |WARL
 |0
 
 |2
-|trTeEventCallRetPPC
+|trTeEvtCallRetPPC
 |0: don't trace PPCs; 1: trace PPCs
 |WARL
 |0
 
 |3
-|trTeEventSContextPrivPPC
+|trTeEvtSContextPrivPPC
 |0: don't trace PPCs; 1: trace PPCs
 |WARL
 |0
 
 |4
-|trTeEventHContextPrivPPC
+|trTeEvtHContextPrivPPC
 |0: don't trace PPCs; 1: trace PPCs
 |WARL
 |0
 
 |5
-|trTeEventTrapRetPPC
+|trTeEvtTrapRetPPC
 |0: don't trace PPCs; 1: trace PPCs
 |WARL
 |0
 
 |6
-|trTeEventDbgTrigPPC
+|trTeEvtDbgTrigPPC
 |0: don't trace PPCs; 1: trace PPCs
 |WARL
 |0
 
 |7
-|trTeEventPCSamplingPPC
+|trTeEvtPCSamplingPPC
 |0: don't trace PPCs; 1: trace PPCs
 |WARL
 |0
 
 |8
-|trTeEventExtTrigPPC
+|trTeEvtExtTrigPPC
 |0: don't trace PPCs; 1: trace PPCs
 |WARL
 |0
 
 |9
-|trTeEventPerfCounterSelectorPPC
+|trTeEvtPerfCounterSelectorPPC
 |0: don't trace PPCs; 1: trace PPCs
 |WARL
 |0
@@ -831,16 +900,122 @@ NOTE: The value of the field is always 0 if the feature is not implemented, thus
 |
 
 |19:16
-|trTeEventPPCNumTrace
+|trTeEvtPPCNumTrace
 |0: turn off tracing of PPCs for all Event Types +
 1-15: Trace this number of PPCs.  If the value is greater than the number of PPCs implemented, then trace all PPCs.
 |WARL
 |0
 |===
 
-Add control for PPCeventX, requires low and high regs to specify which events to trace for each selector-based event.  This is only needed if the implementation of PPCs is based on independent counters and independent event selectors.  If the implementation of PPCs is based on hpmcounters and hpmeventX selectors, then no additional control registers are needed since the same hpmeventX selectors are used for both purposes.
+==== trTeEvtPPCControl: Event Trace Profiling Performance Counter (PPC) Control Register (trTeBase+0x10C)
 
-Add (MMIO) regs to read the PPCs for testing and DV purposes, and optionally for performance sampling by software.
+A write to the *trTeEvtPPCControl* register (any value) causes all the PPCs, i.e. *trTeEvtPPCCounter__i__*, to be snapshotted (latched) allowing their respective values to be read by software. The PPCs are reset to zero and begin counting the pre-programmed events on the next cycle. 
+
+This action only works if Event Trace is disabled.
+
+=== Event Trace PPC Event Selector Registers - *trTeEvtPPCEvent__i__* (64b) (trTeBase+0x110 to 0x148)
+
+The *trTeEvtPPCEvent__i__* registers are equivalent to the hpmeventX selectors of the HPM (hardware performance module). This set of registers is based on the PPC Alternative 2 (previously described in this document) where the PPCs are independent Profiling Performance counters.
+
+The EVT developer has the choice of using hpmeventX selectors (components of the Hardware Performance Monitor) or implementing PPCEvent__i__ selectors which are independent of the HPM - hardware performance module. Each PPCEvent__i__ selector register is 64 bits and is identical programmatic-wise to hpmeventX selectors of the HPM. (An exception is that the interrupt bit 63 status/control bit is not defined). These registers can be read/written as 64-bit registers or as address-adjacent 32-bit low/high registers.
+
+The Event Trace specification and associated memory mapping is assuming the maximum number of PPCs is 8. Thus the __i__ in the register name is an index from 0 to 7. If the implementation includes fewer than 8 PPCs, then the unused register slots are reserved.
+
+.Event Trace PPC Event Selector Register *trTeEvtPPCEvent__i__* fields
+[cols="1,1,6,1,1", options="header"]
+|===
+^|Bits ^|Field ^|Description ^|RW ^|Reset
+|[31:0]
+|Low
+|Lower 32 bits of PPC event selector. (address 0x110, 0x118, 0x120, 0x128, 0x130, 0x138, 0x140, or 0x148)
+|RW
+|0
+|[63:32]
+|High
+|Upper 32 bits of PPC event selector. (address 0x114, 0x11C, 0x124, 0x12C, 0x134, 0x13C, 0x144, or 0x14C) 
+|RW
+|0
+|===
+
+=== Event Trace PPC Counter Registers - *trTeEvtPPCCounter__i__* (24b) (trTeBase+0x150 to 0x198)
+
+This set of registers is only applicable if the implementation includes independent PPC counters (Alternative 2). The recommended width of each counter is 24 bits. They are delta, saturating counters that, for Event Trace, count performance events for the duration of each Event Trace event that is then packetized and sent into the trace stream. (Unfortunately the term "event" is an overloaded term in this context.)
+
+This register access is an optional feature. If implemented, these registers are memory-mapped to allow for read/write access and that does not require cpu instructions to access them (as CSR-based HPM counters require).
+
+The mapping of these registers to MMIO space is optional. The purposes are:
+
+1. read/write access for DV-based testing, in-circuit diagnostic testing, and 
+
+2. to be used as independent (outside of Event Trace) perf counters. This extends the usefulness of these counters beyond Event Trace and HPM counters. For example, they can enable memory-based access by another core in the cluster or by JTAG or other external debug port/device for taking performance measurements without cpu intervention.
+
+The registers exist in the design as Capture registers.  When a new Event Trace event occurs, each of the profiling performance counters must be latched in order for the counter to be zeroed and ready to begin counting on the next cycle. Then the Trace Encoder must create a message packet with each of the PPCs put into the packet, sequentially.  This requires that all the PPCs be latched simultaneously.
+
+If MMIO access is implemented, software can first snapshot the counters then read the Capture registers sequentially, until the next snapshot. The snapshot action is done with a write to a specific control register (s)
+
+The *trTeEvtPPCCounter__i__* registers are similar to hpmcounterX counters of the HPM (hardware performance module). This set of registers is based on the PPC Alternative 2 (previously described in this document) where the PPCs are independent Profiling Performance counters.
+
+.Event Trace *trTeEvtPPCounter__i__* Capture Registers (24b)
+[cols="1,1,1,1,1,4", options="header"]
+|===
+^|Trace Encoder Address Offset ^|Name ^|Size ^|RW ^|Reset ^|Description
+|0x150
+|PPCCounter0
+|[23:0]
+|RW
+|Undef
+|Counter 0 and 1 can be access as one 64b read with 0 in the lower 32 bits and 1 in the upper 32 bits.
+
+|0x154
+|PPCCounter1
+|[23:0]
+|RW
+|Undef
+| This allows for more efficient reading of both counters at the same time.
+
+|0x158
+|PPCCounter2
+|[23:0]
+|RW
+|Undef
+|
+
+|0x15C
+|PPCCounter3
+|[23:0]
+|RW
+|Undef
+|
+
+|0x160
+|PPCCounter4
+|[23:0]
+|RW
+|Undef
+|
+
+|0x164
+|PPCCounter5
+|[23:0]
+|RW
+|Undef
+|
+
+|0x168
+|PPCCounter6
+|[23:0]
+|RW
+|Undef
+|
+
+|0x16C
+|PPCCounter7
+|[23:0]
+|RW
+|Undef
+|
+|===
+
 
 
 

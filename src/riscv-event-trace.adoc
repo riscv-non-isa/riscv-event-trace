@@ -19,8 +19,8 @@ include::../docs-resources/global-config.adoc[]
 // Settings:
 :experimental:
 :reproducible:
-//:WaveDromEditorApp: app/wavedrom-editor.app
-:WaveDromEditorApp: wavedrom-cli
+:WaveDromEditorApp: app/wavedrom-editor.app
+//:WaveDromEditorApp: wavedrom-cli
 :imagesoutdir: images
 //:srcdir: src
 :bibtex-file: src/example.bib

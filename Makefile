@@ -18,7 +18,8 @@ DOCS := \
 DATE ?= $(shell date -u +%Y-%m-%d)
 VERSION ?= v0.0.0
 REVMARK ?= Draft
-DOCKER_IMG := ghcr.io/riscv/riscv-docs-base-container-image:latest
+# DOCKER_IMG := ghcr.io/riscv/riscv-docs-base-container-image:latest
+DOCKER_IMG := ghcr.io/riscv/riscv-docs-base-container-image@sha256:aac2028ffcc812fdc136f883a8e402966e08e4ed4a3ae8f2313710c05b8d494b
 DOCKER_BIN ?= docker
 ifneq ($(SKIP_DOCKER),true)
 	DOCKER_IS_PODMAN = \
@@ -56,7 +57,7 @@ OPTIONS := --trace \
            --failure-level=ERROR
 REQUIRES := --require=asciidoctor-bibtex \
             --require=asciidoctor-diagram \
-				--require=asciidoctor-lists
+			--require=asciidoctor-lists
 
 .PHONY: all build clean build-container build-no-container build-docs check-docs-resources pdf html
 

@@ -5,7 +5,7 @@
 
 * Extension of ratified RISC-V Instruction Trace as an additional encoder mode with additional message types
 
-* Based on same core hardware interface, now defined as RHTI (RISC-V Hart Trace Interface)
+* Based on same core hardware interface, now defined as RHTI[3] (RISC-V Hart Trace Interface)
 
 * A trace mode that turns off full instruction trace and turns on hardware filtering of instruction types and external interrupt events
 
@@ -55,7 +55,7 @@ itype = 8 (indirect call), 9 (direct call), 12 (co-routine swap), 13 (return)
 |Programmable timer that generates a trace packet with the most recent retired PC and timestamp when it expires.  This allows for periodic PC sampling of the executing code to provide an execution profile over time.
 
 |*External Signal (trigger) Events*
-|Edge-triggered signals that can insert a trace packet containing the closest retired PC at the time of the event, plus timestamp.  This enables tracing of external events such as interrupts, I/O events, DMA start-end markers, uncore signals, or user-selectable SoC-based events outside of core execution and to *time correlate* them with program execution. (Defined in the Trace Control Interface spec as "External Trace Triggers").
+|Edge-triggered signals that can insert a trace packet containing the closest retired PC at the time of the event, plus timestamp.  This enables tracing of external events such as interrupts, I/O events, DMA start-end markers, uncore signals, or user-selectable SoC-based events outside of core execution and to *time correlate* them with program execution. (Defined in the Trace Control Interface spec [1] as "External Trace Triggers").
 
 |*Performance Counter Selector Events*
 |RISC-V HPM (Hardware Performance Monitor) includes selector registers (mhpmeventX) which are user-programmed to select one (or several) core event types to count. This Event Trace feature extends this perf counter feature to record the closest retired PC on the rising edge of mhpmeventX output and save it in the trace buffer thus showing *where* in the code the core event occurred.
@@ -106,7 +106,7 @@ Exceptions occur whenever the processor undergoes privilege mode changes; tracin
 |Filtering benefits the utilization of trace memory by recording only events that are relevant to the debugging or performance analysis task.  For example, if the developer is only interested in user-level code, then filtering out events that occur in M-mode and S-mode can save trace memory and make post-processing more efficient.  If the developer is only interested in a specific process, then filtering by context ID excludes all other processes, including the OS itself. If the user is only interested in specific exception types or interrupt causes, then the resulting display will show only relevant data. 
 
 |*Debug trigger/watchpoints*
-|Tracing hardware trigger/watchpoints are useful for programming  markers without having to instrument and recompile code. They provide traces of specific locations in one's code for timing executions, counting occurrences, and especially for precisely measuring algorithic loop times, variations, and observing data-dependent behavior, such as cache misses or a function that executes in a varying amount of time based on the input data.
+|Tracing hardware trigger/watchpoints [4] are useful for programming  markers without having to instrument and recompile code. They provide traces of specific locations in one's code for timing executions, counting occurrences, and especially for precisely measuring algorithic loop times, variations, and observing data-dependent behavior, such as cache misses or a function that executes in a varying amount of time based on the input data.
 
 For device driver debugging, watchpoints can be set on memory-mapped I/O addresses to trace reads or writes for debugging and performance throughput of I/O.  These types of measurements are difficult or impossible to trace with generic instruction trace because of the infrequency of the events and the fact that they may be accessed by a number of different locations in the code.
 |*Periodic PC Sampling*
@@ -126,7 +126,7 @@ For cpu events that can occur in high-frequency bursts such as cache misses, the
 
 ==== Event Trace Message Fields
 
-NOTE: *F-ADDR* means full or uncompressed address. *C-ADDR* means compressed address which the trace decoder converts into a full address from a previous message, starting from a sync message that includes a full address. A C-ADDR, for N-Trace, is called a U-ADDR (U=unique) which is generated with "previous PC XOR current PC" to compress.  For E-Trace, compressed addresses (or delta address mode) are referred to as a differential encoding which is hardware logic that does "previous address - current address".
+NOTE: *F-ADDR* means full or uncompressed address. *C-ADDR* means compressed address which the trace decoder converts into a full address from a previous message, starting from a sync message that includes a full address. A C-ADDR, for N-Trace [2], is called a U-ADDR (U=unique) which is generated with "previous PC XOR current PC" to compress.  For E-Trace, compressed addresses (or delta address mode) are referred to as a differential encoding which is hardware logic that does "previous address - current address".
 
 .Event Trace Message Fields for non-function events
 [cols="12%,10%,12%,10%,~", options="header"]
@@ -160,7 +160,7 @@ Causes for Sync Disable: +
 |PC
 |cause
 |1
-|PC (C-Addr) is what is loaded into xepc (the address of the instruction that caused the exception), *cause* is what is loaded into the Exception Code field of xcause. cause signals are defined in Table 1 of RHTI spec (see References).
+|PC (C-Addr) is what is loaded into xepc (the address of the instruction that caused the exception), *cause* is what is loaded into the Exception Code field of xcause. cause signals are defined in Table 1 of RHTI spec[3].
 
 |*Interrupt*
 |PC
@@ -240,7 +240,7 @@ Source function can be derived from trace history however src address (i.e. line
 If Calls/Returns are supported, Event Trace requires implementation of CALL_SYNC, CALL_FULL, and RET_FULL.  CALL_DEST and CALL_PC are useful for reducing bandwidth.  RET_DEST and RET are also useful for reducing bandwidth.
 
 === Context + Privilege Level Events
-Instruction Trace already has the capability to trace changes in context ID and privilege level. Event Trace will utilize the same message type to trace these events - for N-Trace and E-Trace.
+Instruction Trace already has the capability to trace changes in context ID and privilege level. Event Trace will utilize the same message type to trace these events - for N-Trace [2] and E-Trace.
 
 *ORing* of controls for enabling Context and Privilege level
 
@@ -249,7 +249,7 @@ Instruction Trace already has the capability to trace changes in context ID and 
 * Set Event Trace Context enable control bit
 
 === Debug Trigger/Watchpoint Events
-A Debug Module can (and most often does) include a Trigger Module - hardware which matches on core conditions such as instruction address, data address, data value, privilege mode, context ID, etc. The Trigger Module can be programmed to generate an action called *Trace-notify* (Table 12 of RISC-V Debug Spec) using the value 4 for the 4-bit action field which is then routed to the RHTI-defined *trigger*[2] signal. Refer to <<Trigger/Watchpoint ID>> section for details.
+A Debug Module can (and most often does) include a Trigger Module [4] - hardware which matches on core conditions such as instruction address, data address, data value, privilege mode, context ID, etc. The Trigger Module can be programmed to generate an action called *Trace-notify* (Table 12 of RISC-V Debug Spec) using the value 4 for the 4-bit action field which is then routed to the RHTI[3]-defined *trigger +[2]+* signal. Refer to <<Trigger/Watchpoint ID>> section for details.
 
 For Event Trace, the *Trace-notify* action, when programmed by the user and enabled in Event Trace, results in a packet message output that includes the PC of the instruction that hit the trigger/watchpoint and a timestamp, plus PPCs if enabled. Thus Event Trace will record these Debug Triggers, and depending on the specific implementation of hardware debug triggers, can be amarker for instruction address/addresses executed or when certain data addresses have been accessed.
 
@@ -311,7 +311,7 @@ RISC-V programmable performance counters have selector registers (programmed wit
 
 (optional) Many prog. perf counter events can occur with high frequency.  To avoid overloading the trace system, hardware can include a digital "low-pass filer" to block highly frequent edges.  This utilizes a one-shot triggered timer that, while true, blocks additonal event generation.  The one-shot triggered timer duration is the same for all selector outputs.  The  lock-out timer logic also includes a counter that accumulates edge counts for the duration.  When the lock-out timer ends, Event Trace constructs a packet that include the selector ID, the latched timestamp when the first event occurred, and the count.
 
-The width of the timer lock-out counter is user selectable.  Recommended is a width of 18 to 24 bits (increments-of-6 work best for N-Trace), and the counter should be saturating so that it does not roll over and cause loss of information.  When the lock-out timer ends, if the count is at maximum, this indicates in the trace packet that the count exceeded the maximum.
+The width of the timer lock-out counter is user selectable.  Recommended is a width of 18 to 24 bits (increments-of-6 work best for N-Trace [2]), and the counter should be saturating so that it does not roll over and cause loss of information.  When the lock-out timer ends, if the count is at maximum, this indicates in the trace packet that the count exceeded the maximum.
 
 *Limiting Event Trace Bandwidth based on Trace Encoder Feedback.*  Most Trace Encoders include a FIFO for buffering trace events and to smooth out bursts of trace recordings that can occur at higher rates than the back-end rate of streaming trace packets to memory or PIB (probe interface block). Most FIFOs have a buffer depth signal indicating when it is close to full (for example, 3/4 full). This indicator can act as a back-pressure signal to the Event Trace hardware to temporarily stop the generation of trace packets.  This allows the trace system to catch up and avoid losing trace information due to FIFO overflow.  When the back-pressure signal is deasserted, Event Trace generation can resume.  For events like watchpoints, programmable performance counter selectors, and external signals which can occur at higher frequency, this feedback mechanism can be built into its hardware to either compress the trace information or simply throw away or reject these events.
 
@@ -361,7 +361,7 @@ NOTE: The previous section covered the Event trace feature "Event Trace Performa
 === Fixed Counter - Instructions Retired
 A very common and useful performance measurement is IPC - instructions per cycle.  This ratio indicates the instruction throughput of the core and identifies the actual code performance relative to the ideal.  For example, if a core is a 2-issue/2-instruction retire per cycle core then its ideal and maximum performance would be IPC=2.  Numbers less than 2 indicate how far from the ideal it is performing.  Measuring IPC per function with Event Trace provides a reasonably-fine granular view of performance, and sorting function results by IPC will identify which functions are furthest from the ideal and thus have the most to gain by improving their performance.
 
-The current RHTI specification, version v0.9, does not include a signal set for reporting the number of instructions retired in each cycle.  The proposal for adding this signal set is here - <<Instruction_Retired_Count, Instruction Retired Count>>. 
+The current RHTI specification [3] does not include a signal set for reporting the number of instructions retired in each cycle.  The proposal for adding this signal set is here - <<Instruction_Retired_Count, Instruction Retired Count>>. 
 
 An implementer can include the *Fixed counter - Instructions Retired* feature without the RHTI spec by accessing and routing these signals from the HPM unit to the Trace Encoder.
 
@@ -383,7 +383,7 @@ More documentation to follow.
 
 === Control Registers, Summary
 
-Event Trace as a trace mode (separate from Instruction Trace) is set by software writing trTeControl.trTeInstMode=4 which is defined in the N-Trace spec as "Protocol defined trace mode".
+Event Trace as a trace mode (separate from Instruction Trace) is set by software writing trTeControl.trTeInstMode=4 which is defined in the N-Trace spec [2] as "Protocol defined trace mode".
 
 Event Trace register starting point is an offset from the Trace Encoder base address. The Event Trace allocates and uses addresses *0x100-0x1FF*. Thus trTeEvtBase = trBaseEncoder+0x100. In the table below, the Offset is from the trTeEvtBase.
 
@@ -1062,12 +1062,6 @@ Range is 2^6 to 2^21, i.e. 64 cycles to ~2 million cycles in powers-of-2 increme
 |31:12
 |RESERVED | | | 
 |===
-
-//== Extensions to N-Trace General Messages (for all trace modes)
-//Located in the file Trace-Control-Extensions.adoc
-
-//== Event Trace N-Trace Messages
-//Located in the file N-Trace-packets.adoc
 
 //== Event Trace E-Trace Messages
 //Located in the file E-Trace-packets.adoc

@@ -24,7 +24,7 @@ include::../docs-resources/global-config.adoc[]
 :imagesoutdir: images
 //:srcdir: src
 :bibtex-file: src/event_trace.bib
-:bibtex-order: alphabetical
+:bibtex-order: appearance
 :bibtex-style: ieee
 :icons: font
 :lang: en

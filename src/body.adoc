@@ -1,4 +1,4 @@
-//5-18-26 5pm
+//5-21-26 3am
 
 [[body]]
 == Event Trace Features
@@ -135,7 +135,7 @@ For cpu events that can occur in high-frequency bursts such as cache misses, the
 
 ==== Event Trace Message Fields
 
-NOTE: *F-ADDR* means full or uncompressed address. *C-ADDR* means compressed address which the trace decoder converts into a full address from a previous message, starting from a sync message that includes a full address. A C-ADDR, for N-Trace cite:[riscv-N-Trace-spec-1.0], is called a U-ADDR (U=unique) which is generated with "previous PC XOR current PC" to compress.  For E-Trace, compressed addresses (or delta address mode) are referred to as a differential encoding which is hardware logic that does "previous address - current address".
+NOTE: *F-ADDR* means full or uncompressed address. *C-ADDR* means compressed address which the trace decoder converts into a full address from a previous message, starting from a sync message that includes a full address. A C-ADDR, for N-Trace cite:[riscv-N-Trace-spec-1.0], is called a U-ADDR (U=unique) which is generated with "previous PC XOR current PC" to compress.  For E-Trace cite:[riscv-E-Trace-spec-2.0], compressed addresses (or delta address mode) are referred to as a differential encoding which is hardware logic that does "previous address - current address".
 
 .Event Trace Message Fields for non-function events
 [cols="12%,10%,12%,10%,~", options="header"]
@@ -252,7 +252,7 @@ If Calls/Returns are supported, Event Trace requires implementation of CALL_SYNC
 === Context + Privilege Level Events
 (((Events, context and privilege level)))
 
-Instruction Trace already has the capability to trace changes in context ID and privilege level. Event Trace will utilize the same message type to trace these events - for N-Trace cite:[riscv-N-Trace-spec-1.0] and E-Trace cite:[riscv-E-Trace-spec-1.0].
+Instruction Trace already has the capability to trace changes in context ID and privilege level. Event Trace will utilize the same message type to trace these events - for N-Trace cite:[riscv-N-Trace-spec-1.0] and E-Trace cite:[riscv-E-Trace-spec-2.0].
 
 *ORing* of controls for enabling Context and Privilege level
 

@@ -2,7 +2,7 @@
 == RHTI Extensions for Event Trace
 (((Event Trace, RHTI extensions)))
 
-This file (RHTI-Extensions.adoc) defines extensions to the "RISC-V Hart to Trace Interface Specification" cite:[riscv-RHTI-spec-0.83] to support several features for Event Trace.  While an implementer can wire up these signals "on their own", RHTI defines them, along with all the existing signal definitions for Instruction Trace, to provide the named signals for Event Trace use.
+This file (RHTI-Extensions.adoc) defines extensions to the "RISC-V Hart to Trace Interface Specification"   xref:riscv-RHTI-spec-0.83[] to support several features for Event Trace.  While an implementer can wire up these signals "on their own", RHTI defines them, along with all the existing signal definitions for Instruction Trace, to provide the named signals for Event Trace use.
 
 //[[Trigger/Watchpoint-ID, Trigger/Watchpoint ID]]
 === Trigger/Watchpoint ID

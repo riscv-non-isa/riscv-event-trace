@@ -4,6 +4,33 @@
 
 This file (N-Trace-packets.adoc) defines the N-Trace cite:[riscv-N-Trace-spec-1.0] packets for Event Trace.
 
+(((N-Trace, Ownership Packet)))
+
+NOTE: N-Trace *Ownership* Message is already defined in the ratified N-Trace spec. It is here as reference to the message for tracing context ID and Privilege Mode as a selectable event type to trace, or when privilege mode is changed. This is described in detail in section 7.1 of the ratified RISC-V N-Trace spec [cite:[riscv-N-Trace-spec-1.0, 7.1].
+
+.Process Information (Context ID and Privilege Mode)
+[cols="10%,15%,~", options="header"]
+|===
+|Bits |Field |Description
+
+|*6*
+|*TCODE*
+|*Value = 0x2 (2)*
+
+|cfg
+|SRC
+|Source Hart of this message (width is trTeSrcBits)
+
+|Var
+|PROCESS
+|This is a variable-length field, which encodes V and PRV privilege mode bits as well as scontext/hcontext CSR values. +
+PROCESS[x+5:0] = {CONTEXT[x:0], V[0], PRV[1:0], FORMAT[1:0]}
+
+|var
+|TSTAMP
+|Relative timestamp value
+|===
+
 === Time Synchronization Packet for recording mtime & timestamp
 (((N-Trace, MTIME_SYNC packet)))
 
@@ -43,15 +70,11 @@ In addition, new N-Trace TCODE messages are defined for calls and returns to pro
 * N-Trace uses a byte-sized data format where 6 bits are payload and 2 bits called MSEO bits define the message framing. 00 = first or middle bytes, 01 = end of a variable field, 11 = end of a message
 * If only the destination address of an event is recorded in the message, the decoder must determine the source address from the execution binary and the previous messages recorded. In some cases, it will not be possible to determine the exact source address when a function is called in many different places in the calling function. If the user wants the precise source and destination addresses then they can set the appropriate Event Trace modes (there are separate modes for calls and returns), with the understanding that these messages include more bytes.
 
-=== Event Trace N-Trace Message Formats for Non-Function Events
+=== Non-Function Event Trace Message Formats
 (((N-Trace, EVT message formats)))
 
-==== EVT Trace Messages for Non-Function Event Trace Messages
-
-(((N-Trace, EVT Non-Function Packet)))
 .EVT Trace Messages for non-function events
-[cols="1,1,9", options="header"]
-
+[cols="10%,15%,~", options="header"]
 |===
 |Bits |Field |Description
 
@@ -87,112 +110,125 @@ Message contents. PC is for source address.
 (TCODE=0x23) Absolute timestamp value
 |===
 
-==== Event Trace Message Fields
+==== Event Trace non-Function Messages, per-EVTSRC
 .Event Trace Message Fields for non-function events
-[cols="1,1,1,1,1,1,8", options="header"]
+[cols="12%,10%,10%,10%,10%,~", options="header"]
 |===
-|Event |EVTSRC |EVTCNT |EVTPC |EVTDATA |ITYPE |Description
+^|Event ^|EVTSRC ^|EVTCNT ^|EVTPC ^|EVTDATA ^|Description
 
 |Sync Enable
-(((N-Trace, EVT Sync Enable Packet)))
+(((N-Trace, Event, Sync Enable Packet)))
 |0
 |1
 |PC
 |SYNC
-|X
-|SYNC field (compatible w/N-Trace Table 25):
-EVTPC is always F-ADDR (TCODE=0x23)
-(1)=Exit from Reset
-(3) = exit-debug. PC=first instruction to execute after debug mode.
-(5) = event trace enable. PC=instruction responsible for trace-on.
+|EVTPC is always F-ADDR (TCODE=0x23) +
+PC=instruction responsible for trace-on. +
+SYNC field (compatible w/N-Trace Table 25): +
+(1) = Exit from Reset +
+(3) = exit-debug. PC=first instruction to execute after debug mode. +
+(5) = event trace enable. +
 (others) reserved
 
 |Sync Disable
-(((N-Trace, EVT Sync Disable Packet)))
+(((N-Trace, Event, Sync Disable Packet)))
 |1
 |1
 |PC
 |EVCODE
-|X
-|EVCODE field (compatible w/N-Trace Table 24):
-EVTPC is always F-ADDR (TCODE=0x23)
-(0) = enter-debug. PC=address loaded into depc (has not executed).
-(4) = event trace disabled. PC=instruction responsible for trace-off.
+|EVCODE field (compatible w/N-Trace Table 24): +
+EVTPC is always F-ADDR (TCODE=0x23) +
+(0) = enter-debug. PC=address loaded into depc (has not executed). +
+(4) = event trace disabled. PC=instruction responsible for trace-off. +
 (6) = enter-reset. PC=last instruction to execute before reset.
 (others) reserved
 
 |Exception
-(((N-Trace, EVT Exception Packet)))
+(((N-Trace, Event, Exception Packet)))
 |2
 |1
 |PC
 |cause
-|1
-|PC is what is loaded into xepc (the address of the instruction that caused the exception), cause is what is loaded into the Exception Code field of xcause. cause signals are defined in Table 1 of RHTI spec (see References).
+|(ITYPE=1) PC is what is loaded into xepc (the address of the instruction that caused the exception), cause is what is loaded into the Exception Code field of xcause. cause signals are defined in Table 1 of RHTI spec (see References).
 
 |Interrupt
-(((N-Trace, EVT Interrupt Packet)))
+(((N-Trace, Event, Interrupt Packet)))
 |3
 |1
 |PC
 |cause
-|2
-|PC is what is loaded into xepc, cause is what is loaded into the Exception Code field of xcause.
+|(ITYPE=2) PC is what is loaded into xepc, cause is what is loaded into the Exception Code field of xcause.
 
 |Return from trap
-(((N-Trace, EVT Return from Trap Packet)))
+(((N-Trace, Event, Return from Trap Packet)))
 |4
 |1
 |PC
 |PCdest
-|3
-|Return from exception or interrupt (MRET or SRET)
+|(ITYPE=3) Return from exception or interrupt (MRET or SRET)
 (to distinguish from normal function return)
 This is generated when both PC's are not filtered by privilege mode.
 
 |Return from trap
-(((N-Trace, EVT Return from Trap Packet - Variant)))
+(((N-Trace, Event, Return from Trap Packet - Variant)))
 |4
 |0
 |PCdest
 |---
-|3
 |(Variant of above) Return from exception or interrupt (MRET or SRET)
 Generated when the source PC is filtered by privilege mode (but PCdest is not).
+
+|Debug Trigger/Watchpoint
+(((N-Trace, Event, Debug Trigger/Watchpoint Packet)))
+|5
+|1
+|PC
+|ID
+|When a debug trigger/watchpoint matches, the PC is normally the address of the instruction that caused the match. In multi-issue cores, this message may report the address of a later instruction retired in the same cycle. The ID is the trigger number and is recorded in the EVTDATA field. If hardware does not include the ID, it's value is 0. The trace decoder may be able to determine the ID from the PC and the knowledge of the triggers that are programmed.
+
+|Periodic PC Sampling
+(((N-Trace, Event, Periodic PC Sampling Packet)))
+|6
+|0
+|PC
+|---
+|This event samples the PC of the hart at a periodic interval. The PC is the address of the instruction that is executing at the time of the sample.
+
+|External Signal (trigger) with PC
+(((N-Trace, Event, External Signal Packet w/PC)))
+|7
+|1
+|PC
+|ID,val (Concat)
+|ID (3b) and val (2b) where *val* is rising (0), falling (1), both (2), multiple edges (3). +
+Generated when external signal edge on this channel (ID) is detected by the Event Trace encoder. The PC is the address of the instruction that is executing at the time of the signal. Timestamp must be enabled and its value is latched at the time of the signal edge.
+
+|External Signal (trigger) no PC
+(((N-Trace, Event, External Signal Packet wo/PC)))
+|7
+|0
+|ID,val (Concat)
+|---
+|ID (3b) and val (2b) where *val* is rising (0), falling (1), both (2), multiple edges (3). +
+Generated when external signal edge on this channel (ID) is detected by the Event Trace encoder. Timestamp must be enabled and its value is latched at the time of the signal edge.
+
+
+|Perf Counter Selector Occurrence
+(((N-Trace, Event, Performance Counter Selector Packet)))  
+|8
+|1
+|ID
+|Count
+|*ID* is the Selector (channel) recorded. *Count* is the number of cycles the signal has a high value during the time window, defined by the control register *trTeEvtControl.trTeEvtPerfSelWindow*.
+
 |===
 
-(((N-Trace, Ownership Packet)))
-N-Trace *Ownership* Message (defined in the ratified N-Trace spec) is used to trace Process information, which is *contextID* when the register is written to via instrumentation along with *Privilege state*. This is described in detail in section 7.1 of the ratified RISC-V N-Trace spec.
-
-.N-Trace Message for Process Information (ContextID and Privilege Mode)
-[cols="1,1,9", options="header"]
-|===
-|Bits |Field |Description
-
-|*6*
-|*TCODE*
-|*Value = 0x2 (2)*
-
-|cfg
-|SRC
-|Source Hart of this message (width is trTeSrcBits)
-
-|Var
-|PROCESS
-|This is a variable-length field, which encodes V and PRV privilege mode bits as well as scontext/hcontext CSR values.
-PROCESS[x+5:0] = {CONTEXT[x:0], V[0], PRV[1:0], FORMAT[1:0]}
-
-|var
-|TSTAMP
-|Relative timestamp value
-|===
-
-=== Event Trace N-Trace Message Formats for Calls and Returns
-(((N-Trace, Call and Return packet)))
+=== Event Trace Message Formats for Calls and Returns
+(((N-Trace, Event, Call and Return packet)))
 The following table lists the message types to support function Calls and Returns, with different types and numbers of parameters.
 
 .Event Trace Message Types for Calls and Returns
-[cols="1,1,1,1,1,7", options="header"]
+[cols="15%,10%,10%,10%,10%,~", options="header"]
 |===
 |Name |TCODE |Source |Destination |ITYPE |Description
 
@@ -247,17 +283,17 @@ Source function can be derived from trace history however src address (i.e. line
 |Function returned to is determined from history. If caller was CALL_PC (inferrable caller), decoder can determine return destination address from 2-byte or 4-byte opcode.
 |===
 
-*NOTE: Implementation priority* +
+Recommended priority of implementation +
 1: CALL_SYNC, CALL_FULL, RET_FULL +
 2: CALL_PC, RET +
 3: CALL_DEST, RET_DEST
 
-==== N-Trace Message for CALL_SYNC Function Event
+====  CALL_SYNC Function Event
 (((N-Trace, CALL_SYNC packet)))
 Used to synchronize messages, outputting new absolute address for any call type (8, 9)
 
-.N-Trace Message for CALL_SYNC Function Event
-[cols="1,2,9", width=70%, options="header"]
+.CALL_SYNC Function Event
+[cols="10%,20%,~", width=90%, options="header"]
 |===
 |Bits |Field |Description
 
@@ -282,12 +318,12 @@ Used to synchronize messages, outputting new absolute address for any call type 
 |Absolute timestamp value, leading zero suppression.
 |===
 
-==== N-Trace Message for CALL_FULL Function Event
+====  CALL_FULL Function Event
 (((N-Trace, CALL_FULL packet)))
 Trace both source and destination addresses of any call type (8, 9)
 
-.N-Trace Message for CALL_FULL Function Event
-[cols="1,2,9", width=60%, options="header"]
+.CALL_FULL Function Event
+[cols="10%,20%,~", width=90%, options="header"]
 |===
 |Bits |Field |Description
 
@@ -312,12 +348,12 @@ Trace both source and destination addresses of any call type (8, 9)
 |Relative timestamp value (offset from last reported absolute or relative timestamp), leading zero suppression.
 |===
 
-==== N-Trace Message for CALL_DEST Function Event
+==== CALL_DEST Function Event
 (((N-Trace, CALL_DEST packet)))
 For Uninferrable call
 
-.N-Trace Message for CALL_DEST Function Event
-[cols="1,2,9", width=60%, options="header"]
+.CALL_DEST Function Event
+[cols="10%,20%,~", width=90%, options="header"]
 |===
 |Bits |Field |Description
 
@@ -338,12 +374,12 @@ For Uninferrable call
 |Relative timestamp value
 |===
 
-==== N-Trace Message for CALL_PC Function Event
+====  CALL_PC Function Event
 ((((N-Trace, CALL_PC packet)))
 For Inferrable call
 
-.N-Trace Message for CALL_PC Function Event
-[cols="1,2,9", width=60%, options="header"]
+.CALL_PC Function Event
+[cols="10%,20%,~", width=90%, options="header"]
 |===
 |Bits |Field |Description
 
@@ -365,12 +401,12 @@ Destination is inferrable from opcode
 |Relative timestamp value
 |===
 
-==== N-Trace Message for RET_FULL Return Event
+====  RET_FULL Return Event
 ((((N-Trace, RET_FULL packet)))
 Trace both source and destination addresses of return when caller is known.
 
-.N-Trace Message for RET_FULL Return Event
-[cols="1,3,9", width=60%, options="header"]
+.RET_FULL Return Event
+[cols="10%,20%,~", width=90%, options="header"]
 |===
 |Bits |Field |Description
 
@@ -395,13 +431,12 @@ Trace both source and destination addresses of return when caller is known.
 |Relative timestamp value
 |===
 
-==== N-Trace Message for RET_DEST Return Event
+====  RET_DEST Return Event
 ((((N-Trace, RET_DEST packet)))
 Output destination address only, to reduce bandwidth.
 
-.N-Trace Message for RET_DEST Return Event
-
-[cols="1,2,9", width=60%, options="header"]
+.RET_DEST Return Event
+[cols="10%,20%,~", width=90%, options="header"]
 |===
 |Bits |Field |Description
 
@@ -422,12 +457,12 @@ Output destination address only, to reduce bandwidth.
 |Relative timestamp value
 |===
 
-==== N-Trace Message for Function RET Event
+====  Function RET Event
 ((((N-Trace, Function RET packet)))
 Return message when caller is known (most compact message since no source or destination address is included).
 
-.N-Trace Message for RET Function Event
-[cols="1,1,9", width=60%,options="header"]
+.RET Function Event
+[cols="10%,20%,~", width=90%, options="header"]
 |===
 |Bits |Field |Description
 
@@ -444,49 +479,87 @@ Return message when caller is known (most compact message since no source or des
 |Relative timestamp value
 |===
 
-== N-Trace TCODE Summary
 
-[cols="1,3,6", options="header"]
+====  Performance Counter Recording
+((((N-Trace, Performance Counter Recording packet)))
+
+This message is used to record the performance counter values.  For Event Trace the values are delta values of Profiling Performance Counters (PPCs). For RIT, it can be HPMCounters.  The values are leading-zero suppressed to reduce bandwidth.
+
+The number of counters can vary depending on hardware configuration. The max number of PPCs is 8.  The recommended max number of HPMCounters to record is 8, starting with hpmCounter3.  
+
+This message can output a variable number of counters.  The N-Trace message format defines the end of a packet. cite:[riscv-N-Trace-spec-1.0, MSEO Sequences]
+
+.Performance Counter Recording
+[cols="10%,20%,~", options="header"]
 |===
-^|TCODE ^| Value ^|Description
+|Bits |Field |Description
 
-|TCODE
+|*6*
+|*TCODE*
+|*Value = 0x2A (43)*
+
+|cfg
+|SRC
+|Source Hart of this message (width is trTeSrcBits)
+
+|var
+|Counter0
+|Leading-zero suppressed value of the first performance counter - either the absolute value of HPMCounter3  or delta value of Profiling Performance Counter 0 (PPC0), depending on the context for generating the trace.  The RIT may record the absolute value of upto the first 8 hpm performance counters, or Event Trace will record the delta values of upto 8 profiing performance counters.
+|var
+|Counter1
+|Next counter (optional)
+|...
+|...
+|...
+
+|var
+|Counter7
+|8th counter (optional)
+|===
+
+
+=== N-Trace TCODE Summary
+[cols="1,3", options="header"]
+|===
+^| Value ^|Description
+
+|0x2 (2)
+|Process Information (Context ID and Privilege Mode)
+
 |0x0F (15)
 |N-Trace MTIME_SYNC Message for Timing Synchronization
 
-|TCODE
-|0x22 (34) (compressed) or 0x23 (35) (uncompressed)
-|EVT Trace Messages for non-function events
+|0x22 (34) (compressed), 0x23 (35) (uncompressed)
+|EVT Trace Messages for non-function events +
+* EVTSRC=0: Sync Enable +
+* EVTSRC=1: Sync Disable +
+* EVTSRC=2: Exception +
+* EVTSRC=3: Interrupt +
+* EVTSRC=4: Return from trap +
+* EVTSRC=5: Periodic PC Sampling
 
-|TCODE
-|0x2 (2)
-|N-Trace Message for Process Information (ContextID and Privilege Mode)
-
-|TCODE
 |0x24 (36)
-|N-Trace Message for CALL_SYNC Function Event
+| CALL_SYNC Function Event
 
-|TCODE
 |0x25 (37)
-|N-Trace Message for CALL_FULL Function Event
+| CALL_FULL Function Event
 
-|TCODE
 |0x26 (38)
-|N-Trace Message for CALL_DEST Function Event
+| CALL_DEST Function Event
 
-|TCODE
 |0x27 (39)
-|N-Trace Message for CALL_PC Function Event
+| CALL_PC Function Event
 
-|TCODE
 |0x28 (40)
-|N-Trace Message for RET_FULL Return Event
+| RET_FULL Return Event
 
-|TCODE
 |0x29 (41)
-|N-Trace Message for RET_DEST Return Event
+| RET_DEST Return Event
 
-|TCODE
 |0x2A (42)
-|N-Trace Message for RET Function Event
+| RET Function Event
+
+|0x2A (43)
+| Performance Counter Recording
+
 |===

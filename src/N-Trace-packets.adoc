@@ -6,7 +6,7 @@ This file (N-Trace-packets.adoc) defines the N-Trace cite:[riscv-N-Trace-spec-1.
 
 (((N-Trace, Ownership Packet)))
 
-NOTE: N-Trace *Ownership* Message is already defined in the ratified N-Trace spec. It is here as reference to the message for tracing context ID and Privilege Mode as a selectable event type to trace, or when privilege mode is changed. This is described in detail in section 7.1 of the ratified RISC-V N-Trace spec [cite:[riscv-N-Trace-spec-1.0, 7.1].
+NOTE: N-Trace *Ownership* Message is already defined in the ratified N-Trace spec. It is here as reference to the message for tracing context ID and Privilege Mode as a selectable event type to trace, or when privilege mode is changed. This is described in detail in section 7.1 of the ratified RISC-V N-Trace spec cite:[riscv-N-Trace-spec-1.0(Ch. 7.1)].
 
 .Process Information (Context ID and Privilege Mode)
 [cols="10%,15%,~", options="header"]
@@ -211,7 +211,6 @@ Generated when external signal edge on this channel (ID) is detected by the Even
 |---
 |ID (3b) and val (2b) where *val* is rising (0), falling (1), both (2), multiple edges (3). +
 Generated when external signal edge on this channel (ID) is detected by the Event Trace encoder. Timestamp must be enabled and its value is latched at the time of the signal edge.
-
 
 |Perf Counter Selector Occurrence
 (((N-Trace, Event, Performance Counter Selector Packet)))  
@@ -479,15 +478,14 @@ Return message when caller is known (most compact message since no source or des
 |Relative timestamp value
 |===
 
-
-====  Performance Counter Recording
+===  Performance Counter Recording
 ((((N-Trace, Performance Counter Recording packet)))
 
-This message is used to record the performance counter values.  For Event Trace the values are delta values of Profiling Performance Counters (PPCs). For RIT, it can be HPMCounters.  The values are leading-zero suppressed to reduce bandwidth.
+This message is used to record performance counter values.  For Event Trace the values are delta values of Profiling Performance Counters (PPCs). For RIT, they may be HPMCounters.  The values are leading-zero suppressed to reduce bandwidth.
 
 The number of counters can vary depending on hardware configuration. The max number of PPCs is 8.  The recommended max number of HPMCounters to record is 8, starting with hpmCounter3.  
 
-This message can output a variable number of counters.  The N-Trace message format defines the end of a packet. cite:[riscv-N-Trace-spec-1.0, MSEO Sequences]
+This message can output a variable number of counters.  The N-Trace message format defines the end of a packet. cite:[riscv-N-Trace-spec-1.0(Ch. MSEO Sequences)]
 
 .Performance Counter Recording
 [cols="10%,20%,~", options="header"]
@@ -529,14 +527,18 @@ This message can output a variable number of counters.  The N-Trace message form
 |0x0F (15)
 |N-Trace MTIME_SYNC Message for Timing Synchronization
 
-|0x22 (34) (compressed), 0x23 (35) (uncompressed)
+|0x22 (34) (compressed), +
+0x23 (35) (uncompressed)
 |EVT Trace Messages for non-function events +
 * EVTSRC=0: Sync Enable +
 * EVTSRC=1: Sync Disable +
 * EVTSRC=2: Exception +
 * EVTSRC=3: Interrupt +
 * EVTSRC=4: Return from trap +
-* EVTSRC=5: Periodic PC Sampling
+* EVTSRC=5: Debug Trigger/Watchpoint +
+* EVTSRC=6: Periodic PC Sampling +
+* EVTSRC=7: External Signal (trigger) +
+* EVTSRC=8: Perf Counter Selector Occurrence
 
 |0x24 (36)
 | CALL_SYNC Function Event

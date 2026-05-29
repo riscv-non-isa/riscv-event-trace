@@ -18,7 +18,7 @@
 == Event Trace Global and per-Event Filtering (non-normative)
 (((Filtering, Global and per-Event)))
 
-These global and per-event filters are documented in the *RISC-V Trace Control Interface Specification* cite:[riscv-trace-control-spec-0.83(Ch. 6.3)]. These are documented here since they are already documented and the specification ratified.
+These global and per-event filters are documented in the *RISC-V Trace Control Interface Specification* cite:[riscv-trace-control-spec-1.0(Ch. 6.3)]. These are documented here since they are already documented and the specification ratified.
 
 There are several types of useful Event Trace filters that can be provided by hardware to reduce the volume of trace data and focus on relevant information.  While these registers and associated hardware are optional, [underline]#they are required to be included in the implementation of Trace hardware.#
 

@@ -1112,7 +1112,7 @@ NOTE: The counter is not accessible as a memory-mapped register. It is part of t
 ], config:{lanes: 4, hspace:1024}}
 ....
 
-.Event Trace Performance Selector Control - *trTeEvtPerfSelectControl* (32b) 
+.Event Trace Performance Selector Control - *trTeEvtPerfSelectControl* (32b)
 [cols="8%,22%,~,8%,8%", options="header"]
 |===
 ^|Bits ^|Field ^|Description ^|RW ^|Reset

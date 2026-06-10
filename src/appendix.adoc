@@ -11,7 +11,7 @@
 * Event Trace can be disabled by writing *trTeEvtControl.trTeEnable* = 0. This does a flush to the trace system.
 * Trace can be set up to stop tracing on buffer full: *trRamControl.trRamStopOnWrap* = 1. When this occurs, Event Trace continues running, however no more trace messages are written to the trace buffer.
 * A self-hosted trace analysis program such as Linux _perf_ could control the starting and stopping of Event Trace.
-* Trace hardware supports on-the-fly switching between Event Trace and Instruction Trace. Memory-mapped (MMIO) hardware control registers allow a user program to change modes of trace so a trace recording can have both instruction trace messages intermixed with event trace messages. This feature allows the tracing of a portion of one program/process full execution while also tracing kernel-level events such as going in and out of kernel mode and running other processes. 
+* Trace hardware supports on-the-fly switching between Event Trace and Instruction Trace. Memory-mapped (MMIO) hardware control registers allow a user program to change modes of trace so a trace recording can have both instruction trace messages intermixed with event trace messages. This feature allows the tracing of a portion of one program/process full execution while also tracing kernel-level events such as going in and out of kernel mode and running other processes.
 // More details are in section "Operational Description & Message Rules".
 
 [appendix]
@@ -47,7 +47,7 @@ Below, the 'i' in trTeFilter**i**Control (and others) is reference to the index 
   *.trTeFilterMatchPrivilege*
 |  Set = 1 +
   Set = 1 +
-  All other fields set to 0 
+  All other fields set to 0
 |*trTeFilteriMatchInst*
 | *.trTeFilterMatchChoicePrivilege*
 |  [7:0] bits to match Privilege levels list in table below
@@ -115,7 +115,7 @@ For *trTeCompjControl* and *trTeCompjMatchLow* below, j=0 which defines the firs
   *.trTeFilterMatchEcause* +
 | Set = 1 +
   Set = 1 (to compare Ecause value) +
-  All other fields set to 0 
+  All other fields set to 0
 |*trTeFilteriMatchInst*
  |*.trTeFilterValueInterrupt* +
  (Note the name doesn't match the comparison)

@@ -60,7 +60,7 @@ This file (N-Trace-packets.adoc) defines the Event Trace messages that extend N-
 * *TSTAMP* is the N-Trace accumulating, running timestamp. Its clock is required to provide accurate short-duration execution timing, with a 10ns minimum resolution and a preferred 1ns resolution (100MHz - 1GHz). TSTAMP minimum width should be 40 bits which provides 18 minutes of duration at 1GHz clock rate. If Event Trace is to run for hours, then 48 bits provides 78 hours.
 * *cfg* in the Bits column means the number of bits is configurable at build time. The primary example is the number of bits for the SRC field. This represents the total number of Harts in the SoC.
 * *N-Trace* uses a byte-sized data format where 6 bits are payload and 2 bits called MSEO bits define the message framing. 00 = first or middle bytes, 01 = end of a variable field, 11 = end of a message/packet.
-* *F-ADDR* means the full address is included in the message. *U-ADDR* means the unique part of the address is included in the message.  Both are output with leading zero suppression. 
+* *F-ADDR* means the full address is included in the message. *U-ADDR* means the unique part of the address is included in the message.  Both are output with leading zero suppression.
 
 === Non-Function Event Trace Message Formats
 (((N-Trace, EVT message formats)))
@@ -215,7 +215,7 @@ Generated when external signal edge on this channel (SIG_ID) is detected by the 
 |*ES_VAL* (see above). Generated when external signal edge on this channel (SIG_ID) is detected by the Event Trace encoder. Timestamp must be enabled, and its value is latched at the time of the signal edge. *trTeEvtExtSigControl.trTeEvtExtSigPCMode* = 0 <<ExtSigPCMode>> for no-PC mode.
 
 |Perf Counter Selector Occurrence
-(((N-Trace, Event, Performance Counter Selector Message)))  
+(((N-Trace, Event, Performance Counter Selector Message)))
 |8
 |1
 |SEL_ID
@@ -495,7 +495,7 @@ Trace hardware can maintain a one-level stack of the last caller PC address (+2 
 
 Messages that include the Program Counter (PC) are predominantly U-ADDRes.  Periodically, however, the full address (F-ADDR) must be output to provide a synchronization point for the trace decoder. The period for generating a synchronization message is defined by the N-Trace register *trTeControl.trTeInstSyncMax* cite:[riscv-trace-control-spec-1.0(Trace Encoder Control Interface)]. The count is 2^(trTeInstSyncMax+4).
 
-Hardware counts the number of Event Trace messages that include a PC and outputs a synchronization message when the count reaches the programmed value. Messages that can include an F-ADDR include all EVT (TCODE=0x23) messages that include a PC address and CALL_SYNC. 
+Hardware counts the number of Event Trace messages that include a PC and outputs a synchronization message when the count reaches the programmed value. Messages that can include an F-ADDR include all EVT (TCODE=0x23) messages that include a PC address and CALL_SYNC.
 
 ===  Profiling Performance Counter (PPC) Recording
 (((N-Trace, Performance Counter Recording message)))

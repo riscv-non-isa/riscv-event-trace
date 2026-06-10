@@ -1,534 +1,17 @@
 
-== N-Trace Packet Definitions
-(((Event Trace, N-Trace packets)))
+== N-Trace Message Definitions
+(((Event Trace, N-Trace messages)))
 
-This file (N-Trace-packets.adoc) defines the N-Trace cite:[riscv-N-Trace-spec-1.0] packets for Event Trace.
+NOTE: the N-trace specification uses the term "message" to refer to the data output by the trace encoder thus this chapter will also use that term.  Other documents use the term "packet" so the other chapters of this document will use the term "packet" to refer to the data output by the trace encoder.  The terms are interchangeable and both refer to the same thing.
 
-(((N-Trace, Ownership Packet)))
-
-NOTE: N-Trace *Ownership* Message is already defined in the ratified N-Trace spec. It is here as reference to the message for tracing context ID and Privilege Mode as a selectable event type to trace, or when privilege mode is changed. This is described in detail in section 7.1 of the ratified RISC-V N-Trace spec cite:[riscv-N-Trace-spec-1.0(Ch. 7.1)].
-
-.Process Information (Context ID and Privilege Mode)
-[cols="10%,15%,~", options="header"]
-|===
-|Bits |Field |Description
-
-|*6*
-|*TCODE*
-|*Value = 0x2 (2)*
-
-|cfg
-|SRC
-|Source Hart of this message (width is trTeSrcBits)
-
-|Var
-|PROCESS
-|This is a variable-length field, which encodes V and PRV privilege mode bits as well as scontext/hcontext CSR values. +
-PROCESS[x+5:0] = {CONTEXT[x:0], V[0], PRV[1:0], FORMAT[1:0]}
-
-|var
-|TSTAMP
-|Relative timestamp value
-|===
-
-=== Time Synchronization Packet for recording mtime & timestamp
-(((N-Trace, MTIME_SYNC packet)))
-
-N-Trace MTIME_SYNC Message to record mtime and trace timestamp simultaneously for Timing Synchronization.
-
-.N-Trace MTIME_SYNC Message for Timing Synchronization
-[cols="8%,15%,~", width=80%, options="header"]
-|===
-|Bits |Field |Description
-
-|*6*
-|*TCODE*
-|*Value = 0x0F (15)*
-
-|Cfg
-|SRC
-|Source Hart of this message (width is trTeSrcBits)
-
-|Var
-|mtime
-|F (Full) mtime value (64b w leading zero suppression)
-
-|Var
-|TSTAMP
-|F (Full) timestamp value (64b w leading zero suppression)
-|===
-
-Event Trace has defined a new N-Trace message called EVT that covers non-call/ret event types. There are two types: EVT compressed (TCODE=34) and uncompressed (TCODE=35).
-
-In addition, new N-Trace TCODE messages are defined for calls and returns to provide the most compact messaging.
-
-=== Informational
-
-* SRC width is a hardware build-time configuration based on the total number of harts, defined in the Trace Control Interface Spec as trTeSrcBits
-* TSTAMP is the N-Trace accumulating, running timestamp. Its clock is required to provide accurate short-duration execution timing, with a 10ns minimum resolution and a preferred 1ns resolution (100MHz - 1GHz). TSTAMP minimum width should be 40 bits which provides 18 minutes of duration at 1GHz clock rate. If Event Trace is to run for hours, then 48 bits provides 78 hours.
-* cfg in the Bits column. This means the number of bits is configurable at build time. The main example is the number of bits for the SRC field. This represents the total number of Harts in the SoC.
-* N-Trace uses a byte-sized data format where 6 bits are payload and 2 bits called MSEO bits define the message framing. 00 = first or middle bytes, 01 = end of a variable field, 11 = end of a message
-* If only the destination address of an event is recorded in the message, the decoder must determine the source address from the execution binary and the previous messages recorded. In some cases, it will not be possible to determine the exact source address when a function is called in many different places in the calling function. If the user wants the precise source and destination addresses then they can set the appropriate Event Trace modes (there are separate modes for calls and returns), with the understanding that these messages include more bytes.
-
-=== Non-Function Event Trace Message Formats
-(((N-Trace, EVT message formats)))
-
-.EVT Trace Messages for non-function events
-[cols="10%,15%,~", options="header"]
-|===
-|Bits |Field |Description
-
-|*6*
-|*TCODE*
-|*Value = 0x22 (34) (compressed) or 0x23 (35) (uncompressed)*
-
-|Cfg
-|SRC
-|Source Hart of this message (width is trTeSrcBits)
-
-|4
-|EVTSRC
-|Type of EVT message; 4 bitS provides up to 16 types
-0=One field (EVTPC), 1=Two fields (EVTPC, EVTDATA), 2-3=reserved
-
-|2
-|EVTCNT
-|Note: EVTSRC+EVTCNT equal 1 byte of N-TRACE message output
-Message contents. PC is for source address.
-
-|Var
-|EVTPC
-|(TCODE=0x22) C-ADDR, (TCODE=0x23) F-ADDR – for some EVTSRC types
-
-|var
-|EVTDATA
-|Additional message content. Some values are subtypes. Some are an additional address. For addresses, (TCODE=0x22) C-ADDR, (TCODE=0x23) F-ADDR
-
-|Var
-|TSTAMP
-|(TCODE=0x22) Relative timestamp value
-(TCODE=0x23) Absolute timestamp value
-|===
-
-==== Event Trace non-Function Messages, per-EVTSRC
-.Event Trace Message Fields for non-function events
-[cols="12%,10%,10%,10%,10%,~", options="header"]
-|===
-^|Event ^|EVTSRC ^|EVTCNT ^|EVTPC ^|EVTDATA ^|Description
-
-|Sync Enable
-(((N-Trace, Event, Sync Enable Packet)))
-|0
-|1
-|PC
-|SYNC
-|EVTPC is always F-ADDR (TCODE=0x23) +
-PC=instruction responsible for trace-on. +
-SYNC field (compatible w/N-Trace Table 25): +
-(1) = Exit from Reset +
-(3) = exit-debug. PC=first instruction to execute after debug mode. +
-(5) = event trace enable. +
-(others) reserved
-
-|Sync Disable
-(((N-Trace, Event, Sync Disable Packet)))
-|1
-|1
-|PC
-|EVCODE
-|EVCODE field (compatible w/N-Trace Table 24): +
-EVTPC is always F-ADDR (TCODE=0x23) +
-(0) = enter-debug. PC=address loaded into depc (has not executed). +
-(4) = event trace disabled. PC=instruction responsible for trace-off. +
-(6) = enter-reset. PC=last instruction to execute before reset.
-(others) reserved
-
-|Exception
-(((N-Trace, Event, Exception Packet)))
-|2
-|1
-|PC
-|cause
-|(ITYPE=1) PC is what is loaded into xepc (the address of the instruction that caused the exception), cause is what is loaded into the Exception Code field of xcause. cause signals are defined in Table 1 of RHTI spec (see References).
-
-|Interrupt
-(((N-Trace, Event, Interrupt Packet)))
-|3
-|1
-|PC
-|cause
-|(ITYPE=2) PC is what is loaded into xepc, cause is what is loaded into the Exception Code field of xcause.
-
-|Return from trap
-(((N-Trace, Event, Return from Trap Packet)))
-|4
-|1
-|PC
-|PCdest
-|(ITYPE=3) Return from exception or interrupt (MRET or SRET)
-(to distinguish from normal function return)
-This is generated when both PC's are not filtered by privilege mode.
-
-|Return from trap
-(((N-Trace, Event, Return from Trap Packet - Variant)))
-|4
-|0
-|PCdest
-|---
-|(Variant of above) Return from exception or interrupt (MRET or SRET)
-Generated when the source PC is filtered by privilege mode (but PCdest is not).
-
-|Debug Trigger/Watchpoint
-(((N-Trace, Event, Debug Trigger/Watchpoint Packet)))
-|5
-|1
-|PC
-|ID
-|When a debug trigger/watchpoint matches, the PC is normally the address of the instruction that caused the match. In multi-issue cores, this message may report the address of a later instruction retired in the same cycle. The ID is the trigger number and is recorded in the EVTDATA field. If hardware does not include the ID, it's value is 0. The trace decoder may be able to determine the ID from the PC and the knowledge of the triggers that are programmed.
-
-|Periodic PC Sampling
-(((N-Trace, Event, Periodic PC Sampling Packet)))
-|6
-|0
-|PC
-|---
-|This event samples the PC of the hart at a periodic interval. The PC is the address of the instruction that is executing at the time of the sample.
-
-|External Signal (trigger) with PC
-(((N-Trace, Event, External Signal Packet w/PC)))
-|7
-|1
-|PC
-|ID,val (Concat)
-|ID (3b) and val (2b) where *val* is rising (0), falling (1), both (2), multiple edges (3). +
-Generated when external signal edge on this channel (ID) is detected by the Event Trace encoder. The PC is the address of the instruction that is executing at the time of the signal. Timestamp must be enabled and its value is latched at the time of the signal edge.
-
-|External Signal (trigger) no PC
-(((N-Trace, Event, External Signal Packet wo/PC)))
-|7
-|0
-|ID,val (Concat)
-|---
-|ID (3b) and val (2b) where *val* is rising (0), falling (1), both (2), multiple edges (3). +
-Generated when external signal edge on this channel (ID) is detected by the Event Trace encoder. Timestamp must be enabled and its value is latched at the time of the signal edge.
-
-|Perf Counter Selector Occurrence
-(((N-Trace, Event, Performance Counter Selector Packet)))  
-|8
-|1
-|ID
-|Count
-|*ID* is the Selector (channel) recorded. *Count* is the number of cycles the signal has a high value during the time window, defined by the control register *trTeEvtControl.trTeEvtPerfSelWindow*.
-
-|===
-
-=== Event Trace Message Formats for Calls and Returns
-(((N-Trace, Event, Call and Return packet)))
-The following table lists the message types to support function Calls and Returns, with different types and numbers of parameters.
-
-.Event Trace Message Types for Calls and Returns
-[cols="15%,10%,10%,10%,10%,~", options="header"]
-|===
-|Name |TCODE |Source |Destination |ITYPE |Description
-
-|CALL_SYNC
-|36
-|PC (F-ADDR)
-|dest (C-ADDR)
-|8 or 9
-|Traces both src and dest addresses. The second address is XOR compressed. Full (absolute) timestamp if enabled.
-
-|CALL_FULL
-|37
-|PC (C-ADDR)
-|dest (C-ADDR)
-|8 or 9
-|Traces both src and dest compressed (unique) addrs; relative timestamp if enabled.
-
-|CALL_DEST
-|38
-|-----
-|dest (C-ADDR)
-|8
-|itype=8 means indirect (uninferrable) call or co-routine swap.
-Source function can be derived from trace history however src address (i.e. line # of caller) is unknown.
-
-|CALL_PC
-|39
-|PC (C-ADDR)
-|-----
-|9
-|inferrable call so dest obtained from opcode if binary available
-
-|RET_FULL
-|40
-|PC (C-ADDR)
-|dest (C-ADDR)
-|13
-|Traces both src and dest (return to) addresses
-
-|RET_DEST
-|41
-|
-|dest (C-ADDR)
-|13
-|return-to address; caller (function) determined from symbolic address range of destination address and/or from history.
-
-|RET
-|42
-|------
-|------
-|13
-|Function returned to is determined from history. If caller was CALL_PC (inferrable caller), decoder can determine return destination address from 2-byte or 4-byte opcode.
-|===
-
-Recommended priority of implementation +
-1: CALL_SYNC, CALL_FULL, RET_FULL +
-2: CALL_PC, RET +
-3: CALL_DEST, RET_DEST
-
-====  CALL_SYNC Function Event
-(((N-Trace, CALL_SYNC packet)))
-Used to synchronize messages, outputting new absolute address for any call type (8, 9)
-
-.CALL_SYNC Function Event
-[cols="10%,20%,~", width=90%, options="header"]
-|===
-|Bits |Field |Description
-
-|*6*
-|*TCODE*
-|*Value = 0x24 (36)*
-
-|cfg
-|SRC
-|Source Hart of this message (width is trTeSrcBits)
-
-|var
-|Src Addr
-|PC: F-ADDR (F=full)
-
-|var
-|Dest Addr
-|C-ADDR (U=unique part of address – same as ratified N-Trace)
-
-|var
-|TSTAMP
-|Absolute timestamp value, leading zero suppression.
-|===
-
-====  CALL_FULL Function Event
-(((N-Trace, CALL_FULL packet)))
-Trace both source and destination addresses of any call type (8, 9)
-
-.CALL_FULL Function Event
-[cols="10%,20%,~", width=90%, options="header"]
-|===
-|Bits |Field |Description
-
-|*6*
-|*TCODE*
-|*Value = 0x25 (37)*
-
-|cfg
-|SRC
-|Source Hart of this message (width is trTeSrcBits)
-
-|var
-|Src Addr
-|PC: C-ADDR (U=unique part of address – same as ratified N-Trace)
-
-|var
-|Dest Addr
-|C-ADDR
-
-|var
-|TSTAMP
-|Relative timestamp value (offset from last reported absolute or relative timestamp), leading zero suppression.
-|===
-
-==== CALL_DEST Function Event
-(((N-Trace, CALL_DEST packet)))
-For Uninferrable call
-
-.CALL_DEST Function Event
-[cols="10%,20%,~", width=90%, options="header"]
-|===
-|Bits |Field |Description
-
-|*6*
-|*TCODE*
-|*Value = 0x26 (38)*
-
-|cfg
-|SRC
-|Source Hart of this message (width is trTeSrcBits)
-
-|var
-|Dest Addr
-|C-ADDR
-
-|var
-|TSTAMP
-|Relative timestamp value
-|===
-
-====  CALL_PC Function Event
-((((N-Trace, CALL_PC packet)))
-For Inferrable call
-
-.CALL_PC Function Event
-[cols="10%,20%,~", width=90%, options="header"]
-|===
-|Bits |Field |Description
-
-|*6*
-|*TCODE*
-|*Value = 0x27 (39)*
-
-|cfg
-|SRC
-|Source Hart of this message (width is trTeSrcBits)
-
-|var
-|PC
-|C-ADDR
-Destination is inferrable from opcode
-
-|var
-|TSTAMP
-|Relative timestamp value
-|===
-
-====  RET_FULL Return Event
-((((N-Trace, RET_FULL packet)))
-Trace both source and destination addresses of return when caller is known.
-
-.RET_FULL Return Event
-[cols="10%,20%,~", width=90%, options="header"]
-|===
-|Bits |Field |Description
-
-|*6*
-|*TCODE*
-|*Value = 0x28 (40)*
-
-|cfg
-|SRC
-|Source Hart of this message (width is trTeSrcBits)
-
-|var
-|PC Dest Addr
-|C-ADDR – (Unique part of address – same as N-Trace)
-
-|var
-|Dest Addr
-|C-ADDR
-
-|var
-|TSTAMP
-|Relative timestamp value
-|===
-
-====  RET_DEST Return Event
-((((N-Trace, RET_DEST packet)))
-Output destination address only, to reduce bandwidth.
-
-.RET_DEST Return Event
-[cols="10%,20%,~", width=90%, options="header"]
-|===
-|Bits |Field |Description
-
-|*6*
-|*TCODE*
-|*Value = 0x29 (41)*
-
-|cfg
-|SRC
-|Source Hart of this message (width is teImpl.nSrcBits)
-
-|var
-|Dest Addr
-|C-ADDR of destination address
-
-|var
-|TSTAMP
-|Relative timestamp value
-|===
-
-====  Function RET Event
-((((N-Trace, Function RET packet)))
-Return message when caller is known (most compact message since no source or destination address is included).
-
-.RET Function Event
-[cols="10%,20%,~", width=90%, options="header"]
-|===
-|Bits |Field |Description
-
-|*6*
-|*TCODE*
-|*Value = 0x2A (42)*
-
-|cfg
-|SRC
-|Source Hart of this message (width is trTeSrcBits)
-
-|var
-|TSTAMP
-|Relative timestamp value
-|===
-
-===  Performance Counter Recording
-((((N-Trace, Performance Counter Recording packet)))
-
-This message is used to record performance counter values.  For Event Trace the values are delta values of Profiling Performance Counters (PPCs). For RIT, they may be HPMCounters.  The values are leading-zero suppressed to reduce bandwidth.
-
-The number of counters can vary depending on hardware configuration. The max number of PPCs is 8.  The recommended max number of HPMCounters to record is 8, starting with hpmCounter3.  
-
-This message can output a variable number of counters.  The N-Trace message format defines the end of a packet. cite:[riscv-N-Trace-spec-1.0(Ch. MSEO Sequences)]
-
-.Performance Counter Recording
-[cols="10%,20%,~", options="header"]
-|===
-|Bits |Field |Description
-
-|*6*
-|*TCODE*
-|*Value = 0x2A (43)*
-
-|cfg
-|SRC
-|Source Hart of this message (width is trTeSrcBits)
-
-|var
-|Counter0
-|Leading-zero suppressed value of the first performance counter - either the absolute value of HPMCounter3  or delta value of Profiling Performance Counter 0 (PPC0), depending on the context for generating the trace.  The RIT may record the absolute value of upto the first 8 hpm performance counters, or Event Trace will record the delta values of upto 8 profiing performance counters.
-|var
-|Counter1
-|Next counter (optional)
-|...
-|...
-|...
-
-|var
-|Counter7
-|8th counter (optional)
-|===
-
+This file (N-Trace-packets.adoc) defines the Event Trace messages that extend N-Trace cite:[riscv-N-Trace-spec-1.0].
 
 === N-Trace TCODE Summary
 [cols="1,3", options="header"]
 |===
 ^| Value ^|Description
-
-|0x2 (2)
-|Process Information (Context ID and Privilege Mode)
-
-|0x0F (15)
-|N-Trace MTIME_SYNC Message for Timing Synchronization
-
 |0x22 (34) (compressed), +
-0x23 (35) (uncompressed)
+0x23 (35) (synchronized)
 |EVT Trace Messages for non-function events +
 * EVTSRC=0: Sync Enable +
 * EVTSRC=1: Sync Disable +
@@ -561,7 +44,549 @@ This message can output a variable number of counters.  The N-Trace message form
 |0x2A (42)
 | RET Function Event
 
-|0x2A (43)
+|0x11 (17)
 | Performance Counter Recording
 
+|0x2 (2)
+|Ownership: Process Information (Context ID and Privilege Mode)
+
+|0x10 (16)
+|N-Trace MTIME_SYNC Message for Timing Synchronization
 |===
+
+=== Informational (non-normative)
+
+* *SRC* width is a hardware build-time configuration based on the total number of harts, defined in the Trace Control Interface Spec as trTeSrcBits
+* *TSTAMP* is the N-Trace accumulating, running timestamp. Its clock is required to provide accurate short-duration execution timing, with a 10ns minimum resolution and a preferred 1ns resolution (100MHz - 1GHz). TSTAMP minimum width should be 40 bits which provides 18 minutes of duration at 1GHz clock rate. If Event Trace is to run for hours, then 48 bits provides 78 hours.
+* *cfg* in the Bits column means the number of bits is configurable at build time. The primary example is the number of bits for the SRC field. This represents the total number of Harts in the SoC.
+* *N-Trace* uses a byte-sized data format where 6 bits are payload and 2 bits called MSEO bits define the message framing. 00 = first or middle bytes, 01 = end of a variable field, 11 = end of a message/packet.
+* *F-ADDR* means the full address is included in the message. *U-ADDR* means the unique part of the address is included in the message.  Both are output with leading zero suppression. 
+
+=== Non-Function Event Trace Message Formats
+(((N-Trace, EVT message formats)))
+
+Event Trace has defined a new N-Trace message called EVT that covers non-call/ret event types. There are two types: EVT compressed (TCODE=34) and synchronized (TCODE=35). Note that this message type has the same TCODEs and format as the Nexus Trace ICT (in-circuit trace) messages.
+
+.EVT Trace Messages for non-function events
+[cols="10%,15%,~", options="header"]
+|===
+|Bits |Field |Description
+
+|*6*
+|*TCODE*
+|*Value = 0x22 (34) (compressed) or 0x23 (35) (synchronized)*
+
+|Cfg
+|SRC
+|Source Hart of this message (width is trTeSrcBits)
+
+|4
+|EVTSRC
+|Type of EVT message; 4 bits provides up to 16 types
+
+|2
+|EVTCNT
+|0=One field (EVTPC), 1=Two fields (EVTPC, EVTDATA), 2-3=reserved +
+Note: EVTSRC+EVTCNT equal 1 byte of N-TRACE message output
+
+|var
+|EVTPC
+|(TCODE=0x22) U-ADDR, (TCODE=0x23) F-ADDR. Source address for some EVTSRC types
+
+|var
+|EVTDATA
+|Additional message content. Some values are subtypes. Some are an additional address. For addresses, (TCODE=0x22) U-ADDR, (TCODE=0x23) U-ADDR (since first addr is F-ADDR)
+
+|var,cfg
+|TSTAMP
+|(TCODE=0x22) Relative timestamp value
+(TCODE=0x23) Absolute timestamp value
+|===
+
+==== Event Trace non-Function Messages, per-EVTSRC (type)
+.Event Trace Message Fields for non-function events
+[cols="12%,10%,10%,10%,10%,~", options="header"]
+|===
+^|Event ^|EVTSRC ^|EVTCNT ^|EVTPC ^|EVTDATA ^|Description
+
+|Sync Enable
+(((N-Trace, Event, Sync Enable Message)))
+|0
+|1
+|PC
+|SYNC
+|EVTPC is always F-ADDR (TCODE=0x23) +
+PC=instruction responsible for trace-on. +
+SYNC field, must be compatible w/N-Trace Table 25: +
+(1) = Exit from Reset +
+(3) = exit-debug. PC=first instruction to execute after debug mode. +
+(5) = event trace enable. +
+(others) reserved
+
+|Sync Disable
+(((N-Trace, Event, Sync Disable Message)))
+|1
+|1
+|PC
+|EVCODE
+|EVCODE field (compatible w/N-Trace Table 24): +
+EVTPC is U-ADDR (TCODE=0x23) +
+(0) = enter-debug. PC=address loaded into depc (has not executed). +
+(4) = event trace disabled. PC=instruction responsible for trace-off. +
+(6) = enter-reset. PC=last instruction to execute before reset.
+(others) reserved
+
+|Exception
+(((N-Trace, Event, Exception Message)))
+|2
+|1
+|PC
+|cause
+|(ITYPE=1) PC is what is loaded into xepc (the address of the instruction that caused the exception), cause is what is loaded into the Exception Code field of xcause. cause signals are defined in Table 1 of RHTI spec (see References).
+
+|Interrupt
+(((N-Trace, Event, Interrupt Message)))
+|3
+|1
+|PC
+|cause
+|(ITYPE=2) PC is what is loaded into xepc, cause is what is loaded into the Exception Code field of xcause.
+
+|Return from trap
+(((N-Trace, Event, Return from Trap Message)))
+|4
+|1
+|PC
+|PCdest
+|(ITYPE=3) Return from exception or interrupt (MRET or SRET)
+(to distinguish from normal function return)
+This is generated when both PC's are not filtered by privilege mode.
+
+|Return from trap
+(((N-Trace, Event, Return from Trap Message - Variant)))
+|4
+|0
+|PCdest
+|---
+|(Variant of above) Return from exception or interrupt (MRET or SRET)
+Generated when the source PC is filtered by privilege mode (but PCdest is not).
+
+|Debug Trigger/Watchpoint w/TRIG_ID
+(((N-Trace, Event, Debug Trigger/Watchpoint Message)))
+|5
+|1
+|PC
+|TRIG_ID
+|When a debug trigger/watchpoint matches, the PC is normally the address of the instruction that caused the match, although for a watchpoint, it can be after when comparing on the data portion of a load or store. In multi-issue cores, this message may report the address of a later instruction retired in the same cycle. +
+For *trTeEvtFeatures.trTeEvtDbgTrigIDImpl* <<DebugTriggerIDImpl>> = 1, the *TRIG_ID* is the trigger number and is recorded in the EVTDATA field.
+
+|Debug Trigger/Watchpoint wo/TRIG_ID
+(((N-Trace, Event, Debug Trigger/Watchpoint Message)))
+|5
+|0
+|PC
+|---
+|When a debug trigger/watchpoint matches, the PC is normally the address of the instruction that caused the match, although for a watchpoint, it can be after when comparing on the data portion of a load or store. In multi-issue cores, this message may report the address of a later instruction retired in the same cycle. +
+For *trTeEvtFeatures.trTeEvtDbgTrigIDImpl* <<DebugTriggerIDImpl>> = 0, the hardware does not provide the trigger ID; the trace decoder must determine the unique trigger indentification from the PC and from the knowledge of the trigger values that are programmed.
+
+|Periodic PC Sampling
+(((N-Trace, Event, Periodic PC Sampling Message)))
+|6
+|0
+|PC
+|---
+|This event samples the PC of the hart at a periodic interval. The PC is the address of the last instruction retired at the time of the sample.
+
+|External Signal (trigger) with PC
+(((N-Trace, Event, External Signal Message w/PC)))
+|7
+|1
+|PC
+|ES_VAL
+|*ES_VAL*[4:0] = {SIG_ID[2:0],SIG_VAL[1:0]} where SIG_VAL is rising (0), falling (1), both (2), multiple edges (3). +
+Generated when external signal edge on this channel (SIG_ID) is detected by the Event Trace encoder. The PC is the address of the last retired instruction when the signal is recognized. Timestamp must be enabled, and its value is latched at the time of the signal edge. *trTeEvtExtSigControl.trTeEvtExtSigPCMode* = 1 <<ExtSigPCMode>> to include the PC in the message.
+
+|External Signal (trigger) no PC
+(((N-Trace, Event, External Signal Message wo/PC)))
+|8
+|0
+|ES_VAL
+|---
+|*ES_VAL* (see above). Generated when external signal edge on this channel (SIG_ID) is detected by the Event Trace encoder. Timestamp must be enabled, and its value is latched at the time of the signal edge. *trTeEvtExtSigControl.trTeEvtExtSigPCMode* = 0 <<ExtSigPCMode>> for no-PC mode.
+
+|Perf Counter Selector Occurrence
+(((N-Trace, Event, Performance Counter Selector Message)))  
+|8
+|1
+|SEL_ID
+|Count
+|*SEL_ID* is the Selector (channel) recorded. *Count* is the number of cycles the signal has a high value during the time window, defined by the control register *trTeEvtControl.trTeEvtPerfSelWindow* <<SelectCycleWindow>>.
+|===
+
+=== Event Trace Message Formats for Calls and Returns
+(((N-Trace, Event, Call and Return message)))
+
+The following table lists the message types to support function Calls and Returns, with different types and numbers of parameters. These are defined separately from the non-functional EVT messages to provide the most compact messaging.
+
+NOTE: If only the destination address of an event is recorded in the message, the decoder must determine the source address from the execution binary and the previous messages recorded. In some cases, it will not be possible to determine the exact source address when a function is called in many different places in the calling function. If the user wants the precise source and destination addresses then they must set the appropriate Event Trace modes (and there are separate modes for calls and returns), with the understanding that these messages include more bytes.
+
+.Event Trace Message Types for Calls and Returns
+[cols="15%,10%,15%,15%,10%,~", options="header"]
+|===
+|Name |TCODE |Source |Destination |ITYPE |Description
+
+|CALL_SYNC
+|36
+|PC +
+(F-ADDR)
+|Dest Addr +
+(U-ADDR)
+|8 or 9
+|Traces both Src and Dest addresses. The second address is XOR compressed. Full (absolute) timestamp if enabled.
+
+|CALL_FULL
+|37
+|PC +
+(U-ADDR)
+|Dest Addr +
+(U-ADDR)
+|8 or 9
+|Traces both Src and Dest compressed (unique) addrs; relative timestamp if enabled.
+
+|CALL_DEST
+|38
+|-----
+|Dest Addr +
+(U-ADDR)
+|8 or 9
+|itype=8 means indirect (uninferrable) call or co-routine swap.
+Source function can be derived from trace history however Src address (i.e. line # of caller) is unknown.
+
+|CALL_PC
+|39
+|PC +
+(U-ADDR)
+|-----
+|9
+|inferrable call so destination obtained from opcode if binary available
+
+|RET_FULL
+|40
+|PC +
+(U-ADDR)
+|Dest Addr +
+(U-ADDR)
+|13
+|Traces both Src and Dest (return to) addresses
+
+|RET_DEST
+|41
+|
+|Dest Addr +
+(U-ADDR)
+|13
+|return-to address; caller (function) determined from symbolic address range of destination address and/or from history.
+
+|RET
+|42
+|------
+|------
+|13
+|Function returned; the return destination is not important.
+|===
+
+Recommended priority of implementation +
+1: CALL_SYNC, CALL_FULL, RET_FULL +
+2: CALL_PC, RET +
+3: CALL_DEST, RET_DEST
+
+====  CALL_SYNC Function Event
+(((N-Trace, CALL_SYNC message)))
+Used to synchronize messages, outputting new absolute address for any call type (8, 9)
+
+.CALL_SYNC Function Event
+[cols="10%,20%,~", width=90%, options="header"]
+|===
+|Bits |Field |Description
+
+|*6*
+|*TCODE*
+|*Value = 0x24 (36)*
+
+|cfg
+|SRC
+|Source Hart of this message (width is trTeSrcBits)
+
+|var
+|Src Addr
+|PC: F-ADDR (F=full)
+
+|var
+|Dest Addr
+|U-ADDR
+
+|var,cfg
+|TSTAMP
+|Absolute timestamp value
+|===
+
+====  CALL_FULL Function Event
+(((N-Trace, CALL_FULL message)))
+Trace both source and destination addresses of any call type (8, 9)
+
+.CALL_FULL Function Event
+[cols="10%,20%,~", width=90%, options="header"]
+|===
+|Bits |Field |Description
+
+|*6*
+|*TCODE*
+|*Value = 0x25 (37)*
+
+|cfg
+|SRC
+|Source Hart of this message (width is trTeSrcBits)
+
+|var
+|Src Addr
+|PC: U-ADDR (U=unique part of address)
+
+|var
+|Dest Addr
+|U-ADDR
+
+|var,cfg
+|TSTAMP
+|Relative timestamp value (offset from last reported absolute or relative timestamp)
+|===
+
+==== CALL_DEST Function Event
+(((N-Trace, CALL_DEST message)))
+For Uninferrable call
+
+.CALL_DEST Function Event
+[cols="10%,20%,~", width=90%, options="header"]
+|===
+|Bits |Field |Description
+
+|*6*
+|*TCODE*
+|*Value = 0x26 (38)*
+
+|cfg
+|SRC
+|Source Hart of this message (width is trTeSrcBits)
+
+|var
+|Dest Addr
+|U-ADDR
+
+|var,cfg
+|TSTAMP
+|Relative timestamp value
+|===
+
+====  CALL_PC Function Event
+((((N-Trace, CALL_PC message)))
+For Inferrable call
+
+.CALL_PC Function Event
+[cols="10%,20%,~", width=90%, options="header"]
+|===
+|Bits |Field |Description
+
+|*6*
+|*TCODE*
+|*Value = 0x27 (39)*
+
+|cfg
+|SRC
+|Source Hart of this message (width is trTeSrcBits)
+
+|var
+|PC
+|U-ADDR (itype=9; destination is inferrable from opcode)
+
+|var,cfg
+|TSTAMP
+|Relative timestamp value
+|===
+
+====  RET_FULL Return Event
+((((N-Trace, RET_FULL message)))
+Trace both source and destination addresses of return when caller is known.
+
+.RET_FULL Return Event
+[cols="10%,20%,~", width=90%, options="header"]
+|===
+|Bits |Field |Description
+
+|*6*
+|*TCODE*
+|*Value = 0x28 (40)*
+
+|cfg
+|SRC
+|Source Hart of this message (width is trTeSrcBits)
+
+|var
+|PC Addr
+|U-ADDR
+
+|var
+|Dest Addr
+|U-ADDR
+
+|var,cfg
+|TSTAMP
+|Relative timestamp value
+|===
+
+====  RET_DEST Return Event
+((((N-Trace, RET_DEST message)))
+Output destination address only, to reduce bandwidth.
+
+.RET_DEST Return Event
+[cols="10%,20%,~", width=90%, options="header"]
+|===
+|Bits |Field |Description
+
+|*6*
+|*TCODE*
+|*Value = 0x29 (41)*
+
+|cfg
+|SRC
+|Source Hart of this message (width is teImpl.nSrcBits)
+
+|var
+|Dest Addr
+|U-ADDR of destination address
+
+|var,cfg
+|TSTAMP
+|Relative timestamp value
+|===
+
+====  Function RET Event
+((((N-Trace, Function RET message)))
+Trace hardware can maintain a one-level stack of the last caller PC address (+2 or +4) which is compared to the return destination address. If a match, the return matches the call so addresses are not needed for decode.  This is the most compact message since no source or destination address is required.
+
+.RET Function Event
+[cols="10%,20%,~", width=90%, options="header"]
+|===
+|Bits |Field |Description
+
+|*6*
+|*TCODE*
+|*Value = 0x2A (42)*
+
+|cfg
+|SRC
+|Source Hart of this message (width is trTeSrcBits)
+
+|var,cfg
+|TSTAMP
+|Relative timestamp value
+|===
+
+=== Periodic Synchronization Messages
+((((N-Trace, Periodic Synchronization messages)))
+
+Messages that include the Program Counter (PC) are predominantly U-ADDRes.  Periodically, however, the full address (F-ADDR) must be output to provide a synchronization point for the trace decoder. The period for generating a synchronization message is defined by the N-Trace register *trTeControl.trTeInstSyncMax* cite:[riscv-trace-control-spec-1.0(Trace Encoder Control Interface)]. The count is 2^(trTeInstSyncMax+4).
+
+Hardware counts the number of Event Trace messages that include a PC and outputs a synchronization message when the count reaches the programmed value. Messages that can include an F-ADDR include all EVT (TCODE=0x23) messages that include a PC address and CALL_SYNC. 
+
+===  Profiling Performance Counter (PPC) Recording
+((((N-Trace, Performance Counter Recording message)))
+
+This message is used to record the Event Trace Profiling Performance Counter (PPCs) which are delta values. Since N-Trace variable fields use leading-zero suppression to reduce bandwidth, the number of bytes used to record each counter in many cases is reduced. The closer together events are in time, the smaller the delta count, thus fewer bits wide. Each byte carries 6 bits of counter value so the incremental sizes are 6 bits/1 byte, 12 bits/2 bytes, 18 bits/3 bytes, and 24 bits/4 bytes.
+
+This message is generally output immediately after an event message when PPCs are enabled for that message. Thus it does not include a timestamp since the event message itself includes a timestamp, if enabled.
+
+The number of PPCs implemented is defined in the control register *trTeEvtFeatures.trTeEvtPPCsImpl* <<PPCsImplemented>>. The number of PPCs to actively record per message is defined by the control register *trTePPCEnables.trTeEvtPPCNumTrace* <<PPCsToTrace>>. (Hardware must make sure that the number of PPCs to record does not exceed the number of PPCs implemented.) Thus this message can output a variable number of counters.  The N-Trace message format defines the end of a message. cite:[riscv-N-Trace-spec-1.0(Ch. MSEO Sequences)]
+
+.Performance Counter Recording
+[cols="10%,20%,~", options="header"]
+|===
+|Bits |Field |Description
+
+|*6*
+|*TCODE*
+|*Value = 0x2A (43)*
+
+|cfg
+|SRC
+|Source Hart of this message (width is trTeSrcBits)
+
+|var
+|PPC0
+|Profiling Performance Counter0
+|var
+|PPC1
+|Profiling Performance Counter1 (if included)
+|...
+|...
+|...
+
+|var
+|PPC7
+|Profiling Performance Counter7 (if included)
+|===
+
+=== Ownership N-Trace Message
+(((N-Trace, Ownership Message)))
+
+NOTE: N-Trace *Ownership* Message cite:[riscv-N-Trace-spec-1.0(Ownership Message)] is already defined in the ratified N-Trace spec. It is here as reference to the message for tracing context ID and Privilege Mode as a selectable event type to trace, or when privilege mode is changed. This is described in detail in the ratified RISC-V N-Trace spec cite:[riscv-N-Trace-spec-1.0(Ownership Message)].
+
+.Ownership Message: Process Information (Context ID and Privilege Mode)
+[cols="10%,15%,~", options="header"]
+|===
+|Bits |Field |Description
+
+|*6*
+|*TCODE*
+|*Value = 0x2 (2)*
+
+|cfg
+|SRC
+|Source Hart of this message (width is trTeSrcBits)
+
+|var
+|PROCESS
+|This is a variable-length field, which encodes V and PRV privilege mode bits as well as scontext/hcontext CSR values. +
+PROCESS[x+5:0] = {CONTEXT[x:0], V[0], PRV[1:0], FORMAT[1:0]}
+
+|var,cfg
+|TSTAMP
+|Relative timestamp value
+|===
+
+=== Time Synchronization message for recording mtime & timestamp
+(((N-Trace, MTIME_SYNC message)))
+
+N-Trace MTIME_SYNC Message to record mtime and trace timestamp simultaneously for Timing Synchronization.
+
+[#tab,MTIME_SYNC]
+.N-Trace MTIME_SYNC Message for Timing Synchronization
+[cols="8%,15%,~", width=80%, options="header"]
+|===
+|Bits |Field |Description
+
+|*6*
+|*TCODE*
+|*Value = 0x0F (15)*
+
+|Cfg
+|SRC
+|Source Hart of this message (width is trTeSrcBits)
+
+|var
+|mtime
+|F (Full) mtime value
+
+|var,cfg
+|TSTAMP
+|F (Full) timestamp value
+|===
+

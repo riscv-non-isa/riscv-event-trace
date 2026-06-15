@@ -91,8 +91,8 @@ Event Trace can include the option of Profiling Performance Counters (PPCs) whic
 
 [align="center"]
 .Event Trace Block Diagram
-//image::images/EVT_block_1.svg[Event Trace Block Diagram]
-image::riscv-event-trace/images/EVT_block_1.svg[Event Trace Block Diagram]
+image::images/EVT_block_1.svg[Event Trace Block Diagram,width=90%]
+//image::riscv-event-trace/images/EVT_block_1.svg[Event Trace Block Diagram]
 
 === Features and Benefits (non-normative)
 (((Event Trace, features and benefits)))

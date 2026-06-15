@@ -1,0 +1,1004 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="600"
+   height="800"
+   viewBox="0 0 600 800"
+   font-family="Arial, sans-serif"
+   font-size="12px"
+   text-anchor="middle"
+   version="1.1"
+   id="svg51"
+   sodipodi:docname="EVT_block_1.svg"
+   inkscape:version="1.4.3 (0d15f75, 2025-12-25)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview51"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="1.0748023"
+     inkscape:cx="156.77302"
+     inkscape:cy="327.50209"
+     inkscape:window-width="1508"
+     inkscape:window-height="1232"
+     inkscape:window-x="3462"
+     inkscape:window-y="113"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg51" />
+  <style
+     id="style1">
+    .rect { fill: white; stroke: black; stroke-width: 1; }
+    .rect-rounded { fill: white; stroke: black; stroke-width: 1; rx: 10; ry: 10; }
+    .label { font-size: 14px; font-weight: bold; }
+    .sub-label { font-size: 10px; }
+    .bus { stroke: black; stroke-width: 3; marker-end: url(#arrowbus); }
+    .signal { stroke: black; stroke-width: 1; marker-end: url(#arrowsignal); }
+    .fifo-bus { stroke: black; stroke-width: 1; marker-end: url(#arrowfifo); }
+    .wave { fill: none; stroke: black; stroke-width: 1; }
+  </style>
+  <defs
+     id="defs3">
+    <rect
+       x="504.60526"
+       y="422.36842"
+       width="9.2105263"
+       height="13.157895"
+       id="rect83" />
+    <rect
+       x="465.13158"
+       y="3.2894737"
+       width="0"
+       height="16.447368"
+       id="rect73" />
+    <marker
+       style="overflow:visible"
+       id="Triangle"
+       refX="0"
+       refY="0"
+       orient="auto-start-reverse"
+       inkscape:stockid="Triangle arrow"
+       markerWidth="1"
+       markerHeight="1"
+       viewBox="0 0 1 1"
+       inkscape:isstock="true"
+       inkscape:collect="always"
+       preserveAspectRatio="xMidYMid">
+      <path
+         transform="scale(0.5)"
+         style="fill:context-stroke;fill-rule:evenodd;stroke:context-stroke;stroke-width:1pt"
+         d="M 5.77,0 -2.88,5 V -5 Z"
+         id="path135" />
+    </marker>
+    <rect
+       x="156.57895"
+       y="350.65789"
+       width="44.078947"
+       height="48.026316"
+       id="rect58" />
+    <rect
+       x="173.68421"
+       y="343.42105"
+       width="4.6052632"
+       height="33.552632"
+       id="rect57" />
+    <rect
+       x="237.5"
+       y="342.76316"
+       width="111.84211"
+       height="45.394737"
+       id="rect53" />
+    <marker
+       id="arrowbus"
+       viewBox="0 0 10 10"
+       refX="8"
+       refY="5"
+       markerWidth="5"
+       markerHeight="5"
+       orient="auto"
+       preserveAspectRatio="xMidYMid">
+      <path
+         d="M 0 0 L 10 5 L 0 10 z"
+         fill="black"
+         id="path1" />
+    </marker>
+    <marker
+       id="arrowsignal"
+       viewBox="0 0 10 10"
+       refX="10"
+       refY="5"
+       markerWidth="3"
+       markerHeight="3"
+       orient="auto"
+       preserveAspectRatio="xMidYMid">
+      <path
+         d="M 0 0 L 10 5 L 0 10 z"
+         fill="black"
+         id="path2" />
+    </marker>
+    <marker
+       id="arrowfifo"
+       viewBox="0 0 10 10"
+       refX="10"
+       refY="5"
+       markerWidth="0.001"
+       markerHeight="0.001"
+       orient="auto"
+       preserveAspectRatio="xMidYMid">
+      <path
+         d="M 0 0 L 10 5 L 0 10 z"
+         fill="black"
+         id="path3" />
+    </marker>
+  </defs>
+  <rect
+     x="35.769958"
+     y="47.743645"
+     width="113.59166"
+     height="358.59164"
+     class="rect-rounded"
+     id="rect3"
+     style="stroke-dasharray:22.708, 0.946167;stroke-dashoffset:0" />
+  <text
+     x="105.33416"
+     y="72.426277"
+     class="label"
+     id="text3"
+     style="font-size:18.6667px;stroke-width:5.37199;stroke-dasharray:none"
+     transform="scale(0.81958372,1.2201316)">CORE</text>
+  <rect
+     x="224.37952"
+     y="40.244453"
+     width="360"
+     height="680"
+     class="rect-rounded"
+     id="rect4"
+     style="stroke-width:0.9;stroke-dasharray:none" />
+  <text
+     x="304.47369"
+     y="72.763161"
+     text-anchor="start"
+     class="label"
+     id="text4">EVENT TRACE ENCODER</text>
+  <line
+     x1="150"
+     y1="130"
+     x2="220"
+     y2="130"
+     class="bus"
+     id="line4" />
+  <text
+     x="185"
+     y="145"
+     id="text5">RHTI</text>
+  <line
+     x1="150.6579"
+     y1="234.60527"
+     x2="220.6579"
+     y2="234.60527"
+     class="bus"
+     id="line5" />
+  <line
+     x1="150"
+     y1="307.23685"
+     x2="222.63158"
+     y2="307.23685"
+     class="bus"
+     id="line6" />
+  <text
+     x="176.44737"
+     y="341.8421"
+     id="text6"
+     style="white-space:pre;inline-size:55.7526;display:inline"
+     transform="translate(-5.9210526,-19.736841)"
+     xml:space="preserve"><tspan
+       x="176.44737"
+       y="341.8421"
+       id="tspan1">upto 8</tspan></text>
+  <text
+     x="185.01793"
+     y="296.31302"
+     id="text7"
+     style="font-size:10.1655px;stroke-width:0.847121">HPMevent3-11</text>
+  <rect
+     x="225.52632"
+     y="92.105263"
+     width="160"
+     height="100"
+     class="rect"
+     id="rect7" />
+  <text
+     x="287.76315"
+     y="118.42105"
+     id="text8">Calls, Returns</text>
+  <text
+     x="320"
+     y="185"
+     id="text9">Packet Generator</text>
+  <line
+     x1="386.1842"
+     y1="150"
+     x2="450"
+     y2="150"
+     class="bus"
+     id="line9" />
+  <text
+     x="425"
+     y="165"
+     class="sub-label"
+     id="text10">PACKETS</text>
+  <rect
+     x="224.86841"
+     y="203.81578"
+     width="160"
+     height="60"
+     class="rect"
+     id="rect10" />
+  <g
+     id="g58"
+     transform="translate(-0.65789474,-2.6315789)">
+    <text
+       x="304.86841"
+       y="228.8158"
+       id="text11">Debug Trigger /</text>
+    <text
+       x="295.6579"
+       y="247.5"
+       id="text12">Watchpoints</text>
+  </g>
+  <line
+     x1="384.21051"
+     y1="234.47368"
+     x2="447.36841"
+     y2="234.47368"
+     class="bus"
+     id="line12" />
+  <text
+     x="419.07895"
+     y="252.76315"
+     class="sub-label"
+     id="text13">PACKETS</text>
+  <rect
+     x="223.45308"
+     y="283.3215"
+     width="160.1991"
+     height="51.251728"
+     class="rect"
+     id="rect13" />
+  <line
+     x1="382.89474"
+     y1="306.97369"
+     x2="446.05264"
+     y2="306.97369"
+     class="bus"
+     id="line15" />
+  <rect
+     x="224.8091"
+     y="345.46698"
+     width="160.11864"
+     height="93.144958"
+     class="rect"
+     id="rect15" />
+  <text
+     x="300.92105"
+     y="364.60526"
+     id="text16">PPCSelectorEvent</text>
+  <text
+     x="302.23685"
+     y="398.1579"
+     id="text17">Interval</text>
+  <rect
+     x="273.55264"
+     y="413.1579"
+     width="60"
+     height="20"
+     class="rect"
+     id="rect17" />
+  <text
+     x="302.23685"
+     y="426.8421"
+     id="text18">Count</text>
+  <line
+     x1="384.21054"
+     y1="381.8421"
+     x2="448.6842"
+     y2="381.8421"
+     class="bus"
+     id="line18" />
+  <text
+     x="389.94803"
+     y="419.52783"
+     class="sub-label"
+     id="text19"
+     transform="scale(1.0554159,0.94749378)"
+     style="stroke-width:1.05542">PACKETS</text>
+  <rect
+     x="239.47069"
+     y="450.14087"
+     width="160.12823"
+     height="75.937737"
+     class="rect"
+     id="rect19" />
+  <text
+     x="290.22708"
+     y="469.15735"
+     id="text20">Edge Detection</text>
+  <text
+     x="316.27835"
+     y="512.52734"
+     id="text21">cycles-interval</text>
+  <line
+     x1="400.46524"
+     y1="491.83136"
+     x2="446.95428"
+     y2="491.83136"
+     class="bus"
+     id="line21" />
+  <text
+     x="425.93042"
+     y="511.01822"
+     class="sub-label"
+     id="text22">PACKETS</text>
+  <g
+     id="g72"
+     transform="translate(-15.789474,-113.81579)">
+    <g
+       id="g73">
+      <polyline
+         points="280,520 280,500 320,500 320,520 360,520"
+         class="wave"
+         id="polyline16"
+         transform="translate(17.763158,-17.763158)" />
+      <line
+         x1="297.43164"
+         y1="502.63156"
+         x2="269.14734"
+         y2="502.63156"
+         class="fifo-bus"
+         id="line22"
+         inkscape:transform-center-x="22.368421"
+         inkscape:transform-center-y="-30.263158" />
+    </g>
+  </g>
+  <circle
+     cx="210"
+     cy="430"
+     r="3"
+     fill="black"
+     id="circle22" />
+  <line
+     x1="171.22052"
+     y1="316.34497"
+     x2="188.64789"
+     y2="300.62875"
+     class="fifo-bus"
+     id="line26" />
+  <rect
+     x="450"
+     y="100"
+     width="30"
+     height="610"
+     class="rect-rounded"
+     id="rect29" />
+  <text
+     x="320.39474"
+     y="-461.05264"
+     transform="rotate(90)"
+     id="text29">AGGREGATOR</text>
+  <rect
+     x="18.001833"
+     y="438.13342"
+     width="117.54897"
+     height="180.04897"
+     class="rect-rounded"
+     id="rect30" />
+  <text
+     x="85"
+     y="515"
+     class="label"
+     id="text30">SoC</text>
+  <text
+     x="85"
+     y="535"
+     class="label"
+     id="text31">External</text>
+  <text
+     x="85"
+     y="555"
+     class="label"
+     id="text32">Signals</text>
+  <polygon
+     points="220,530 220,630 170,660 170,500 "
+     class="rect"
+     id="polygon32"
+     transform="matrix(1.0038748,0,0,0.72850728,-14.571378,70.788148)" />
+  <text
+     x="180.20638"
+     y="498.91821"
+     id="text33"
+     inkscape:transform-center-x="-22.79489"
+     inkscape:transform-center-y="68.849871">MUX</text>
+  <g
+     id="g85"
+     transform="translate(-10.855263,-38.815789)">
+    <line
+       x1="147.03947"
+       y1="506.97369"
+       x2="167.03947"
+       y2="506.97369"
+       class="signal"
+       id="line33" />
+    <g
+       id="g84"
+       transform="translate(-2.6315789,-22.697368)">
+      <text
+         x="160"
+         y="525"
+         class="sub-label"
+         id="text34">8</text>
+      <line
+         x1="155"
+         y1="525"
+         x2="165"
+         y2="535"
+         stroke="#000000"
+         stroke-width="1"
+         id="line34" />
+    </g>
+  </g>
+  <g
+     id="g89"
+     transform="translate(-18.421053,-31.25)">
+    <line
+       x1="224.9342"
+       y1="497.10526"
+       x2="244.9342"
+       y2="497.10526"
+       class="signal"
+       id="line41" />
+    <g
+       id="g88"
+       transform="translate(5.2631579,-32.894737)">
+      <text
+         x="230"
+         y="525"
+         class="sub-label"
+         id="text41">1</text>
+      <line
+         x1="225"
+         y1="525"
+         x2="235"
+         y2="535"
+         stroke="#000000"
+         stroke-width="1"
+         id="line42" />
+    </g>
+  </g>
+  <rect
+     x="518.6842"
+     y="272.76315"
+     width="30"
+     height="110"
+     class="rect-rounded"
+     id="rect48" />
+  <text
+     x="590.8559"
+     y="260.78802"
+     transform="matrix(0.91411144,0.02583655,-0.03089509,1.0930853,0,0)"
+     id="text48"
+     style="font-size:23.8279px;stroke-width:1.98567">F</text>
+  <line
+     x1="480"
+     y1="323.02631"
+     x2="516.328"
+     y2="323.02631"
+     class="bus"
+     id="line49" />
+  <text
+     x="528.28949"
+     y="443.42111"
+     class="sub-label"
+     id="text49">FIFO_AF</text>
+  <line
+     x1="533.35529"
+     y1="384.07895"
+     x2="533.35529"
+     y2="416.44736"
+     stroke="#000000"
+     stroke-width="0.542456"
+     id="line50" />
+  <line
+     x1="532.36841"
+     y1="416.44739"
+     x2="423.55264"
+     y2="416.44739"
+     class="fifo-bus"
+     id="line51" />
+  <text
+     x="185"
+     y="145"
+     id="text51">RHTI</text>
+  <g
+     id="g59"
+     transform="translate(-11.842105,-53.289474)">
+    <text
+       x="320"
+       y="375"
+       id="text14"
+       style="white-space:pre;inline-size:88.959;display:inline"
+       transform="translate(-40.789474,0.65789474)"
+       xml:space="preserve"><tspan
+         x="320"
+         y="375"
+         id="tspan2">Performance</tspan></text>
+    <text
+       x="343.6842"
+       y="375.26315"
+       id="text15">Counters</text>
+    <text
+       xml:space="preserve"
+       style="writing-mode:lr-tb;direction:ltr;fill:#000000"
+       x="287.5"
+       y="358.55264"
+       id="text52"><tspan
+         sodipodi:role="line"
+         id="tspan52"
+         x="287.5"
+         y="358.55264">PPCs - Profiling</tspan></text>
+  </g>
+  <text
+     xml:space="preserve"
+     id="text53"
+     style="writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect53);display:inline;fill:#000000" />
+  <text
+     x="185"
+     y="145"
+     id="text54"
+     style="white-space:pre;inline-size:2.2904;display:inline"
+     xml:space="preserve"><tspan
+       x="185"
+       y="145"
+       id="tspan4"><tspan
+         dx="0 8.6660156 8.6660156 7.3300781"
+         id="tspan3">RHTI</tspan></tspan></text>
+  <text
+     xml:space="preserve"
+     style="writing-mode:lr-tb;direction:ltr;fill:#000000"
+     x="182.23683"
+     y="227.63156"
+     id="text55"><tspan
+       id="tspan54"
+       x="182.23683"
+       y="227.63156"
+       sodipodi:role="line">RHTI</tspan></text>
+  <rect
+     style="fill:#0000ff"
+     id="rect56"
+     width="1.3157991"
+     height="0"
+     x="525.00006"
+     y="486.8421" />
+  <text
+     xml:space="preserve"
+     id="text56"
+     style="writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect57);display:inline;fill:#0000ff" />
+  <text
+     xml:space="preserve"
+     id="text57"
+     style="writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect58);display:inline;fill:#0000ff" />
+  <text
+     x="419.07895"
+     y="323.81577"
+     class="sub-label"
+     id="text59">PACKETS</text>
+  <circle
+     id="path61"
+     style="fill:#000000;stroke:none"
+     cx="194.07895"
+     cy="306.57895"
+     r="1.5" />
+  <path
+     style="opacity:1;fill:none;stroke-width:50;stroke-dasharray:none;marker-end:url(#Triangle);paint-order:fill markers stroke"
+     d="m 206.90789,307.89474 v 70.39473"
+     id="path64" />
+  <path
+     style="opacity:1;fill:none;stroke-width:50;stroke-dasharray:20.4797, 0.853319;stroke-dashoffset:0;paint-order:fill markers stroke"
+     d="M 23.026316,434.86842 H 142.76316"
+     id="path65" />
+  <path
+     style="opacity:1;fill:none;stroke-width:49.7;stroke-dasharray:20.35681848,0.84819893;stroke-dashoffset:0;paint-order:fill markers stroke"
+     d="M 25,433.55263 H 146.05263"
+     id="path67" />
+  <path
+     style="opacity:1;fill:none;stroke-width:49.15;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;paint-order:fill markers stroke;stroke:none"
+     d="m 17.763158,167.76316 v 96.05263"
+     id="path71" />
+  <path
+     style="opacity:1;fill:none;stroke:#000000;stroke-width:3;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:fill markers stroke"
+     d="m 196.05263,306.57895 v 77.63158"
+     id="path72" />
+  <line
+     x1="196.05263"
+     y1="383.28949"
+     x2="220"
+     y2="383.28949"
+     class="bus"
+     id="line72"
+     style="stroke-width:2.255;stroke-dasharray:none" />
+  <text
+     x="176.44737"
+     y="341.8421"
+     id="text72"
+     style="white-space:pre;inline-size:55.7526;display:inline"
+     transform="translate(8.5526316,54.605264)"
+     xml:space="preserve"><tspan
+       x="176.44737"
+       y="341.8421"
+       id="tspan5">(subset)</tspan></text>
+  <text
+     xml:space="preserve"
+     id="text73"
+     style="writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect73);display:inline;opacity:1;fill:none;stroke:#000000;stroke-width:0.721;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:fill markers stroke" />
+  <path
+     style="opacity:1;fill:none;stroke:#000000;stroke-width:0.50691;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:fill markers stroke"
+     d="m 230.9171,384.98286 16.27053,-0.44707 -0.95709,-11.62396 h 16.27053"
+     id="path73" />
+  <text
+     xml:space="preserve"
+     style="writing-mode:lr-tb;direction:ltr;opacity:1;fill:none;stroke:#000000;stroke-width:1.121;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:fill markers stroke"
+     x="530.92102"
+     y="299.3421"
+     id="text74"><tspan
+       sodipodi:role="line"
+       id="tspan74"
+       x="530.92102"
+       y="299.3421" /></text>
+  <text
+     xml:space="preserve"
+     style="writing-mode:lr-tb;direction:ltr;opacity:1;fill:none;stroke:#000000;stroke-width:1.621;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:fill markers stroke"
+     x="521.05261"
+     y="436.8421"
+     id="text75"><tspan
+       sodipodi:role="line"
+       id="tspan75"
+       x="521.05261"
+       y="436.8421" /></text>
+  <text
+     xml:space="preserve"
+     style="writing-mode:lr-tb;direction:ltr;opacity:1;fill:none;stroke:#000000;stroke-width:1.121;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:fill markers stroke"
+     x="525.6579"
+     y="313.8158"
+     id="text76"><tspan
+       sodipodi:role="line"
+       id="tspan76"
+       x="525.6579"
+       y="313.8158" /></text>
+  <text
+     x="586.02429"
+     y="437.25"
+     transform="matrix(0.91411144,0.02583655,-0.03089509,1.0930853,0,0)"
+     id="text77"
+     style="font-size:23.8279px;stroke-width:1.98567" />
+  <text
+     x="590.19"
+     y="283.6748"
+     transform="matrix(0.91411144,0.02583655,-0.03089509,1.0930853,0,0)"
+     id="text78"
+     style="font-size:23.8279px;stroke-width:1.98567"
+     inkscape:transform-center-y="-29.605263">I</text>
+  <text
+     x="587.63776"
+     y="463.69412"
+     transform="matrix(0.91411144,0.02583655,-0.03089509,1.0930853,0,0)"
+     id="text79"
+     style="font-size:23.8279px;stroke-width:1.98567"
+     inkscape:transform-center-y="-29.605263" />
+  <text
+     x="585.51324"
+     y="486.01352"
+     transform="matrix(0.91411144,0.02583655,-0.03089509,1.0930853,0,0)"
+     id="text80"
+     style="font-size:23.8279px;stroke-width:1.98567"
+     inkscape:transform-center-y="-29.605263" />
+  <text
+     x="593.83893"
+     y="306.45959"
+     transform="matrix(0.91411144,0.02583655,-0.03089509,1.0930853,0,0)"
+     id="text81"
+     style="font-size:23.8279px;stroke-width:1.98567">F</text>
+  <text
+     x="594.591"
+     y="328.711"
+     transform="matrix(0.91411144,0.02583655,-0.03089509,1.0930853,0,0)"
+     id="text82"
+     style="font-size:23.8279px;stroke-width:1.98567">O</text>
+  <text
+     xml:space="preserve"
+     id="text83"
+     style="writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect83);display:inline;opacity:1;fill:none;stroke:#000000;stroke-width:1.121;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:fill markers stroke" />
+  <g
+     id="g87"
+     transform="translate(-11.513158,-15.131578)">
+    <line
+       x1="147.03947"
+       y1="506.97369"
+       x2="167.03947"
+       y2="506.97369"
+       class="signal"
+       id="line85" />
+    <g
+       id="g86"
+       transform="translate(-2.6315789,-22.697368)">
+      <text
+         x="160"
+         y="525"
+         class="sub-label"
+         id="text85">8</text>
+      <line
+         x1="155"
+         y1="525"
+         x2="165"
+         y2="535"
+         stroke="#000000"
+         stroke-width="1"
+         id="line86" />
+    </g>
+  </g>
+  <g
+     id="g94"
+     transform="translate(66.05866,-27.446908)">
+    <circle
+       cx="145.85527"
+       cy="508.15787"
+       r="3"
+       fill="#000000"
+       id="circle25" />
+    <circle
+       cx="146.18422"
+       cy="521.64471"
+       r="3"
+       fill="#000000"
+       id="circle87" />
+    <circle
+       cx="146.84212"
+       cy="534.14471"
+       r="3"
+       fill="#000000"
+       id="circle88" />
+  </g>
+  <line
+     x1="206.51315"
+     y1="465.85526"
+     x2="240.00401"
+     y2="465.85526"
+     class="signal"
+     id="line89" />
+  <g
+     id="g90"
+     transform="translate(-13.157895,-64.144737)">
+    <text
+       x="230"
+       y="525"
+       class="sub-label"
+       id="text89">1</text>
+    <line
+       x1="225"
+       y1="525"
+       x2="235"
+       y2="535"
+       stroke="#000000"
+       stroke-width="1"
+       id="line90" />
+  </g>
+  <text
+     x="176.44737"
+     y="341.8421"
+     id="text94"
+     style="white-space:pre;inline-size:55.7526;display:inline"
+     transform="translate(30.597291,205.42084)"
+     xml:space="preserve"><tspan
+       x="176.44737"
+       y="341.8421"
+       id="tspan6">upto 8</tspan></text>
+  <g
+     id="g96"
+     transform="translate(-1.3956053,-0.46520187)">
+    <circle
+       cx="145.85527"
+       cy="508.15787"
+       r="3"
+       fill="#000000"
+       id="circle94" />
+    <circle
+       cx="146.18422"
+       cy="521.64471"
+       r="3"
+       fill="#000000"
+       id="circle95" />
+    <circle
+       cx="146.84212"
+       cy="534.14471"
+       r="3"
+       fill="#000000"
+       id="circle96" />
+  </g>
+  <text
+     x="176.44737"
+     y="341.8421"
+     id="text96"
+     style="white-space:pre;inline-size:55.7526;display:inline"
+     transform="translate(-22.668318,226.35492)"
+     xml:space="preserve"><tspan
+       x="176.44737"
+       y="341.8421"
+       id="tspan7">upto 64</tspan></text>
+  <g
+     id="g99"
+     transform="translate(-15.789474,-113.81579)">
+    <g
+       id="g98">
+      <polyline
+         points="280,520 280,500 320,500 320,520 360,520"
+         class="wave"
+         id="polyline97"
+         transform="translate(17.763158,-17.763158)" />
+      <line
+         x1="297.43164"
+         y1="502.63156"
+         x2="269.14734"
+         y2="502.63156"
+         class="fifo-bus"
+         id="line97"
+         inkscape:transform-center-x="22.368421"
+         inkscape:transform-center-y="-30.263158" />
+    </g>
+  </g>
+  <g
+     id="g101"
+     transform="translate(-15.789474,-113.81579)">
+    <g
+       id="g100">
+      <polyline
+         points="280,520 280,500 320,500 320,520 360,520"
+         class="wave"
+         id="polyline99"
+         transform="translate(17.763158,-17.763158)" />
+      <line
+         x1="297.43164"
+         y1="502.63156"
+         x2="269.14734"
+         y2="502.63156"
+         class="fifo-bus"
+         id="line99"
+         inkscape:transform-center-x="22.368421"
+         inkscape:transform-center-y="-30.263158" />
+    </g>
+  </g>
+  <g
+     id="g103"
+     transform="translate(-3.6942264,-2.1673508)">
+    <g
+       id="g102">
+      <polyline
+         points="280,520 280,500 320,500 320,520 360,520"
+         class="wave"
+         id="polyline101"
+         transform="translate(17.763158,-17.763158)" />
+      <line
+         x1="297.43164"
+         y1="502.63156"
+         x2="269.14734"
+         y2="502.63156"
+         class="fifo-bus"
+         id="line101"
+         inkscape:transform-center-x="22.368421"
+         inkscape:transform-center-y="-30.263158" />
+    </g>
+  </g>
+  <line
+     x1="230.93626"
+     y1="553.54584"
+     x2="239.30621"
+     y2="553.54584"
+     class="signal"
+     id="line103" />
+  <line
+     x1="230.82695"
+     y1="524.33936"
+     x2="231.2346"
+     y2="553.67706"
+     stroke="#000000"
+     stroke-width="1.40011"
+     id="line104"
+     style="stroke-width:1;stroke-dasharray:none" />
+  <text
+     x="216.84212"
+     y="516.6795"
+     class="sub-label"
+     id="text103">1</text>
+  <line
+     x1="212.30731"
+     y1="519.00549"
+     x2="222.3073"
+     y2="529.00549"
+     stroke="#000000"
+     stroke-width="1"
+     id="line105" />
+  <line
+     x1="207.13202"
+     y1="525.36169"
+     x2="231.4368"
+     y2="524.51013"
+     stroke="#000000"
+     stroke-width="2.22976"
+     id="line106"
+     style="stroke-width:1;stroke-dasharray:none" />
+  <g
+     id="g108"
+     transform="translate(174.45069,33.494532)">
+    <circle
+       cx="145.85527"
+       cy="508.15787"
+       r="3"
+       fill="#000000"
+       id="circle106" />
+    <circle
+       cx="146.18422"
+       cy="521.64471"
+       r="3"
+       fill="#000000"
+       id="circle107" />
+    <circle
+       cx="146.84212"
+       cy="534.14471"
+       r="3"
+       fill="#000000"
+       id="circle108" />
+  </g>
+  <text
+     xml:space="preserve"
+     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12px;font-family:Arial, sans-serif;-inkscape-font-specification:'Arial, sans-serif';writing-mode:lr-tb;direction:ltr;opacity:1;fill:none;stroke:#000000;stroke-width:1;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:fill markers stroke"
+     x="340.78946"
+     y="464.47369"
+     id="text108"><tspan
+       sodipodi:role="line"
+       id="tspan108"
+       x="340.78946"
+       y="464.47369" /></text>
+  <text
+     xml:space="preserve"
+     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12px;font-family:Arial, sans-serif;-inkscape-font-specification:'Arial, sans-serif';writing-mode:lr-tb;direction:ltr;opacity:1;fill:none;stroke:#000000;stroke-width:1;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:fill markers stroke"
+     x="345.0658"
+     y="471.38159"
+     id="text109"><tspan
+       sodipodi:role="line"
+       id="tspan109"
+       x="345.0658"
+       y="471.38159" /></text>
+  <text
+     x="360.6218"
+     y="461.2626"
+     id="text110"
+     style="font-size:10.6667px"><tspan
+       sodipodi:role="line"
+       id="tspan110"
+       x="360.6218"
+       y="461.2626"
+       style="font-size:10.6667px">Rising</tspan><tspan
+       sodipodi:role="line"
+       id="tspan111"
+       x="360.6218"
+       y="474.59598"
+       style="font-size:10.6667px">Falling</tspan><tspan
+       sodipodi:role="line"
+       x="360.6218"
+       y="487.92935"
+       id="tspan112"
+       style="font-size:10.6667px">Both</tspan></text>
+</svg>

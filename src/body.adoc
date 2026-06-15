@@ -87,11 +87,12 @@ It is highly recommended that the timestamp clock run at or a close ratio to cpu
 Event Trace can include the option of Profiling Performance Counters (PPCs) which are delta counters that are recorded at the time of an event, simultaneously reset to zero, then begin counting again. This is a requirement to keep the counter values smaller to reduce trace bandwidth and storage.  Post-processing of the trace data can reconstruct event counts across multiple event sequences to provide accumulated totals.  An example would be inclusive function call-return counts, where snippets of code execute in a function then more counts for functions that it calls.  "Self" or "exclusive" counts, i.e. only counts attributed to the code of the function itself would only accumulate counts from calls to other functions and from returns to calls of other functions.
 
 === Event Trace Block Diagram
-(((Event Trace, block diagram)))
+//(((Event Trace, block diagram)))
 
 [align="center"]
 .Event Trace Block Diagram
-image::images/EVT_block_1.svg[Event Trace Block Diagram]
+//image::images/EVT_block_1.svg[Event Trace Block Diagram]
+image::riscv-event-trace/images/EVT_block_1.svg[Event Trace Block Diagram]
 
 === Features and Benefits (non-normative)
 (((Event Trace, features and benefits)))

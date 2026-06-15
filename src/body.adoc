@@ -86,6 +86,10 @@ It is highly recommended that the timestamp clock run at or a close ratio to cpu
 (((Profiling Performance Counters)))
 Event Trace can include the option of Profiling Performance Counters (PPCs) which are delta counters that are recorded at the time of an event, simultaneously reset to zero, then begin counting again. This is a requirement to keep the counter values smaller to reduce trace bandwidth and storage.  Post-processing of the trace data can reconstruct event counts across multiple event sequences to provide accumulated totals.  An example would be inclusive function call-return counts, where snippets of code execute in a function then more counts for functions that it calls.  "Self" or "exclusive" counts, i.e. only counts attributed to the code of the function itself would only accumulate counts from calls to other functions and from returns to calls of other functions.
 
+=== Block Diagram
+(((Event Trace, block diagram)))
+images::EVT_block_1.svg[alt="EVT Block Diagram", width=100%, align=center]
+
 === Features and Benefits (non-normative)
 (((Event Trace, features and benefits)))
 
@@ -343,15 +347,15 @@ The counter is defined to be 24 bits (increments-of-6 work best for N-Trace cite
 [wavedrom, , svg]
 ....
 {signal: [
-  { name: 'clk', wave: 'pPp.........' },
-  { name:'hpmevent3', wave: '01..0.10.', node:'.a......' },
-  { name:'cycles-interval-timer', wave: "0.1.......0",phase: 0.5, node:'..b.......c.'},
-  { name:'latch_PC+TS', wave: '0.10.......',phase: 0.5, node:'..d...'},
-  { name:'count', wave: '0.===..=..0', data: ["1", "2", "3","4"],phase: 0.5},
-  { name:'gen_message', wave:'0.........10', node:'..........e.'},
+  { name: 'clk', wave: 'pPp..|.......' },
+  { name:'hpmevent3', wave: '01..0|.10.', node:'.a......' },
+  { name:'cycles-interval-timer', wave: "0.1...|....0",phase: 0.5, node:'..b.......c.'},
+  { name:'latch_PC+TS', wave: '0.10..|.....',phase: 0.5, node:'..d...'},
+  { name:'count', wave: '0.===.|.=..0', data: ["1", "2", "3","4"],phase: 0.5},
+  { name:'gen_packet', wave:'0.........10', node:'..........e.'},
   ],
   head:{
-  text:"Counting events (hi level) from hpmevent3 selector; generating trace message at end of one-shot timer"
+  text:"Counting events (hi level) from hpmevent3 selector; generating trace message at end of interval timer"
   },
  edge:[
     'a-~>b trig','b~d', 'c-~>e', 'b<->c cycles-interval'
@@ -363,6 +367,7 @@ The counter is defined to be 24 bits (increments-of-6 work best for N-Trace cite
 * The cycles-interval timer is triggered on the rising edge of the hpmevent3.
 When it ends, this triggers the gen_packet to generate the trace packet.
 *count is the count value while hpmevent3 level is high and cycles-interval-timer is true.
+* latch_PC+TS is the signal to latch the most recent retired PC and timestamp on the rising edge of hpmevent3.  This is the value that is recorded in the trace packet when the timer expires and the packet is generated.
 
 === Limiting Event Trace Bandwidth based on Trace Encoder Feedback.
 

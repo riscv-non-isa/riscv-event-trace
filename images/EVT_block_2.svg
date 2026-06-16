@@ -23,13 +23,13 @@
      inkscape:pageopacity="0.0"
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
-     inkscape:zoom="1.0748023"
-     inkscape:cx="350.29698"
-     inkscape:cy="287.95993"
-     inkscape:window-width="1600"
+     inkscape:zoom="1.52"
+     inkscape:cx="343.42105"
+     inkscape:cy="352.96053"
+     inkscape:window-width="2091"
      inkscape:window-height="1231"
-     inkscape:window-x="3657"
-     inkscape:window-y="147"
+     inkscape:window-x="3006"
+     inkscape:window-y="179"
      inkscape:window-maximized="0"
      inkscape:current-layer="svg51" />
   <style
@@ -223,6 +223,12 @@
          fill="black"
          id="path3" />
     </marker>
+    <rect
+       x="465.13158"
+       y="3.2894737"
+       width="0"
+       height="16.447368"
+       id="rect157" />
   </defs>
   <rect
      x="35.769958"
@@ -232,15 +238,6 @@
      class="rect-rounded"
      id="rect3"
      style="stroke-dasharray:none;stroke-dashoffset:0" />
-  <text
-     x="114.96677"
-     y="63.25988"
-     class="label"
-     id="text3"
-     style="font-size:16px;stroke-width:5.37199;stroke-dasharray:none"
-     transform="scale(0.81958372,1.2201316)"><tspan
-       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:Arial, sans-serif;-inkscape-font-specification:'Arial, sans-serif Bold';fill:#008080"
-       id="tspan119" /></text>
   <text
      x="304.47369"
      y="72.763161"
@@ -265,10 +262,10 @@
      class="bus"
      id="line5" />
   <line
-     x1="150"
-     y1="307.23685"
-     x2="218.84358"
-     y2="307.23685"
+     x1="149.50658"
+     y1="308.22369"
+     x2="218.35016"
+     y2="308.22369"
      class="bus"
      id="line6" />
   <text
@@ -276,7 +273,7 @@
      y="341.8421"
      id="text6"
      style="white-space:pre;inline-size:55.7526;display:inline"
-     transform="translate(-5.9210526,-19.736841)"
+     transform="translate(-6.3862544,-16.82933)"
      xml:space="preserve"><tspan
        x="176.44737"
        y="341.8421"
@@ -298,10 +295,6 @@
      y="107.2562"
      id="text8"
      style="text-align:start;text-anchor:start">Calls, Returns</text>
-  <text
-     x="320"
-     y="185"
-     id="text9" />
   <line
      x1="386.1842"
      y1="150"
@@ -370,10 +363,6 @@
      x="300.92105"
      y="364.60526"
      id="text16">PPC Selector Event</text>
-  <text
-     x="267.81192"
-     y="579.354"
-     id="text17">Interval</text>
   <rect
      x="273.55264"
      y="413.1579"
@@ -461,7 +450,7 @@
      id="text29">AGGREGATOR</text>
   <rect
      x="36.40229"
-     y="438.11282"
+     y="433.50757"
      width="99.827003"
      height="194.04622"
      class="rect-rounded"
@@ -610,7 +599,7 @@
        y="227.63156"
        sodipodi:role="line">RHTI</tspan></text>
   <rect
-     style="fill:#0000ff"
+     style="display:inline;fill:#0000ff"
      id="rect56"
      width="1.3157991"
      height="0"
@@ -623,22 +612,17 @@
   <text
      xml:space="preserve"
      id="text57"
-     style="writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect58);display:inline;fill:#0000ff" />
+     style="writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect58);display:inline;fill:#0000ff"
+     inkscape:label="text57" />
+  <text
+     xml:space="preserve"
+     id="text83"
+     style="writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect83);display:inline;opacity:1;fill:none;stroke:#000000;stroke-width:1.121;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:fill markers stroke" />
   <text
      x="419.07895"
      y="323.81577"
      class="sub-label"
      id="text59">PACKETS</text>
-  <circle
-     id="path61"
-     style="fill:#000000;stroke:none"
-     cx="194.07895"
-     cy="306.57895"
-     r="1.5" />
-  <path
-     style="opacity:1;fill:none;stroke-width:50;stroke-dasharray:none;marker-end:url(#Triangle);paint-order:fill markers stroke"
-     d="m 206.90789,307.89474 v 70.39473"
-     id="path64" />
   <path
      style="opacity:1;fill:none;stroke-width:50;stroke-dasharray:20.4797, 0.853319;stroke-dashoffset:0;paint-order:fill markers stroke"
      d="M 23.026316,434.86842 H 142.76316"
@@ -648,35 +632,27 @@
      d="M 25,433.55263 H 146.05263"
      id="path67" />
   <path
-     style="opacity:1;fill:none;stroke-width:49.15;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;paint-order:fill markers stroke;stroke:none"
-     d="m 17.763158,167.76316 v 96.05263"
-     id="path71" />
-  <path
-     style="opacity:1;fill:none;stroke:#000000;stroke-width:3;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:fill markers stroke"
-     d="m 196.05263,306.57895 v 77.63158"
+     style="opacity:1;fill:none;stroke:#000000;stroke-width:2.95471;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:fill markers stroke"
+     d="M 197.4699,307.29553 V 382.6011"
      id="path72" />
   <line
-     x1="196.05263"
-     y1="383.28949"
-     x2="220"
-     y2="383.28949"
+     x1="195.93633"
+     y1="383.52206"
+     x2="218.7139"
+     y2="383.52206"
      class="bus"
      id="line72"
-     style="stroke-width:2.255;stroke-dasharray:none" />
+     style="stroke-width:2.19923;stroke-dasharray:none" />
   <text
      x="176.44737"
      y="341.8421"
      id="text72"
-     style="white-space:pre;inline-size:55.7526;display:inline"
+     style="white-space:pre;inline-size:55.7526;display:inline;fill:#1a1a1a"
      transform="translate(8.5526316,54.605264)"
      xml:space="preserve"><tspan
        x="176.44737"
        y="341.8421"
        id="tspan5">(subset)</tspan></text>
-  <text
-     xml:space="preserve"
-     id="text73"
-     style="writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect73);display:inline;opacity:1;fill:none;stroke:#000000;stroke-width:0.721;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:fill markers stroke" />
   <path
      style="opacity:1;fill:none;stroke:#000000;stroke-width:0.50691;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:fill markers stroke"
      d="m 230.9171,384.98286 16.27053,-0.44707 -0.95709,-11.62396 h 16.27053"
@@ -731,10 +707,6 @@
      id="text80"
      style="font-size:23.8279px;stroke-width:1.98567"
      inkscape:transform-center-y="-29.605263" />
-  <text
-     xml:space="preserve"
-     id="text83"
-     style="writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect83);display:inline;opacity:1;fill:none;stroke:#000000;stroke-width:1.121;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:fill markers stroke" />
   <g
      id="g87"
      transform="translate(-11.513158,-15.131578)">
@@ -802,7 +774,7 @@
      y="341.8421"
      id="text94"
      style="white-space:pre;inline-size:55.7526;display:inline"
-     transform="translate(30.597291,205.42084)"
+     transform="translate(25.334133,208.71031)"
      xml:space="preserve"><tspan
        x="176.44737"
        y="341.8421"
@@ -970,7 +942,7 @@
   </g>
   <text
      xml:space="preserve"
-     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12px;font-family:Arial, sans-serif;-inkscape-font-specification:'Arial, sans-serif';writing-mode:lr-tb;direction:ltr;opacity:1;fill:none;stroke:#000000;stroke-width:1;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:fill markers stroke"
+     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12px;font-family:Arial, sans-serif;-inkscape-font-specification:'Arial, sans-serif';writing-mode:lr-tb;direction:ltr;display:inline;opacity:1;fill:none;stroke:#000000;stroke-width:1;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:fill markers stroke"
      x="340.78946"
      y="464.47369"
      id="text108"><tspan
@@ -1010,10 +982,6 @@
        style="font-size:10.6667px">Both</tspan></text>
   <text
      xml:space="preserve"
-     id="text114"
-     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.3333px;font-family:Arial, sans-serif;-inkscape-font-specification:'Arial, sans-serif';writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect114);display:inline;opacity:1;fill:none;stroke:#000000;stroke-width:1;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:fill markers stroke" />
-  <text
-     xml:space="preserve"
      style="writing-mode:lr-tb;direction:ltr;fill:#000000"
      x="182.23683"
      y="227.63156"
@@ -1024,8 +992,12 @@
        sodipodi:role="line">RHTI</tspan></text>
   <text
      xml:space="preserve"
+     id="text114"
+     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.3333px;font-family:Arial, sans-serif;-inkscape-font-specification:'Arial, sans-serif';writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect114);display:inline;opacity:1;fill:none;stroke:#000000;stroke-width:1;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:fill markers stroke" />
+  <text
+     xml:space="preserve"
      id="text116"
-     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12px;font-family:Arial, sans-serif;-inkscape-font-specification:'Arial, sans-serif';writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect116);display:inline;opacity:1;fill:none;stroke:#000000;stroke-width:1;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:fill markers stroke" />
+     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12px;font-family:Arial, sans-serif;-inkscape-font-specification:'Arial, sans-serif';writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect116);display:inline;opacity:1;mix-blend-mode:normal;fill:none;stroke:#000000;stroke-width:1;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:fill markers stroke" />
   <text
      xml:space="preserve"
      style="writing-mode:lr-tb;direction:ltr;fill:#000000"
@@ -1055,7 +1027,8 @@
      y2="471.51675"
      class="fifo-bus"
      id="line127"
-     style="stroke-width:1.5527;stroke-dasharray:none;marker-end:url(#marker127)" />
+     style="stroke-width:1.5527;stroke-dasharray:none;marker-end:url(#marker127)"
+     inkscape:label="line127" />
   <line
      x1="416.68851"
      y1="428.19455"
@@ -1146,17 +1119,6 @@
      y2="504.53946"
      class="bus"
      id="line141" />
-  <text
-     xml:space="preserve"
-     id="text144"
-     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:17.3333px;font-family:Arial, sans-serif;-inkscape-font-specification:'Arial, sans-serif';writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect144);display:inline;opacity:1;fill:#1a1a1a;stroke:#000000;stroke-width:1.6;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:fill markers stroke"><tspan
-       x="511.18359"
-       y="601.79664"
-       id="tspan9">&lt;</tspan></text>
-  <text
-     xml:space="preserve"
-     id="text145"
-     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:17.3333px;font-family:Arial, sans-serif;-inkscape-font-specification:'Arial, sans-serif';writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect145);display:inline;opacity:1;fill:#1a1a1a;stroke:#000000;stroke-width:1.6;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:fill markers stroke" />
   <line
      x1="417.82306"
      y1="276.84436"
@@ -1168,10 +1130,10 @@
      inkscape:transform-center-x="14.676523"
      inkscape:transform-center-y="17.470622" />
   <rect
-     x="220.94583"
-     y="46.966919"
-     width="343.68951"
-     height="587.40387"
+     x="220.93556"
+     y="46.956646"
+     width="343.71005"
+     height="580.18756"
      class="rect-rounded"
      id="rect147"
      style="fill:none" />
@@ -1211,7 +1173,7 @@
        sodipodi:role="line"
        id="tspan153"
        x="229.61293"
-       y="138.07306"> entry/exit + cause</tspan></text>
+       y="138.07306">..entry/exits + cause</tspan></text>
   <text
      x="299.8584"
      y="154.70679"
@@ -1232,4 +1194,28 @@
      transform="matrix(0,0.99712443,-1.0028839,0,0,0)"
      id="text156"
      style="font-size:15.7229px;stroke-width:1.31024">FIFO</text>
+  <g
+     inkscape:groupmode="layer"
+     id="layer1"
+     inkscape:label="Layer 1"
+     style="display:inline" />
+  <g
+     inkscape:groupmode="layer"
+     id="layer2"
+     inkscape:label="Layer 2"
+     style="display:none" />
+  <g
+     inkscape:groupmode="layer"
+     id="layer3"
+     inkscape:label="Layer 3"
+     style="display:none" />
+  <g
+     inkscape:groupmode="layer"
+     id="layer4"
+     inkscape:label="Layer 4"
+     style="display:none" />
+  <text
+     xml:space="preserve"
+     id="text157"
+     style="writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect157);display:inline;opacity:1;fill:#ff0000;stroke:#000000;stroke-width:0.721;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:fill markers stroke" />
 </svg>

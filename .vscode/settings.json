@@ -1,3 +1,4 @@
 {
-    "editor.defaultFormatter": "asciidoctor.asciidoctor-vscode"
+    "editor.defaultFormatter": "asciidoctor.asciidoctor-vscode",
+    "makefile.configureOnOpen": false
 }

@@ -670,7 +670,7 @@ NOTE: For the setup of *trTeEvtExceptionEn* and *trTeEvtInterruptEn*, the return
 ==== trTeEvtFeatures: Event Trace Features RO Register (trBaseEncoder+0x104)
 
 .Event Trace Features Read-only Register - *trTeEvtFeatures* (32b)
-[cols="8%,22%,~,5%,10%", options="header"]
+[cols="8%,22%a,~,5%,10%", options="header"]
 |===
 ^|Bits ^|Field ^|Description ^|RW ^|Reset
 |0
@@ -737,7 +737,7 @@ a|[#PPCsImplemented] trTeEvtPPCsImpl
 
 
 |13
-a|[#DebugTriggerIDImpl] trTeEvtDbgTrigIDImpl
+|[#DebugTriggerIDImpl] trTeEvtDbgTrigIDImpl
 |Read as 1 if Debug Trigger ID is implemented in RHTI (or manually)
 |RO
 |0 (SD)

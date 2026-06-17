@@ -11,3 +11,5 @@ src/N-Trace-packets.adoc
 pdf/riscv-event-trace(5-29-26).pdf
 .gitignore
 .gitignore
+.vscode/settings.json
+pdf/riscv-event-trace(6-15-26).pdf

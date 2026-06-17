@@ -670,7 +670,7 @@ NOTE: For the setup of *trTeEvtExceptionEn* and *trTeEvtInterruptEn*, the return
 ==== trTeEvtFeatures: Event Trace Features RO Register (trBaseEncoder+0x104)
 
 .Event Trace Features Read-only Register - *trTeEvtFeatures* (32b)
-[cols="8%,22%a,~,5%,10%", options="header"]
+[cols="8%,22%,~,5%,10%", options="header"]
 |===
 ^|Bits ^|Field ^|Description ^|RW ^|Reset
 |0
@@ -716,7 +716,7 @@ NOTE: For the setup of *trTeEvtExceptionEn* and *trTeEvtInterruptEn*, the return
 |1 (SD)
 
 |10:7
-a|[#PPCsImplemented] trTeEvtPPCsImpl
+|[#PPCsImplemented]trTeEvtPPCsImpl
 |Number of Profiling Performance Counters implemented (0-15)
 |RO
 |8 (SD)
@@ -743,7 +743,7 @@ a|[#PPCsImplemented] trTeEvtPPCsImpl
 |0 (SD)
 
 |16-14
-a|[#SelectorsImplemented] trTeEvtSelectorsImpl
+| [#SelectorsImplemented]trTeEvtSelectorsImpl
 |Number of Performance Counter selectors implemented for Event Trace (0-7)
 |RO
 |0 (SD)

@@ -121,7 +121,9 @@ SYNC field, must be compatible w/N-Trace Table 25: +
 (1) = Exit from Reset +
 (3) = exit-debug. PC=first instruction to execute after debug mode. +
 (5) = event trace enable. +
-(others) reserved
+(others) Reserved +
+Note: some cores may not have logic to recognize "Exit from Reset". Start of execution can use the "event trace enable" encoding. +
+
 
 |Sync Disable
 (((N-Trace, Event, Sync Disable Message)))

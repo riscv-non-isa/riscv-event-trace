@@ -652,7 +652,7 @@ Note: Context writes are also enabled when the *trTeControl.trTeContext* bit is 
 |0
 
 |28
-a|[#EventLockout] trTeEvtLockout
+| [[EventLockout]]trTeEvtLockout
 |0: ignore Trace Encoder FIFO-AF (almost-full) condition +
 1: when Trace Encoder FIFO-AF feedback signal indicates "almost full", stop generating events. This is a front-end throttle to prevent the Trace Encoder FIFO from filling up and using the Encoder back-end to stop tracing, which generates an error packet when tracing is resumed. The lockout affects all external inputs to the encoder (when enabled) including Debug trigger/watchpoints, External Signals (triggers), and Performance Counter selectors.
 |WARL
@@ -847,7 +847,7 @@ NOTE: The value of the field is always 0 if the feature is not implemented, thus
 |15:10 |RESERVED | | |
 
 |19:16
-a|[#PPCsToTrace] trTeEvtPPCNumTrace
+|[[PPCsToTrace]] trTeEvtPPCNumTrace
 |0: turn off tracing of PPCs for all Event Types +
 1-15: Trace this number of PPCs. This tells the Encoder how many counters to include in the PPC trace packet. If the value is greater than the number of PPCs implemented, then trace all PPCs.
 |WARL
@@ -1034,7 +1034,7 @@ NOTE: These fields are WARL; the value of the field is always 0 if the feature i
 |0
 
 |22
-a|[#ExtSigPCMode] trTeEvtExtSigPCMode
+|[[ExtSigPCMode]]trTeEvtExtSigPCMode
 |0: Do not include the PC in the external signal trace packet (to save on bandwidth) +
 1: Include PC in external signal trace packet, to correlate transition of signal to instruction executed in core
 |WARL
@@ -1120,7 +1120,7 @@ NOTE: The counter is not accessible as a memory-mapped register. It is part of t
 |RESERVED | | |
 
 |11:8
-a|[#select-cycles-interval] trTeEvtPerfSelInterval
+|[[select-cycles-interval]]trTeEvtPerfSelInterval
 |*cycles-interval* during which perf selector level (high) events are counted. Interval duration is selectable in powers of 2 +
  *cycles-interval* = *2^(trTeEvtPerfSelInterval + 6)* +
 Range is 2^6 to 2^21, i.e. 64 cycles to ~2 million cycles in powers-of-2 values. For a 1GHz clock, the range is 64ns to 2ms. Common for all Perf Selects.

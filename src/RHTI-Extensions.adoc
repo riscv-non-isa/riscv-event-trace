@@ -15,12 +15,18 @@ The RHTI defines trigger +[2]+ signal to be *Trace-notify*.  When asserted, it i
 The following signal definition extends the section "Optional sideband signals",  Table 8 of the spec with the definition of *triggerID* which identifies *which* trigger matched.
 
 .Optional sideband encoder *triggerID* output signals
-[cols="12%, 12%,~",options="header"]
+[cols="12%, 20%,~",options="header"]
 |===
 ^|*Signal* ^|*Group* ^|*Function*
-|*triggerID* | O | 4-bit field that encodes the ID of the matching trigger thus supports up to 16 triggers.
+|*triggerID* 
+| OR +
+("Optional Replicated" which means replicated N time for a hart that can retire N instructions per cycle with a trigger match on any of those instructions)
+| 4-bit field that encodes the ID of the matching trigger, thus supports up to 16 triggers. +
+There are two cases for multiple triggers matching on the same cycle: +
+1) multiple triggers with the same match condition, which could include address-range triggers that overlap. (Also there is nothing to prevent a user from programming multiple triggers with the same match condition), or +
+2) multiple triggers that occur when multiple instructions retire in the same cycle. +
 
-If multiple triggers match on the same cycle, hardware precedence must ensure that the lowest ID value is asserted on the encoded *triggerID* field (over higher ID encoded values). Simultaneous matches may occur with a core which retires more than one instruction per cycle or hw trigger comparisons overlap.  (Also, there is nothing to prevent a user from programming multiple triggers with the same match condition.)
+The Event Trace debug trigger/watchpoint event is limited to one trigger match per cycle. In the case of multiple matches, for Case 1, the RHTI hardware must use numeric precedence to transmit (over this TriggerID field) the lowest ID value.  For Case 2, each of the potential matches on each of the retired instructions has its own, internal, 4-bit field. Logic in the core ORes the occurrence bits and also uses precedence to select the lowest numbered triggerID to transmit over the RHTI signal field.  
 |===
 
 //[[Performance Counter Selector Output]]
@@ -31,8 +37,8 @@ If multiple triggers match on the same cycle, hardware precedence must ensure th
 [cols="35%, 10%, ~"]
 |===
 ^|*Signal* ^|*Group* ^|*Function*
-|*HPMeventXOutput*[_eventNum_p-1_:0]
-| O | Field that carries (routes) the least significant Num Hardware Performance Monitor (HPM) hpmEventX select outputs, where Num is _eventNum_p_. These signal outputs may be used for profiling performance counter delta counting or Selector-based event generation or both.
+|*mhpmeventXOutput*[_eventNum_p-1_:0]
+| O | Field that carries (routes) the least significant "Num" Hardware Performance Monitor (HPM) mhpmEventX selector outputs, where Num is _eventNum_p_. These signal outputs may be used for profiling performance counter delta counting or Selector-based event generation or both.
 
 If HPM mhpmeventX selectors are being used (Alternative 2), _eventNum_p_ can range from 1 to 8.
 |===

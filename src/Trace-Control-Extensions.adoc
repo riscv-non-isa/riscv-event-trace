@@ -11,7 +11,7 @@ This document defines Event Trace as a sub-component of the Trace Encoder. Event
 
 *trTeControl.trTeInstMode = 4* +
 
-which is defined in the N-Trace spec as *"Protocol defined trace mode"*.
+which is defined in the RISC-V Trace Control Interface spec as *"Protocol defined trace mode"* cite:[riscv-trace-control-spec-1.0(Trace Encoder Control Interface)].
 
 //[[time-sync-message]]
 === Time Synchronization Message for simultaneously recording mtime & timestamp

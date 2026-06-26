@@ -24,7 +24,7 @@ The following signal definition extends the section "Optional sideband signals",
 | 4-bit field that encodes the ID of the matching trigger, thus supports up to 16 triggers. +
 There are two cases for multiple triggers matching on the same cycle: +
 1) multiple triggers with the same match condition, which could include address-range triggers that overlap. (Also there is nothing to prevent a user from programming multiple triggers with the same match condition), or +
-2) multiple triggers that occur when multiple instructions retire in the same cycle. +
+2) multiple triggers that occur when multiple instructions retire in the same cycle.
 
 The Event Trace debug trigger/watchpoint event is limited to one trigger match per cycle. In the case of multiple matches, for Case 1, the RHTI hardware must use numeric precedence to transmit (over this TriggerID field) the lowest ID value.  For Case 2, each of the potential matches on each of the retired instructions has its own, internal, 4-bit field. Logic in the core ORes the occurrence bits and also uses precedence to select the lowest numbered triggerID to transmit over the RHTI signal field.
 |===

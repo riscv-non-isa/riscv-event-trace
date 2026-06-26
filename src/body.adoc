@@ -4,7 +4,7 @@
 == Features
 (((Event Trace, features)))
 
-* Extension of ratified RISC-V Instruction Trace as an additional encoder mode with additional packet types
+* Extension of ratified RISC-V Instruction Trace as an additional encoder mode and packet types
 
 * Based on same core hardware interface, now defined as RHTI (RISC-V Hart Trace Interface) cite:[riscv-RHTI-spec-0.83]
 
@@ -12,13 +12,13 @@
 
 * Event types that are independently traceable allowing control of the granularity of information captured
 
-* Event types that include function calls and returns, exceptions, interrupts, and context changes
+* Event types that include function calls and returns, exceptions, interrupts, context and privilege level changes
 
 * Event types that include a timestamp based on a common fixed-frequency trace clock to provide precise timing information for an execution timeline and for performance analysis
 
-* Event types that can selectively include profiling performance counter (PPC) values to provide core performance information such as IPC (instructions per cycle) or cache misses, for the duration of the event
+* Event types that can selectively include profiling performance counter (PPC) values to provide core performance information such as IPC (instructions per cycle) or cache misses, summed for the duration of the event
 
-* Run-time filtering of events based on type, privilege level, operating system context, and user-instrumented directives in source code to reduce the volume of trace data and focus on relevant information
+* Run-time filtering of events based on type, privilege level, operating system context, and user-instrumented directives in source code to reduce the volume of trace data and to focus on relevant information
 
 * External signals - edge-triggered signals that can insert a trace packet containing the closest retired PC when the event occurs, plus timestamp.  This enables tracing of external events such as interrupts, I/O events, DMA start-end markers, uncore signals, or SoC-based events outside of program execution, and to time correlate them *with* program execution.
 
@@ -92,9 +92,6 @@ Event Trace can include the option of Profiling Performance Counters (PPCs) whic
 [align="center"]
 .Event Trace Block Diagram
 image::../../images/EVT_block_2.svg[Event Trace Block Diagram,width=90%]
-//image::EVT_block_1.svg[Event Trace Block Diagram,width=90%]
-//image::images/EVT_block_1.svg[Event Trace Block Diagram,width=100%]
-//image::riscv-event-trace/images/EVT_block_1.svg[Event Trace Block Diagram]
 
 === Features and Benefits (non-normative)
 (((Event Trace, features and benefits)))
@@ -132,7 +129,7 @@ For device driver debugging, watchpoints can be set on memory-mapped I/O address
 |*External Signal (Trigger) Events*
 |Applicable for embedded systems, tracing external events such as the rising edge of an interrupt signal, the closest concurrent retired instruction along with tracing the cpu processing of the interrupt - this combination provides a means of precisely measuring interrupt latencies.  Capturing many of these will characterize the timing and variability of interrupt processing and could expose maximum values that violate real-time requirements.
 
-External signals can also be traced in a logic analyzer mode and shown as timing waveforms to provide visibility into signals and timing that may otherwise be impossible to observe.
+External signal tracing is primarily for a few (up to 8) signals that don't transition rapidly (i.e. not for tracing buses). The user has the choice to record only rising, only falling, or both edges of a signal, the latter for measuring pulse widths.  Each edge generates a trace packet with timestamp which can be shown as a "logic analyzer" waveform view. This can provide visibility into signals and timing that may otherwise be impossible to observe.
 |*Performance Counter Selector Events*
 |Normally, performance counter selector registers (mhpmeventX) are used to select one or more core events to count.  With this Event Trace feature, the closest retired PC is recorded in the trace buffer on the occurrence of the mhpmeventX output signal.  This shows *where* in the code the core event occurred; post-processing these addresses into module/function/line numbers provides direct user feedback as to the code locations where performance bottlenecks are occurring.
 
@@ -322,6 +319,76 @@ Features:
 
 NOTE: The implementer must be aware that each channel is independent and has its own edge detection, cycle interval counter, latching of edge state, timestamp and PC (if enabled).  Events like a rising edge could occur simultaneously on multiple channels, including all channels.  The trace encoder must serialize these events into a packet stream and into trace storage.
 
+==== Waveform examples of tracing an external signal event
+(((Event Types, External Signal Events, waveform example)))
+This section includes three examples of external signal edge capture within the cycles-interval time window  - rising edge, falling then rising edge, and three (multiple) edges.
+
+* each example uses a cycles-interval of 8 cycles (2^3)
+* at the detection of the first edge, which takes two sample clocks, "latch_PC+TS" saves the closest retired instruction PC and timestamp.  "latch_TS" option only records the timestamp.
+* SIG_VAL is the value of the signal at the time of the first edge, and if additional edges occur within the cycles-interval, it records either "both edges" or "multiple edges" have occurred.
+*gen_packet is the time in the recording when the trace packet is generated, which is at the end of the cycles-interval.  The packet includes the channel ID, timestamp, and PC (if enabled) and the signal value (rising, falling, both, or multiple edges).
+
+[%unbreakable]
+[wavedrom, , svg]
+....
+{signal: [
+  { name: 'clk', wave: 'PPp.........' },
+  { name:'ext_chan1', wave: '01........', phase:0.5, node:'.a......' },
+  { name:'cycles-interval', wave: "0.1.......0",phase: 0.5, node:'..b.......c.'},
+  { name:'latch_PC+TS', wave: '0.10.......',phase: 0.5, node:'..d...'},
+  { name:"SIG_VAL", wave: '0=.........0.', data: ["2'b00 (rising edge)"]},
+  { name:'gen_packet', wave:'0.........10', node:'..........e.'},
+  ],
+  head:{
+  text:"external signal rise generates trace packet with rise+PC+TS after cycles-interval ends"
+  },
+ edge:[
+    'a-~>b trig','b~d', 'c-~>e', 'b<->c cycles-interval=8'
+  ],
+}
+....
+
+[%unbreakable]
+[wavedrom, , svg]
+....
+{signal: [
+  { name: 'clk', wave: 'PPp.........' },
+  { name:'ext_chan2', wave: '01....0....', phase:0.5, node:'.a......' },
+  { name:'cycles-interval', wave: "0.1.......0",phase: 0.5, node:'..b.......c.'},
+  { name:'latch_TS', wave: '0.10.......',phase: 0.5, node:'..d...'},
+  { name:"SIG_VAL", wave: '0=....=....0.', data: ["2'b00 (rising edge)","2'b10 (both edges)"]},
+  { name:'gen_packet', wave:'0.........10', node:'..........e.'},
+  ],
+  head:{
+  text:"external signal rise generates trace packet with rise+fall+TS after cycles-interval ends"
+  },
+ edge:[
+    'a-~>b trig','b~d', 'c-~>e', 'b<->c cycles-interval=8'
+  ],
+}
+....
+
+[%unbreakable]
+[wavedrom, , svg]
+....
+{signal: [
+  { name: 'clk', wave: 'PPp.........' },
+  { name:'ext_chan3', wave: '10..1..0....', phase:0.5, node:'.a......' },
+  { name:'cycles-interval', wave: "0.1.......0",phase: 0.5, node:'..b.......c.'},
+  { name:'latch_TS', wave: '0.10.......',phase: 0.5, node:'..d...'},
+  { name:"SIG_VAL", wave: '0=..=..=...0.', data: ["2'b01 (falling)","2'b10 (both)","2'b11 (multiple"]},
+  { name:'gen_packet', wave:'0.........10', node:'..........e.'},
+  ],
+  head:{
+  text:"external signal falling edge triggers start, ends w/multiple edges+TS, TCODE=0x22"
+  },
+ edge:[
+    'a-~>b trig','b~d', 'c-~>e', 'b<->c cycles-interval=8'
+  ],
+}
+....
+
+
 [#Performance-Counter-Selector-Based-Events]
 === Performance Counter Selector-Based Events
 (((Event Types, Performance Counter Selectors)))
@@ -357,7 +424,7 @@ The counter is defined to be 24 bits (increments-of-6 work best for N-Trace cite
   { name:'mhpmevent3', wave: '01..0|.10.', node:'.a......',phase: 0.5},
   { name:'cycles-interval', wave: "0.1..|....0",phase: 0.5, node:'..b.......c.'},
   { name:'latch_PC+TS', wave: '0.10.|......',phase: 0.5, node:'..d...'},
-  { name:'count', wave: '0.===|....0', data: ["1", "2", "3"]},
+  { name:'count', wave: '0====|....0.', data: ["1","2","3","4"]},
   { name:'gen_packet', wave:'0.........10', node:'..........e.'},
   ],
   head:{
@@ -369,15 +436,16 @@ The counter is defined to be 24 bits (increments-of-6 work best for N-Trace cite
 }
 ....
 
-* mhpmevent3 is the signal from the performance counter selector that is being traced.  It goes high when the selected event occurs; the rising edge is the start of the event recording.
-* The cycles-interval timer is triggered on the rising edge of the mhpmevent3.
-When it ends, this triggers the gen_packet to generate the trace packet.
-*count is the count value while mhpmevent3 level is high and cycles-interval-timer is true.
-* latch_PC+TS is the signal to latch the most recent retired PC and timestamp on the rising edge of mhpmevent3.  This is the value that is recorded in the trace packet when the timer expires and the packet is generated.
+* *mhpmevent3* is the signal being traced, from the output of the performance counter selector.  It goes high when the selected event occurs; the rising edge is the start of the event recording, and the logic then counts its high state while cycles-interval is true.
+* The *cycles-interval* timer is triggered on the rising edge (zero to one sampling)of the mhpmevent3. When the timer ends, this triggers the gen_packet to generate the trace packet.
+* *latch_PC+TS* is the signal to latch the most recent retired PC and timestamp on the rising edge of mhpmevent3.  This is the value that is recorded in the trace packet when the timer expires and the packet is generated.
+* *count* is the count value while mhpmevent3 level is high and cycles-interval-timer is true.
+* *gen_packet* is the signal to generate the trace packet at the end of the cycles-interval timer. It also resets the count to zero and prepares for the next event.
 
 === Limiting Event Trace Bandwidth based on Trace Encoder Feedback.
+(((Event Trace, limiting bandwidth)))
 
-Most Trace Encoders will include a FIFO for buffering trace events and to smooth out bursts of trace recordings that can occur at higher rates than the back-end rate of streaming trace packets to memory or PIB (probe interface block). Most FIFOs have a buffer depth signal indicating when it is close to full. This indicator, called *FIFO_AF* (almost full), can act as a back-pressure signal to the Event Trace hardware to temporarily stop the generation of trace packets.
+Most Trace Encoders will include a FIFO for buffering trace events and to smooth out bursts of trace recordings that can occur at higher rates than the back-end rate of streaming trace packets to memory or PIB (probe interface block). Most FIFOs have a buffer depth signal indicating when it is close to full. This indicator, here labeled *FIFO_AF* (almost full), can act as a back-pressure signal to the Event Trace hardware to temporarily stop the generation of trace packets.
 
 This is a front-end throttle to prevent the Trace Encoder FIFO from filling up and using the Encoder back-end to stop tracing (which generates an error packet when tracing is resumed). The lockout affects all external inputs to the encoder (when enabled) including Debug trigger/watchpoints <<Debug-Trigger-Watchpoint-Events>>, External Signals (triggers) <<External-Signal-Events>>, and Performance Counter selectors <<Performance-Counter-Selector-Based-Events>>. The control register to enable or disable this feedback mechanism is <<EventLockout>>.
 
@@ -443,7 +511,7 @@ NOTE: Counting instructions retired is a RISC-V requirement, which is the *minst
 
 If the developer is using Alternative 2 (independent counters), one choice is to dedicate the first 24-bit counter for counting retired instructions between events, with the same delta saturating counter mechanism as other PPCs.  This provides a max count of 16 million instructions between events. This counter must be able to count > 1 instruction per cycle if the core retires more than 1 instruction per cycle. One disadvantage of this is that the *minstret* counter does not support count filtering by privilege level whereas a programmable counter can, if a selector (mhpmeventX) has a value that includes counting instructions retired.
 
-NOTE: *Counting cycles.* For IPC ratio calculations, the number of cycles between events is also required.  The timestamp may or *may not* be counting cpu cycles.  If it does not, the Event Trace Decoder must be informed what the fixed ratio of timestamp ticks to CPU cycles is so it can convert timestamp counts into cycle counts. One hardware method for recording the timestamp-to-cycle ratio is to implement the <<time-sync-packet, Time Sync Message>>.
+NOTE: *Counting cycles.* For IPC ratio calculations, the number of cycles between events is also required.  The timestamp may or *may not* be counting cpu cycles.  If it does not, the Event Trace Decoder must be informed what the fixed ratio of timestamp ticks to CPU cycles is so it can convert timestamp counts into cycle counts. One hardware method for recording the timestamp-to-cycle ratio is to implement the <<tab:MTIME_SYNC, Time Sync Packet>>.
 
 
 == Event Trace-specific Hardware Filtering
@@ -654,7 +722,7 @@ Note: Context writes are also enabled when the *trTeControl.trTeContext* bit is 
 |28
 | [[EventLockout]]trTeEvtLockout
 |0: ignore Trace Encoder FIFO-AF (almost-full) condition +
-1: when Trace Encoder FIFO-AF feedback signal indicates "almost full", stop generating events. This is a front-end throttle to prevent the Trace Encoder FIFO from filling up and using the Encoder back-end to stop tracing, which generates an error packet when tracing is resumed. The lockout affects all external inputs to the encoder (when enabled) including Debug trigger/watchpoints, External Signals (triggers), and Performance Counter selectors.
+1: when Trace Encoder FIFO-AF feedback signal indicates "almost full", stop generating events. This is a front-end throttle to prevent the Trace Encoder FIFO from filling up and using the Encoder back-end to stop tracing, which generates an error packet when tracing is resumed. When enabled, this lockout affects all external inputs to the encoder including Debug trigger/watchpoints, External Signals (triggers), and Performance Counter selectors.
 |WARL
 |0
 

@@ -388,7 +388,6 @@ This section includes three examples of external signal edge capture within the 
 }
 ....
 
-
 [#Performance-Counter-Selector-Based-Events]
 === Performance Counter Selector-Based Events
 (((Event Types, Performance Counter Selectors)))

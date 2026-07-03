@@ -43,6 +43,7 @@ itype = 8 (indirect call), 9 (direct call), 12 (co-routine swap), 13 (return)
 |Occurrence (itype=1) records PC of instruction causing exception, cause register, + exit address (itype=3 (trap return))
 
 |*Interrupts*
+(((Event Types, Interrupts)))
 |Occurrence (itype=2) records PC of instruction that was interrupted, cause register, + exit address (itype=3 (trap return))
 
 |*Trap Return*
@@ -50,13 +51,20 @@ itype = 8 (indirect call), 9 (direct call), 12 (co-routine swap), 13 (return)
 |Occurrence (itype=3) records PC of return-from-trap instruction (MRET or SRET) of an exception or interrupt. This itype distinguishes the event from a normal function return.
 
 |*Context + Priv Level*
+(((Event Types, Context + Priv Level)))
 |Records *s/hcontext* register when it is written to, plus *privilege level* and indication of s or h context
 
 |*Debug trigger/watchpoints*
 (((Event Types, Debug trigger/watchpoints)))
-|Records PC of instruction that hit the trigger, plus trigger ID and timestamp.  Triggers and their comparison conditions are optional; they can include instruction retired at a specific address or range of addresses, data address read or write or access, data value, privilege mode, scontext, or other trigger conditions.
+|Records PC of instruction that hit the trigger (or close to it depending on the type of trigger set), plus trigger ID and timestamp.  Triggers and their comparison conditions are optional; they can include instruction retired at a specific address or range of addresses, data address read or write or access, data value, privilege mode, scontext, or other trigger conditions. Reference: cite:[riscv-debug-spec-1.0(Sdtrig)].
+
+|*User Definable Signal Events*
+|Records latest retired PC when one or more user-definable signals are asserted. <<User-Definable-Signal-Events>>.
+
+ signals are developer-defined, normally from the core, that are routed to the RHTI impdef[] (implementation-defined) bit array cite:[riscv-RHTI-spec-0.83(Optional sideband signals)]. This feature provides a means to customize Event Trace to mark where and when the processor was executing when any of the signals are asserted. The trace packet includes all the signal values when any one goes true.
 
 |*Periodic PC Sampling*
+(((Event Types, Periodic PC Sampling)))
 |Programmable timer that generates a trace packet with the most recent retired PC and timestamp when it expires.  This allows for periodic PC sampling of the executing code to provide an execution profile over time.
 
 |*External Signal (trigger) Events*
@@ -279,6 +287,12 @@ The RHTI Extensions section <<Trigger/Watchpoint ID>> defines the *triggerID* si
 
 NOTE: If the triggerID is not provided, trace decoder software may be able to identify and fill in the triggerID in the trace output.  This first requires saving the trigger comparator setup for each trigger - primarily the execution or data address comparison value. The trace decoder, with this information, can then match the recorded PC in the trace packet to the list of programmed trigger values and fill in the triggerID.
 
+
+[#User-Definable-Signal-Events]
+=== User Definable Signal Events
+(((Event Types, User Definable Signals)))
+Signals are developer-defined, normally from the core, that are routed to the RHTI impdef[] (implementation-defined) bit array cite:[riscv-RHTI-spec-0.83(Optional sideband signals)]. This feature provides a means for a developer to customize Event Trace to mark when and where the processor was executing when any of the signals are asserted. The trace packet includes all the signal values when any one goes true.
+
 === Periodic PC Sampling Events
 (((Event Types, Periodic PC Sampling)))
 
@@ -446,7 +460,7 @@ The counter is defined to be 24 bits (increments-of-6 work best for N-Trace cite
 
 Most Trace Encoders will include a FIFO for buffering trace events and to smooth out bursts of trace recordings that can occur at higher rates than the back-end rate of streaming trace packets to memory or PIB (probe interface block). Most FIFOs have a buffer depth signal indicating when it is close to full. This indicator, here labeled *FIFO_AF* (almost full), can act as a back-pressure signal to the Event Trace hardware to temporarily stop the generation of trace packets.
 
-This is a front-end throttle to prevent the Trace Encoder FIFO from filling up and using the Encoder back-end to stop tracing (which generates an error packet when tracing is resumed). The lockout affects all external inputs to the encoder (when enabled) including Debug trigger/watchpoints <<Debug-Trigger-Watchpoint-Events>>, External Signals (triggers) <<External-Signal-Events>>, and Performance Counter selectors <<Performance-Counter-Selector-Based-Events>>. The control register to enable or disable this feedback mechanism is <<EventLockout>>.
+This is a front-end throttle to prevent the Trace Encoder FIFO from filling up and using the Encoder back-end to stop tracing (which generates an error packet when tracing is resumed). The lockout affects all external inputs to the encoder (when enabled) including Debug trigger/watchpoints <<Debug-Trigger-Watchpoint-Events>>, User Defineable Signals <<User-Definable-Signal-Events>>, External Signals (triggers) <<External-Signal-Events>>, and Performance Counter selectors <<Performance-Counter-Selector-Based-Events>>. The control register to enable or disable this feedback mechanism is <<EventLockout>>.
 
 == Profiling Performance Counters (PPCs)
 (((Profiling Performance Counters, description)))
@@ -563,7 +577,7 @@ Sets the number of PPCs output with each Event Type enabled.
 |0x14
 |Control register that, when written to, causes all PPCs to be latched. Software can then read out all the PPC values. Only active when Event Trace is disabled.
 
-|RESERVED
+|Reserved
 |0x18
 |
 
@@ -633,7 +647,7 @@ Note that a change in value will generate a trace-on or trace-off Event Trace pa
 |0
 
 |7
-|RESERVED
+|Reserved
 |
 |
 |
@@ -682,25 +696,31 @@ Note: Context writes are also enabled when the *trTeControl.trTeContext* bit is 
 |0
 
 |15
+|trTeEvtUserDefinableEn
+|0: don't trace; 1: trace user definable signals. When any signal is asserted, a trace packet is generated that includes all the signal values at that moment.
+|WARL
+|0
+
+|16
 |trTeEvtPCSampEn
 |0: don't trace; 1: enable the tracing of periodic PC samples. The user sets up period of sampling and optionally the inclusion of randomizing the period.
 |WARL
 |0
 
 
-|16
+|17
 |trTeEvtExtTrigEn
 |0: don't trace; 1: enable the tracing of external trigger signals. The user sets up which external signals to trace and the edge detection (rising, falling, or both) for each signal.
 |WARL
 |0
 
-|17
+|18
 |trTeEvtPerfCtrSelEn
 |0: don't trace; 1: enable the tracing of performance counter selector outputs. The user first programs the mhpmeventX registers that generate the outputs to trace.
 |WARL
 |0
 
-|22:18
+|22:19
 |Reserved
 |Reserved for future Event Type enables
 |
@@ -721,7 +741,7 @@ Note: Context writes are also enabled when the *trTeControl.trTeContext* bit is 
 |28
 | [[EventLockout]]trTeEvtLockout
 |0: ignore Trace Encoder FIFO-AF (almost-full) condition +
-1: when Trace Encoder FIFO-AF feedback signal indicates "almost full", stop generating events. This is a front-end throttle to prevent the Trace Encoder FIFO from filling up and using the Encoder back-end to stop tracing, which generates an error packet when tracing is resumed. When enabled, this lockout affects all external inputs to the encoder including Debug trigger/watchpoints, External Signals (triggers), and Performance Counter selectors.
+1: when Trace Encoder FIFO-AF feedback signal indicates "almost full", stop generating events. This is a front-end throttle to prevent the Trace Encoder FIFO from filling up and using the Encoder back-end to stop tracing, which generates an error packet when tracing is resumed. When enabled, this lockout affects all external inputs to the encoder including Debug trigger/watchpoints, User definable Signals, External Signals (triggers), and Performance Counter selectors.
 |WARL
 |0
 
@@ -816,7 +836,7 @@ NOTE: For the setup of *trTeEvtExceptionEn* and *trTeEvtInterruptEn*, the return
 |0 (SD)
 
 |31:17
-|RESERVED | | |
+|Reserved | | |
 |===
 SD = System Dependent. Reset value of a field is dependent on the build.
 
@@ -911,7 +931,7 @@ NOTE: The value of the field is always 0 if the feature is not implemented, thus
 |WARL
 |0
 
-|15:10 |RESERVED | | |
+|15:10 |Reserved | | |
 
 |19:16
 |[[PPCsToTrace]] trTeEvtPPCNumTrace
@@ -920,7 +940,7 @@ NOTE: The value of the field is always 0 if the feature is not implemented, thus
 |WARL
 |0
 
-|31:20 |RESERVED | | |
+|31:20 |Reserved | | |
 |===
 
 ==== trTeEvtPPCControl: Profiling Performance Counter (PPC) Control Register (trBaseEncoder+0x114)
@@ -1108,7 +1128,7 @@ NOTE: These fields are WARL; the value of the field is always 0 if the feature i
 |0
 
 |23
-|RESERVED
+|Reserved
 |
 |
 |
@@ -1122,7 +1142,7 @@ This field is common for all signals.
 |0
 
 |31:28
-|RESERVED | | |
+|Reserved | | |
 |===
 
 ==== trTeEvtPerfSelectControl: Performance Selector Control Register (trBaseEncoder+0x1A4)
@@ -1148,9 +1168,9 @@ NOTE: The counter is not accessible as a memory-mapped register. It is part of t
   {bits: 1, name:'trTeEvtPerfSel1'},
   {bits: 1, name:'trTeEvtPerfSel2'},
   {bits: 1, name:'trTeEvtPerfSel3'},
-  {bits: 4, name:'RESERVED'},
+  {bits: 4, name:'Reserved'},
   {bits: 4, name:'trTeEvtPerfSelInterval'},
-  {bits: 20, name:'RESERVED'},
+  {bits: 20, name:'Reserved'},
 ], config:{lanes: 4, hspace:1024}}
 ....
 
@@ -1184,7 +1204,7 @@ NOTE: The counter is not accessible as a memory-mapped register. It is part of t
 |0
 
 |7:4
-|RESERVED | | |
+|Reserved | | |
 
 |11:8
 |[[select-cycles-interval]]trTeEvtPerfSelInterval
@@ -1195,7 +1215,7 @@ Range is 2^6 to 2^21, i.e. 64 cycles to ~2 million cycles in powers-of-2 values.
 |0
 
 |31:12
-|RESERVED | | |
+|Reserved | | |
 |===
 
 //== Event Trace E-Trace Messages

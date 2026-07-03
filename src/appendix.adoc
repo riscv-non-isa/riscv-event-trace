@@ -12,6 +12,10 @@
 * Trace can be set up to stop tracing on buffer full: *trRamControl.trRamStopOnWrap* = 1. When this occurs, Event Trace continues running, however no more trace messages are written to the trace buffer.
 * A self-hosted trace analysis program such as Linux _perf_ could control the starting and stopping of Event Trace.
 * Trace hardware supports on-the-fly switching between Event Trace and Instruction Trace. Memory-mapped (MMIO) hardware control registers allow a user program to change modes of trace so a trace recording can have both instruction trace messages intermixed with event trace messages. This feature allows the tracing of a portion of one program/process full execution while also tracing kernel-level events such as going in and out of kernel mode and running other processes.
+* Extension to the Instruction Trace message (for N-trace this is ProgTraceCorrelation message) will generate a disable trace message for two additional conditions: 
+** Inhibiting trace for security reasons +
+** Unbounded wait - pausing trace for an unbounded amount of time (e.g. executing WFI or WFE instructions)
+
 // More details are in section "Operational Description & Message Rules".
 
 [appendix]
@@ -154,7 +158,7 @@ Table of (encoded) Exception cause values (from RISC-V Instruction Set Manual: V
 === Interrupt Cause Register Filtering
 (((Filtering, Interrupt Cause)))
 
-Note that several of the registers are "shared" with Ecause filtering, thus the name of the field may not match the comparison being made.  For example, trTeFilterMatchChoiceEcauseLow is used to compare against the cause value for both exceptions and interrupts.
+NOTE: Several of the registers are "shared" with Ecause filtering, thus the name of the field may not match the comparison being made.  For example, trTeFilterMatchChoiceEcauseLow is used to compare against the cause value for both exceptions and interrupts.
 
 .Interrupt Cause Register Filtering
 [cols="28%,32%,~", options="header"]

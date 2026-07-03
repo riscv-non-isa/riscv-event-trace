@@ -13,8 +13,9 @@ This document defines Event Trace as a sub-component of the Trace Encoder. Event
 
 which is defined in the RISC-V Trace Control Interface spec as *"Protocol defined trace mode"* cite:[riscv-trace-control-spec-1.0(Trace Encoder Control Interface)].
 
-//[[time-sync-message]]
+[#time-sync-message]
 === Time Synchronization Message for simultaneously recording mtime & timestamp
+(((N-Trace, Time Synchronization Message)))
 
 This message is common for N-Trace and E-Trace Instruction Trace and its purpose is to record mtime and trace timestamp simultaneously for Trace message synchronization. This message is generated periodically based on a configurable interval of N- or E-Trace messages, and also aperiodically after certain events such as trace-on, exit debug, exit reset, ProgTraceSync message, and immediately after trace has stopped or halted.
 

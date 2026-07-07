@@ -193,9 +193,17 @@ Watchpoint wo/TRIG_ID
 |When a debug trigger/watchpoint matches, the PC is normally the address of the instruction that caused the match, although for a watchpoint, it can be after when comparing on the data portion of a load or store. In multi-issue cores, this message may report the address of a later instruction retired in the same cycle. +
 For *trTeEvtFeatures.trTeEvtDbgTrigIDImpl* <<DebugTriggerIDImpl>> = 0, the hardware does not provide the trigger ID; the trace decoder must determine the unique trigger indentification from the PC and from the knowledge of the trigger values that are programmed.
 
+|User Definable Signals
+(((N-Trace, Event, User Definable Signals Message)))
+|6
+|0
+|PC
+|impdef[] signals value
+|This event samples the PC address of the last instruction retired at the time of the assertion of one of the impdef[] signals cite:[riscv-RHTI-spec-0.83(Optional sideband signals)].
+
 |Periodic PC Sampling
 (((N-Trace, Event, Periodic PC Sampling Message)))
-|6
+|7
 |0
 |PC
 |---
@@ -203,7 +211,7 @@ For *trTeEvtFeatures.trTeEvtDbgTrigIDImpl* <<DebugTriggerIDImpl>> = 0, the hardw
 
 |External Signal (trigger) with PC
 (((N-Trace, Event, External Signal Message w/PC)))
-|7
+|8
 |1
 |PC
 |ES_VAL
@@ -220,7 +228,7 @@ Generated when external signal edge on this channel (SIG_ID) is detected by the 
 
 |Perf Counter Selector Occurrence
 (((N-Trace, Event, Performance Counter Selector Message)))
-|8
+|9
 |1
 |SEL_ID
 |Count
@@ -593,3 +601,19 @@ N-Trace MTIME_SYNC Message to record mtime and trace timestamp simultaneously fo
 |TSTAMP
 |F (Full) timestamp value
 |===
+
+[#]
+=== Inhibiting Trace for Security and Unbounded Wait reasons
+(((N-Trace, Inhibiting Trace Message)))
+
+The RHTI spec cite:[riscv-RHTI-spec-0.83, Trace State] added Trace State signal group *trcstate[1:0]* to replace the *halted* signal to provide additional conditions.  Extended values are:
+
+*10* Inhibiting trace for security reasons +
+*11* Unbounded wait - pausing trace for an unbounded amount of time (e.g. executing WFI or WFE instructions)
+
+These states, when they occur over the RHTI, generate the N-trace ProgTraceCorrelation Message which is emitted when the trace is disabled or stopped.  These additions are to the EVCODE field:
+
+*5* = Trace disabled for security reasons +
+*6* = Trace paused for an unbounded amount of time
+
+In addition, the *CDF* field includes a new value of *2*, for Event Trace, whose value means "do not generate the I-CNT or the HIST fields."

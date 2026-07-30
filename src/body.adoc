@@ -673,7 +673,7 @@ Note that a change in value will generate a trace-on or trace-off Event Trace pa
 |11
 |trTeEvtSContextPrivEn
 |0: don’t trace; 1: trace when Supervisor Context (CSR 0x5a8) is written to. +
-Note: Context writes are also enabled when the *trTeControl.trTeContext* bit is set (only mentioned here).
+Note: Context writes are also enabled when the *trTeControl.trTeContext* bit is set.
 |WARL
 |0
 

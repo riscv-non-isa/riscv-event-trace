@@ -3,7 +3,7 @@
 
 This file (Trace-Control-Extensions.adoc) defines the extensions required to the "RISC-V-Trace-Control-Interface.pdf" spec to support Event Trace.
 
-The Trace Control Interface spec, Table 4, has several reserved address ranges labeled "Reserved for future standard extension". Event Trace control registers starting point is an offset from the Trace Encoder base address. The Event Trace allocates and uses addresses *0x100-0x17F*. Thus *trTeEventBase = trBaseEncoder+0x100*.
+The Trace Control Interface spec, Table 4 cite:[riscv-trace-control-spec-1.0(Table 4)], has several reserved address ranges labeled "Reserved for future standard extension". The Event Trace fits into one of those and currently allocates and uses addresses *0x100-0x1A4*. Thus Event Trace control registers starting point is an offset from the Trace Encoder base address, i.e. *trTeEventBase = trBaseEncoder+0x100*.
 
 === Event Trace Control Register Mode Field
 

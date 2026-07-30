@@ -1,0 +1,13 @@
+== Sync Causes
+
+The purpose of a sync is to re-establish a Full Address of an executed instruction in the trace stream in order for the decoder to output a specific location in the code that has executed.
+Trace stream uses address compression to reduce the number of bits used to mark executed addresses.  A Relative Address is a reduced-size address and is based on the Full Address of a sync.
+
+
+[cols="20%,30%" options="header", width="100%"]
+|===
+|Reason |Description
+| Periodic Timer
+|Insert sync message with Full Address so decoder can output executed instruction address.  Subsequent Relative Addresses allow compressed addresses based on Full Address
+
+|===

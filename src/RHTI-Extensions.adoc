@@ -18,7 +18,7 @@ The following signal definition extends the section "Optional sideband signals",
 [cols="12%, 20%,~",options="header"]
 |===
 ^|*Signal* ^|*Group* ^|*Function*
-|*triggerID* 
+|*triggerID*
 | OR +
 ("Optional Replicated" which means replicated N time for a hart that can retire N instructions per cycle with a trigger match on any of those instructions)
 | 4-bit field that encodes the ID of the matching trigger, thus supports up to 16 triggers. +

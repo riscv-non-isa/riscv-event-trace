@@ -12,7 +12,7 @@
 * Trace can be set up to stop tracing on buffer full: *trRamControl.trRamStopOnWrap* = 1. When this occurs, Event Trace continues running, however no more trace messages are written to the trace buffer.
 * A self-hosted trace analysis program such as Linux _perf_ could control the starting and stopping of Event Trace.
 * Trace hardware supports on-the-fly switching between Event Trace and Instruction Trace. Memory-mapped (MMIO) hardware control registers allow a user program to change modes of trace so a trace recording can have both instruction trace messages intermixed with event trace messages. This feature allows the tracing of a portion of one program/process full execution while also tracing kernel-level events such as going in and out of kernel mode and running other processes.
-* Extension to the Instruction Trace message (for N-trace this is ProgTraceCorrelation message) will generate a disable trace message for two additional conditions: 
+* Extension to the Instruction Trace message (for N-trace this is ProgTraceCorrelation message) will generate a disable trace message for two additional conditions:
 ** Inhibiting trace for security reasons +
 ** Unbounded wait - pausing trace for an unbounded amount of time (e.g. executing WFI or WFE instructions)
 

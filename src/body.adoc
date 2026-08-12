@@ -184,7 +184,7 @@ Causes for Sync Disable: +
 |PC
 |cause
 |1
-|PC (C-Addr) is what is loaded into xepc (the address of the instruction that caused the exception), *cause* is what is loaded into the Exception Code field of xcause. cause signals are defined in Table 1 of RHTI spec cite:[riscv-RHTI-spec-0.83].
+|PC (C-Addr) is what is loaded into xepc (the address of the instruction that caused the exception), *cause* is what is loaded into the Exception Code field of xcause. cause signals are defined in the RHTI spec cite:[riscv-RHTI-spec-0.83(Table 1)].
 
 |*Interrupt*
 |PC
@@ -211,7 +211,7 @@ Generated when the source PC is filtered by privilege mode (but PCdest which is 
 === Function Events
 (((Event Types, function)))
 
-The following table lists the packet types to support function Calls and Returns, with different types and numbers of parameters.
+The following table lists the packet types to support function Calls and Returns, with different types and numbers of parameters. ITYPE details can be found in the RHTI spec cite:[riscv-RHTI-spec-0.83(Table 5)].
 
 .Event Trace Message Types for Calls and Returns
 [cols="15%,15%,15%,10%,~", options="header"]
@@ -233,15 +233,14 @@ The following table lists the packet types to support function Calls and Returns
 |*CALL_DEST*
 |------
 |dest (C-ADDR)
-|8
-|itype=8 means indirect (uninferrable) call or co-routine swap.
-Source function can be derived from trace history however src address (i.e. line # of caller) is unknown.
+|8 or 9
+|Source function can be derived from trace history however src address (i.e. line # of caller) is unknown. This call type is useful for capturing call stacks and decoded into a display such as a flame graph.
 
 |*CALL_PC*
 |PC (C-ADDR)
 |------
 |9
-|inferrable call so dest obtained from opcode if binary available
+|Inferrable call so dest obtained from opcode if binary available. This call type can be selected if the user wants to know the symbolic line number of the calling function.
 
 |*RET_FULL*
 |PC (C-ADDR)
@@ -262,7 +261,8 @@ Source function can be derived from trace history however src address (i.e. line
 |Function returned to is determined from history. If caller was CALL_PC (inferrable caller), decoder can determine return destination address from 2-byte or 4-byte opcode.
 |===
 
-If Calls/Returns are supported, Event Trace requires implementation of CALL_SYNC, CALL_FULL, and RET_FULL.  CALL_DEST and CALL_PC are useful for reducing bandwidth.  RET_DEST and RET are also useful for reducing bandwidth.
+If Calls/Returns are supported, Event Trace requires implementation of CALL_SYNC, CALL_FULL, and RET_FULL. +
+CALL_DEST, CALL_PC, RET_DEST and RET are useful for reducing bandwidth.
 
 === Context + Privilege Level Events
 (((Event Types, context and privilege level)))
@@ -279,11 +279,11 @@ Instruction Trace already has the capability to trace changes in context ID and 
 === Debug Trigger/Watchpoint Events
 (((Event Types, Debug trigger/watchpoint)))
 
-A Debug Module can (and most often does) include a Trigger Module cite:[riscv-debug-spec-1.0(Sdtrig)] - hardware which matches on core conditions such as instruction address, data address, data value, privilege mode, context ID, etc. The Trigger Module can be programmed to generate an action called *Trace-notify* cite:[riscv-debug-spec-1.0(Tb. 12)] using the value 4 for the 4-bit action field which is then routed to the RHTI cite:[riscv-RHTI-spec-0.83] defined *trigger +[2]+* signal. Refer to <<Trigger/Watchpoint ID>> section for details.
+A Debug Module can (and most often does) include a Trigger Module cite:[riscv-debug-spec-1.0(Sdtrig)] - hardware which matches on core conditions such as instruction address, data address, data value, privilege mode, context ID, etc. The Trigger Module can be programmed to generate an action called *Trace-notify* cite:[riscv-debug-spec-1.0(Table. 12)] using the value 4 for the 4-bit action field which is then routed to the RHTI cite:[riscv-RHTI-spec-0.83(Table 8, 10)] defined *trigger +[2]+* signal. Refer to <<Trigger/Watchpoint ID>> section for details.
 
 For Event Trace, the *Trace-notify* action, when programmed by the user and enabled in Event Trace, results in a packet packet output that includes the PC of the instruction that hit the trigger/watchpoint and a timestamp, plus PPCs if enabled. Thus Event Trace will record these Debug Triggers, and depending on the specific implementation of hardware debug triggers, can be amarker for instruction address/addresses executed or when certain data addresses have been accessed.
 
-The RHTI Extensions section <<Trigger/Watchpoint ID>> defines the *triggerID* signals for identifying which programmed trigger/watchpoint condition was met. The *triggerID* value will be included in the trace packet to identify which trigger/watchpoint caused the trace event.
+The RHTI Extensions Chapter <<Trigger/Watchpoint ID>> defines the *triggerID* signals for identifying which programmed trigger/watchpoint condition was met. The *triggerID* value will be included in the trace packet to identify which trigger/watchpoint caused the trace event.
 
 NOTE: If the triggerID is not provided, trace decoder software may be able to identify and fill in the triggerID in the trace output.  This first requires saving the trigger comparator setup for each trigger - primarily the execution or data address comparison value. The trace decoder, with this information, can then match the recorded PC in the trace packet to the list of programmed trigger values and fill in the triggerID.
 
@@ -460,7 +460,7 @@ The counter is defined to be 24 bits (increments-of-6 work best for N-Trace cite
 
 Most Trace Encoders will include a FIFO for buffering trace events and to smooth out bursts of trace recordings that can occur at higher rates than the back-end rate of streaming trace packets to memory or PIB (probe interface block). Most FIFOs have a buffer depth signal indicating when it is close to full. This indicator, here labeled *FIFO_AF* (almost full), can act as a back-pressure signal to the Event Trace hardware to temporarily stop the generation of trace packets.
 
-This is a front-end throttle to prevent the Trace Encoder FIFO from filling up and using the Encoder back-end to stop tracing (which generates an error packet when tracing is resumed). The lockout affects all external inputs to the encoder (when enabled) including Debug trigger/watchpoints <<Debug-Trigger-Watchpoint-Events>>, User Defineable Signals <<User-Definable-Signal-Events>>, External Signals (triggers) <<External-Signal-Events>>, and Performance Counter selectors <<Performance-Counter-Selector-Based-Events>>. The control register to enable or disable this feedback mechanism is <<EventLockout>>.
+This is a front-end throttle to prevent the Trace Encoder FIFO from filling up and using the Encoder back-end to stop tracing (which generates an error packet when tracing is resumed). The lockout affects all external inputs to the encoder (when enabled) including Debug trigger/watchpoints <<Debug-Trigger-Watchpoint-Events>>, User Definable Signals <<User-Definable-Signal-Events>>, External Signals (triggers) <<External-Signal-Events>>, and Performance Counter selectors <<Performance-Counter-Selector-Based-Events>>. The control register to enable or disable this feedback mechanism is <<EventLockout>>.
 
 == Profiling Performance Counters (PPCs)
 (((Profiling Performance Counters, description)))
@@ -632,7 +632,7 @@ Note that a change in value will generate a trace-on or trace-off Event Trace pa
 |trTeEvtCallMode
 |0: use messages that include both source and destination addresses for calls (CALL_SYNC, CALL_FULL). These generate more bytes (than modes 1, 2), however the decoder can determine the symbolic line # where calls are made and returned to without requiring a binary image. (Required if Call/Ret implemented) +
 1: Generate CALL_DEST for both direct and indirect calls. +
-2: least bandwidth: use CALL_DEST for indirect calls, CALL_PC for direct (inferrable) calls. Most aggressive on saving bandwidth +
+2: least bandwidth: uses CALL_DEST for indirect calls, CALL_PC for direct (inferrable) calls. Most aggressive on saving bandwidth +
 3: reserved
 |WARL
 |0
@@ -641,7 +641,7 @@ Note that a change in value will generate a trace-on or trace-off Event Trace pa
 |trTeEvtRetMode
 |0: use messages that include both source and destination addresses for returns (RET_FULL). These generate more bytes (than modes 1, 2), however the decoder can determine the symbolic line # where return is made and returned to without requiring a binary image. (Required if Call/Ret implemented) +
 1: generate RET_DEST for returns. +
-2: least bandwidth: use RET with no addresses when return address matches the call, otherwise RET_DEST. +
+2: least bandwidth: uses RET with no addresses when return address matches the call, otherwise RET_DEST. +
 3: reserved
 |WARL
 |0

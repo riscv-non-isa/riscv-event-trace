@@ -11,13 +11,29 @@ RHTI signals (defined in spec): +
 * trcstate[] +
 * trigger[] +
 * cause[] +
+* priv[] +
+* context[] +
 * itype[]
 
+.Table of Rules
+[cols="50%,50%", options="header"]
+|===
+^|Rule ^|Action
+
+|If a PC is filtered out or blocked by security
+|The PC can either be omitted from the trace packet or the address set to 0.
+
+|*trTeInstSyncMax* defines a periodic count of packets, clock cycles, or instructions counted (depending on trTeInstSyncMode) before a synchronization message or F-ADDR should be generated.
+|When this condition is reached, this document is calling this a *sync_needed* flag.  The next packet outputting a PC is required to output it as an F-ADDR and reset the *sync_needed* flag.
+
+|===
+
+.Event Types (non-function) and Message Contents
 [cols="15%,22%,22%,22%,18", options="header"]
 |===
 ^|Event ^|Transition ^| Output1 ^| Output2 ^|Output3
 
-.4+|*Sync* t-on
+.4+|*Sync* trace-on
 | * Exit from Reset (opt)
 | * F-ADDR of PC of first instruction
 | PRIVILEGE mode +
@@ -38,13 +54,13 @@ contextID (opt)
 | *trace-on* from +
 * PRIV or ContextID filter +
 * SW writes to trTeControl bits +
-* RHTI signals via trigger[] (opt)
+* trace-on trigger[] signal (opt)
 | F-ADDR of PC of instruction responsible for trace-on +
 | PRIVILEGE mode +
 contextID (opt)
 |
 
-.4+|*Sync* t-off
+.4+|*Sync* trace-off
 |* Enter debug mode - trcstate=01 +
 |F-ADDR of PC = address loaded into depc (but has not executed) +
 |Cause code
@@ -63,32 +79,32 @@ contextID (opt)
 |*Trace off* +
 * PRIV or ContextID filter +
 * SW writes to trTeControl bits +
-* RHTI trigger[] signals (opt)
-|* F-ADDR of PC of instruction responsible for trace-off +
+* Trace-off trigger[] signals (opt)
+|F-ADDR of PC of instruction responsible for trace-off +
 | Cause code
 |
 
 |Exception
 |
-|PC (R-ADDR) is what is loaded into xepc (the address of the
-instruction that caused the exception)
+|PC (opt) is what is loaded into xepc (the address of the
+instruction that caused the exception). +
+if *sync_needed*, PC is F-ADDR else R-ADDR.
 |cause[] is what is loaded into the Exception Code field of xcause
-|
+|PRIVILEGE mode when PRIV value has changed
 
 |Interrupt
 |
-|PC (R-ADDR) is what is loaded into xepc (address of next instruction after return from trap)
+|PC (opt) is what is loaded into xepc; the address of instruction that would have executed next if interrupt hadn't occurred, i.e. next instruction to be executed after returning from trap. +
+if *sync_needed*, PC is F-ADDR else R-ADDR.
 |cause[] is what is loaded into the Exception Code field of xcause
-|
+|PRIVILEGE mode when PRIV value has changed
 
 |Return from trap
 |Return from exception or interrupt (MRET or SRET)
-|PC (R-ADDR) is addr of MRET or SRET
-|PCdest (R-ADDR) (opt) is addr of instruction to begin executing after trap
+|PC (opt) is address of MRET or SRET. +
+if *sync_needed*, PC is F-ADDR else R-ADDR.
+|PCdest (R-ADDR) (opt) is address of instruction to begin executing after trap
 |PRIVILEGE mode +
 contextID (opt)
-
-
-
 
 |===

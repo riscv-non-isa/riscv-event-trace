@@ -1,4 +1,4 @@
-//7-31-26 6:30am
+//8-12-26 3am
 
 [[body]]
 == Features
@@ -298,11 +298,11 @@ Signals are developer-defined, normally from the core, that are routed to the RH
 
 For the *Periodic PC sampling* event type, a programmable counter runs until it expires which generates a trace packet with the most recent retired PC and timestamp then is preloaded with the count and counts down again.  This allows for periodic PC sampling of the executing code to provide an execution profile over time.  Note that with the inclusion of profiling performance counters (PPCs), this trace mode provides details of program conditions accumulated at the sample addresses.
 
-While Instruction Trace provides a counter for periodic sampling, its range does not the best match for Event Trace.  Therefore Event Trace will provide its own counter for periodic PC sampling. It uses the same powers-of-2 (exponential) sample count, with a count of *2^(<value>+6*). With a 4-bit <value> selection field (0 to 15), the range extends from 2^6 to 2^21, or 64 counts to 2 million counts. Assuming counts = cpu cycles, the range is 64 cycles (64ns at 1GHz) to 2 million cycles (2ms at 1GHz) which is practical for sampling code execution.
+While Instruction Trace provides a counter for periodic sampling, its range of values does not provide a good match for needs of Event Trace.  Therefore Event Trace will provide its own counter for periodic PC sampling. It uses the same powers-of-2 (exponential) sample count, with a count of *2^(<value>+6*). With a 4-bit <value> selection field (0 to 15), the range extends from 2^6 to 2^21, or 64 counts to 2 million counts. Assuming counts = cpu cycles, the range is 64 cycles (64ns at 1GHz) to 2 million cycles (2ms at 1GHz) which is practical for sampling code execution.
 
 *Randomizing PC sampling*. To avoid aliasing of the periodic PC sampling of a repeating code execution pattern, hardware can randomize the sampling interval by including an additional random count after the powers-of-2 count has counted down.  One method is to use a linear feedback shift register (LFSR) to generate a pseudo-random number which is used to pre-load a final count-down counter.
 
-The number of randomizing bits, i.e. width of the LFSR is developer-selected. (Six is practical).  Note that for shorter intervals the randomizing has a larger percentage effect on the interval than for longer interval durations.
+The number of randomizing bits, i.e. width of the LFSR is developer-selected. (Six is practical).  Note that for shorter intervals the randomizing has a larger percentage effect on the delta interval than for longer interval durations.
 
 [#External-Signal-Events]
 === External Signal Events

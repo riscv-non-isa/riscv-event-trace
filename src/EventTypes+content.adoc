@@ -5,9 +5,9 @@ NOTE: Tracing uses address compression to reduce the number of bits used to mark
 
 NOTE: One purpose of a Sync is to re-establish a Full Address of an executed instruction in the trace stream in order for the decoder to properly determine the location of the next executed instruction. In most cases it also requires tracing the current Privilege level, and in some cases, tracing the current Context ID for the decoder to determine the process or task that is executing.
 
-Note: Context and Context ID are used interchangably in this document.
+Note: Context and Context ID are used interchangeably in this document.
 
-Definition: *CauseID*, value traced identifying the cause of a Trace-on (Sync) or Trace-off event. The Trace Decoder uses it to label the cause of the message. This document assigns ID values; these can be different between E-Trace and N-Trace. 
+Definition: *CauseID*: traced value identifying the cause of a Trace-on (Sync) or Trace-off event. The Trace Decoder uses it to label the cause of the message. This document assigns ID values; these can be different between E-Trace and N-Trace. 
 
 RHTI signals (defined in spec): +
 * trcstate[] +
@@ -39,7 +39,7 @@ NOTE: For exceptions and interrupts, Event Trace deems it important to capture t
 * Security Filter exit +
 * Unbounded Wait exit +
 * any other filter-off transition + +
-* first PC output when *sync_needed* flag is set
+* first retired instruction whose PC is output when *sync_needed* flag is set
 
 |===
 
@@ -50,7 +50,7 @@ Annotations: +
 
 
 .Event Types (non-function) and Message Contents
-[cols="15%,22%,22%,22%,18", options="header"]
+[cols="15%,23%,22%,22%,18%", options="header"]
 |===
 ^|Event ^|Cause ^| Output1 ^| Output2 ^|Output3
 
@@ -61,7 +61,7 @@ Annotations: +
 | PRIVILEGE mode, +
 Context ID (rec)
 
-|* Exit from Debug +
+|* Exit from Debug Mode +
 (trcstate transition from 01 to 00)
 | CauseID=4
 | PC of first instruction after leaving debug (rec)
@@ -71,7 +71,7 @@ Context ID (rec)
 |* Exit from Security Filter +
 (trcstate transition from 10 to 00)
 | CauseID=0
-| PC of first retired instruction after leaving security Filter
+| PC of first retired instruction after leaving Security Filter
 | PRIVILEGE mode, +
 Context ID (rec)
 
@@ -100,13 +100,13 @@ Context ID (rec)
 | CauseID=7
 |
 
-|* Enter debug mode +
+|* Enter Debug Mode +
 (trcstate=01)
 |PC = address loaded into depc (but has not executed)
 | CauseID=5
 |
 
-|* Security Filter-on +
+|* Entry into Security Filter +
 (trcstate=10)
 |PC = last retired instruction before entering Security Filter
 | CauseID=1
@@ -119,7 +119,7 @@ Context ID (rec)
 |
 
 |* Address, PRIV, or Context ID Filter-on
-| PC = last retired instruction before filter-off-to-on transition
+| PC = last retired instruction before Filter-off to Filter-on transition
 | CauseID=9
 |
 
@@ -130,13 +130,13 @@ Context ID (rec)
 
 |Exception
 |Synchronous Faults, Traps, System Calls
-|PC is what is loaded into xepc, i.e. the address of the instruction that caused the exception (rec)
+|PC is value loaded into xepc, i.e. the address of the instruction that caused the exception (rec)
 |cause[] is what is loaded into the Exception Code field of xcause
 |PRIVILEGE mode; optimally only when PRIV value has changed
 
 |Interrupt
 |Asynchronous
-|PC is what is loaded into xepc, i.e. the address of the instruction that would have executed next if interrupt hadn't occurred. (Returning from trap will resume execution at this address) (rec).
+|PC is value loaded into xepc, i.e. the address of the instruction that would have executed next if interrupt had not occurred. (Returning from trap will resume execution at this address) (rec).
 |cause[] is what is loaded into the Exception Code field of xcause
 |PRIVILEGE mode; optimally only when PRIV value has changed
 

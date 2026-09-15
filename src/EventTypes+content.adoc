@@ -1,142 +1,180 @@
-// 8-13-26 5am
+// 9-15-26 3am
 == Event Types and Message Contents
 
 NOTE: Tracing uses address compression to reduce the number of bits used to mark executed addresses.  A non-compressed address is referred to as a Full Address, or *F-ADDR*. A Relative Address, or *R-ADDR* is a reduced-width address and as the name implies, is relative to and calculated from previous Full Addresses.
 
-NOTE: One purpose of a Sync is to re-establish a Full Address of an executed instruction in the trace stream in order for the decoder to properly determine the location of the next executed instruction. In most cases it also requires tracing the current Privilege level, and in some cases, tracing the current ContextID for the decoder to determine the process or task that is executing.
+NOTE: One purpose of a Sync is to re-establish a Full Address of an executed instruction in the trace stream in order for the decoder to properly determine the location of the next executed instruction. In most cases it also requires tracing the current Privilege level, and in some cases, tracing the current Context ID for the decoder to determine the process or task that is executing.
 
-Annotations: +
-(opt) = implementation is optional +
+Note: Context and Context ID are used interchangeably in this document.
 
-Definition: *CauseID*, value traced identifying the cause of a Sync event. The Trace Decoder uses it to label the cause of the Sync message.
+Definition: *CauseID*: traced value identifying the cause of a Trace-on (Sync) or Trace-off event. The Trace Decoder uses it to label the cause of the message. This document uses symbolinc names for ID values; actual assigned values can be different between E-Trace and N-Trace. 
 
-RHTI signals (defined in spec): +
+RHTI signals referenced in this spec: +
 * trcstate[] +
 * trigger[] +
 * cause[] +
 * priv[] +
-* context[]
+* context[] +
+* iaddr[] +
+* iretire[]
 
-.Table of Rules
-[cols="50%,50%", options="header"]
+NOTE: For exceptions and interrupts (itype=1 and 2 respectively), Event Trace deems it important to capture the xepc return address value. This was implemented in a pre-existing Event Trace implementation. +
+The method: `xepc = iaddr + iretire`, when itype=1 or 2 +
+where `iretire` is the "number of halfwords represented by instructions retired in this block". +
+Note that there are exception cases where no instruction is retired, where iretire=0.
+
+*NR* - Not Required
+
+.List of Rules
+[cols="50%", options="header"]
 |===
-^|Rule ^|Action
+^|Rules
+a|* When an event trace packet that contains an instruction address is emitted, that address must be output in F-ADDR format if it is the first packet containing an address emitted after:
+- enabling trace
+- previously indicating trace has ended
+- trcstate transitions to zero (debug exit, security filter exit, unbounded Wait exit)
+- the resync timer has expired
 
-|If a PC is filtered out or blocked by security
-|The PC can either be omitted from the trace packet or the address set to 0. The trace decoder is responsible for interpreting address 0 as "unknown" or "filtered".
-
-|*trTeInstSyncMax* defines a periodic count of packets, clock cycles, or instructions counted (depending on trTeInstSyncMode) before a synchronization F-ADDR PC message should be generated.
-|When this condition is reached, hardware asserts a *sync_needed* flag, defined in this specification.  The next packet outputting a PC is required to output it as an F-ADDR and reset the *sync_needed* flag.
-
-|PC is output as an F-ADDR on these conditions +
-(and if filtered out or blocked by security, a value of 0)
-|* first retired instruction after Sync trace-on event (see list below). These include: +
-* reset (opt)+
-* debug exit +
-* Security Filter exit +
-* Unbounded Wait exit +
-* any other filter-off transition + +
-* first PC output when *sync_needed* flag is set +
-* Last retired instruction prior to an exception (opt)
+a|* If a PC is filtered out or blocked by security, +
+- the PC can either be omitted from a trace packet or the address set to 0 in a packet that includes the address. The trace decoder is responsible for interpreting address 0 as "unknown" or "excluded".
 
 |===
+
+
+NOTE: *resync timer* A periodic count is defined by *trTeInstSyncMax* and the value of trTeInstSyncMode value counts by packets, clock cycles, or instructions before a synchronization F-ADDR PC message is required. +
+When the count-down condition is reached, hardware asserts a *sync_needed* flag (defined in this specification).  The next packet output requires the PC be an F-ADDR then *sync_needed* flag is reset.
+
+
+
 
 .Event Types (non-function) and Message Contents
-[cols="15%,22%,22%,22%,18", options="header"]
+[cols="15%,35%,~", options="header"]
 |===
-^|Event ^|Cause ^| Output1 ^| Output2 ^|Output3
+^|Event ^|Cause ^| Outputs
 
-.6+|*Sync* trace-on
-| * Exit from Reset (opt)
-| * PC of first instruction
-| PRIVILEGE mode +
-contextID (opt)
-|CauseID=6
+.6+|Trace-on (Sync)
+|* Exit from Reset
+| CauseID=EXIT_RESET +
+ PC of first instruction (NR) +
+ PRIVILEGE mode, +
+Context ID (NR)
 
-|* Exit from Debug +
+|* Exit from Debug Mode +
 (trcstate transition from 01 to 00)
-| PC of first instruction after leaving debug
-| PRIVILEGE mode +
-contextID (opt)
-|CauseID=4
+| CauseID=EXIT_DEBUG +
+ PC of first instruction after leaving debug (NR) +
+ PRIVILEGE mode, +
+Context ID (NR)
 
 |* Exit from Security Filter +
 (trcstate transition from 10 to 00)
-| PC of first retired instruction after leaving security Filter
-| PRIVILEGE mode +
-contextID (opt)
-|CauseID=0
+| CauseID=EXIT_SECURITY +
+ PC of first retired instruction after leaving Security Filter (NR) +
+ PRIVILEGE mode, +
+Context ID (NR)
 
 |* Exit from Unbounded Wait +
 (trcstate transition from 11 to 00)
-| PC of first retired instruction after leaving Unbounded Wait
-| PRIVILEGE mode +
-contextID (opt)
-|CauseID=2
+| CauseID=EXIT_UNBOUNDED_WAIT +
+ PC of first retired instruction after leaving Unbounded Wait (NR) +
+ PRIVILEGE mode, +
+Context ID (NR)
 
-|Address, PRIV, or ContextID Filter-Off
-| PC of first retired instruction after filter-on-to-off  transition +
-| PRIVILEGE mode +
-contextID (opt)
-|CauseID=8
+|Address, PRIV, or Context ID unfiltered
+| CauseID=TRACE_ON_UNFILTERED +
+ PC of first retired instruction after filtered-to-unfiltered  transition (NR) +
+ PRIVILEGE mode, +
+Context ID (NR)
 
-|trace-on from trigger[] signal (opt), SW writes to trTeControl bits, other
-| PC of first retired instruction after trace-on transition
-| PRIVILEGE mode +
-contextID (opt)
-|CauseID=10
+|trace-on from trigger[] signal, SW writes to trTeControl bits, other
+| CauseID=TRACE_ON_TRIGGER +
+ PC of first retired instruction after trace-on transition (NR) +
+ PRIVILEGE mode, +
+Context ID (NR)
 
-.6+|*Sync* trace-off
-|* Enter Reset (opt)
-|PC = last instruction to execute before reset 
-|CauseID=7
-|
+.6+|Trace-off
+|* Enter Reset
+| CauseID=ENTER_RESET +
+PC = last instruction to execute before reset (NR) 
 
-|* Enter debug mode +
+|* Enter Debug Mode +
 (trcstate=01)
-|PC = address loaded into depc (but has not executed)
-|CauseID=5
-|
+| CauseID=ENTER_DEBUG +
+PC = address loaded into depc (but has not executed) (NR)
 
-|* Security Filter-on +
+|* Entry into Security Filter +
 (trcstate=10)
-|PC = last retired instruction before entering Security Filter (opt)
-|CauseID=1
-|
+| CauseID=ENTER_SECURITY +
+PC = last retired instruction before entering Security Filter (NR)
 
 |* Unbounded Wait +
 (trcstate=11)
-|PC = address of instruction such as WFI or WRS.NTO
-|CauseID=3
-|
+| CauseID=ENTER_UNBOUNDED_WAIT +
+PC = address of instruction such as WFI or WRS.NTO (NR)
 
-|*Address, PRIV, or ContextID Filter-on
-| PC = last retired instruction before filter-off-to-on transition (opt)
-|CauseID=9
-|
+|* Address, PRIV, or Context ID Filtered
+| CauseID=TRACE_OFF_FILTERED +
+ PC = last retired instruction before unfiltered-to-filtered transition (NR)
 
-|trace-off from trigger[] signal (opt), SW writes to trTeControl bits, other
-| PC of last retired instruction before trace-off transition (opt)
-|CauseID=11
-|
+|* trace-off from trigger[] signal, SW writes to trTeControl bits, other
+| CauseID=TRACE_OFF_TRIGGER +
+ PC of last retired instruction before trace-off transition (NR)
 
 |Exception
 |Synchronous Faults, Traps, System Calls
-|PC is the last retired instruction before the exception (opt).
-|cause[] is what is loaded into the Exception Code field of xcause
-|PRIVILEGE mode; optimally only when PRIV value has changed
+|PC is the address of the instruction that incurred the exception, i.e. xepc which equals iaddr[]+iretire[] (NR) +
+cause[] is what is loaded into the Exception Code field of xcause +
+PRIVILEGE mode; optimally, only when PRIV value has changed
 
 |Interrupt
 |Asynchronous
-|PC is what is loaded into xepc, i.e. the address of the instruction that would have executed next if interrupt hadn't occurred. Returning from trap will resume execution at this address (opt).
-|cause[] is what is loaded into the Exception Code field of xcause
-|PRIVILEGE mode; optimally only when PRIV value has changed
+|PC is the address of the last retired instruction before the interrupt was taken (iaddr[]) (NR) +
+ (Returning from trap will resume execution at the next instruction after this PC, unless modified by OS). +
+cause[] is what is loaded into the Exception Code field of xcause +
+PRIVILEGE mode; optimally only when PRIV value has changed
 
 |Return from trap
 |Return from exception or interrupt (MRET or SRET executed)
-|PC (opt) is address of MRET or SRET. +
-|PCdest (R-ADDR) (opt) is address of instruction to begin executing after trap
-|PRIVILEGE mode +
-contextID (opt)
+|PCdest (R-ADDR) is address of instruction to begin execution after trap +
+PRIVILEGE mode +
+Context ID (NR)
 
 |===
+
+////
+values assigned to CauseID
+0 - EXIT_SECURITY
+1 - ENTER_SECURITY
+2 - EXIT_UNBOUND_WAIT
+3 - ENTER_UNBOUND_WAIT
+4 - EXIT_DEBUG
+5 - ENTER_DEBUG
+6 - EXIT_RESET
+7 - ENTER_RESET
+8 - TRACE_OFF_FILTERED
+9 - TRACE_ON_UNFILTERED
+10 - TRACE_ON_TRIGGER
+11 - TRACE_OFF_TRIGGER
+////
+
+NOTE: Regarding the Event Trace decoder, for an Exception or Interrupt, if the user wants to view the instruction that caused the Exception, or the instruction that was interrupted from, the decoder will have to take the PC value recorded from the Exception or Interrupt, disassemble that instruction and from it, determine the next instruction executed.  For sequential instructions, the next instruction is the one after the Exception or Interrupt PC.  For an inferrable jump, the address of the next instruction is determined from the opcode.  For a conditional branch or uninferrable call, jump or return, the next instruction is not determinable. +
+ +
+If, however, the Return from Trap event is enabled, the decoder can use the PCdest value to determine the next instruction executed after the Exception or Interrupt, regardless of the opcode type.
+
+
+
+=== Control bits for enabling Trace-on and Trace-off events
+
+Each of the Trace-on (Sync) and Trace-off events in the table above can be enabled or disabled at run-time with control bits. There are separate bits for Trace-on and Trace-off transitions, and two GROUPs of type categories, for a total of 4 control bits. The groups are: +
+GROUP1: Reset, Debug, Security Filter, and Unbounded Wait, the last three of which are trcstate[1:0] transitions, and +
+GROUP2: Address, Privilege, or Context ID filtered/unfiltered, and Trace-on/off triggers.
+
+Bits: +
+
+* 0: GROUP1_ENTER (Trace-off) +
+* 1: GROUP1_EXIT (Trace-on) +
+* 2: GROUP2_ENTER (Trace-off) +
+* 3: GROUP2_EXIT (Trace-on)
+
+
+Read-only implementation bits will be defined for GROUP1 and 2 in the *trTeEvtFeatures* (later in this document) and the 4 Enable bits in the *trTeEvtControl* register. 

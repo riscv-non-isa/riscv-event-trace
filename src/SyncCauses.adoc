@@ -1,9 +1,0 @@
-== Sync Causes
-
-[cols="20%,30%" options="header", width="100%"]
-|===
-|Reason |Description
-| Periodic Timer
-|Insert sync message with Full Address so decoder can output executed instruction address.  Subsequent Relative Addresses allow compressed addresses based on Full Address
-
-|===

@@ -1,5 +1,7 @@
 /build/*
 /images/*
+/pdf/*
+/pdfs/*
 pdfs/riscv-event-trace(4-7-26).pdf
 pdfs/riscv-event-trace(4-17-26).pdf
 pdfs/riscv-event-trace(4-28-26).pdf
@@ -17,6 +19,3 @@ pdf/riscv-event-trace(6-16-26).pdf
 pdf/riscv-event-trace(6-19-26).pdf
 pdf/riscv-event-trace(6-26-26).pdf
 pdf/riscv-event-trace(7-7-26).pdf
-src/src.code-workspace
-src/src.code-workspace
-pdf/riscv-event-trace(7-31-26).pdf

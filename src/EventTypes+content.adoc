@@ -1,4 +1,5 @@
-// 9-16-26 2am  
+// 9-16-26 2am 
+//
 == Event Types and Message Contents
 
 NOTE: Tracing uses address compression to reduce the number of bits used to mark executed addresses.  A non-compressed address is referred to as a Full Address, or *F-ADDR*. A Relative Address, or *R-ADDR* is a reduced-width address and as the name implies, is relative to and calculated from previous Full Addresses.

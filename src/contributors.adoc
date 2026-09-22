@@ -4,4 +4,5 @@ This RISC-V specification has been contributed to directly or indirectly by:
 
 [%hardbreaks]
 * Bruce Ableidinger <bableidinger@mips.com>
+* Iain Robertson <iain.robertson@siemens.com>
 * Robert Chyla (robert.chyla@globalfoundries.com)

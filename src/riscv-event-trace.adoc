@@ -1,7 +1,7 @@
 = RISC-V Event Trace Specification
-Authors: Bruce Ableidinger, GlobalFoundries/MIPS +
-Iain Robertson, Tessent/Siemens EDA +
-Robert Chyla, GlobalFoundries/MIPS
+Authors: Bruce Ableidinger, GlobalFoundries/MIPS
+//Iain Robertson, Tessent/Siemens EDA
+//Robert Chyla, GlobalFoundries/MIPS
 include::../docs-resources/global-config.adoc[]
 :docgroup: RISC-V Event Trace Task Group
 :description: RISC-V Event Trace Specification

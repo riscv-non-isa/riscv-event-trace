@@ -1,4 +1,4 @@
-//8-12-26 3am
+//10-6-26 4am
 
 [[body]]
 == Features
@@ -56,11 +56,11 @@ itype = 8 (indirect call), 9 (direct call), 12 (co-routine swap), 13 (return)
 
 |*Debug triggers/watchpoints*
 (((Event Types, Debug trigger/watchpoints)))
-|Records PC of instruction that hit the trigger (or close to it depending on the type of trigger set), plus trigger ID and timestamp.  Triggers and their comparison conditions are optional; they can include instruction retired at a specific address or range of addresses, data address read or write or access, data value, privilege mode, scontext, or other trigger conditions. Reference: cite:[riscv-debug-spec-1.0(Sdtrig)].
+|Records PC of instruction that hit the trigger (or close to it depending on the type of trigger set), plus trigger ID and timestamp.  Triggers and their comparison conditions are (Optional); they can include instruction retired at a specific address or range of addresses, data address read or write or access, data value, privilege mode, scontext, or other trigger conditions. Reference: cite:[riscv-debug-spec-1.0(Sdtrig)].
 
 |*User Definable Signal Events*
 |Records latest retired PC when one or more user-definable signals are asserted. <<User-Definable-Signal-Events>>.
-*Signals* are developer-defined, normally from the core, that are routed to the RHTI impdef[] (implementation-defined) bit array cite:[riscv-RHTI-spec-0.83(Optional sideband signals)]. This feature provides a means to customize Event Trace to mark where and when the processor was executing when any of the signals are asserted. The trace packet includes all the signal values when any one goes true.
+*Signals* are developer-defined, normally from the core, that are routed to the RHTI *impdef* (implementation-defined) bit array cite:[riscv-RHTI-spec-0.83((Optional) sideband signals)]. This feature provides a means to customize Event Trace to mark where and when the processor was executing when any of the signals are asserted. The trace packet includes all the signal values when any one goes true.
 
 |*Periodic PC Sampling*
 (((Event Types, Periodic PC Sampling)))
@@ -77,9 +77,9 @@ itype = 8 (indirect call), 9 (direct call), 12 (co-routine swap), 13 (return)
 
 === Timestamp
 (((Event Trace, Timestamp)))
-The *Event Trace Timestamp* is the same timestamp timer used by Instruction Trace. It is a continuous running count-up counter (not a delta timer).  As the RISC-V-Trace-Control-Interface specification describes in detail, there are optional sources for the timestamp: 1) External, 2) Internal System, 3) Internal Core, and 4) Shared.
+The *Event Trace Timestamp* is the same timestamp timer used by Instruction Trace. It is a continuous running count-up counter (not a delta timer).  As the RISC-V-Trace-Control-Interface specification describes in detail, there are (Optional) sources for the timestamp: 1) External, 2) Internal System, 3) Internal Core, and 4) Shared.
 
-If the (optional) Timestamp Unit is included in the Instruction Trace, then:
+If the (Optional) Timestamp Unit is included in the Instruction Trace, then:
 
 * *Timestamp enable*: must be enabled by setting *trTsControl.trTsActive*, *trTsControl.trTsEnable*, and started by setting *trTsControl.trTsCount*.
 
@@ -103,7 +103,7 @@ image::../../images/EVT_block_2.svg[Event Trace Block Diagram,width=90%]
 === Features and Benefits (non-normative)
 (((Event Trace, features and benefits)))
 
-All Event Trace features are optional, however, the minimal set of event types recommended are: call/returns, interrupts, exceptions and context ID + privilege level.
+All Event Trace features are (Optional), however, the minimal set of event types recommended are: call/returns, interrupts, exceptions and context ID + privilege level.
 
 .Event Trace Features and Benefits
 [%autowidth]
@@ -153,18 +153,16 @@ NOTE: One purpose of a Sync is to re-establish a Full Address of an executed ins
 
 Note: Context and Context ID are used interchangeably in this document.
 
-Definition: *CauseID*: traced value identifying the cause of a Trace-on (Sync) or Trace-off event. The Trace Decoder uses it to label the cause of the message. This document uses symbolinc names for ID values; actual assigned values can be different between E-Trace and N-Trace. 
+Definition: *CauseID*: traced value identifying the cause of a Trace-on (Sync) or Trace-off event. The Trace Decoder uses it to label the cause of the message. This document uses symbolic names for ID values; actual assigned values can be different between E-Trace and N-Trace. 
 
-RHTI signals referenced in this spec: +
-* trcstate[] +
-* trigger[] +
-* cause[] +
-* priv[] +
-* context[] +
-* iaddr[] +
-* iretire[]
-
-*NR* - Not Required
+RHTI signals referenced in this section: +
+* trcstate +
+* trigger +
+* cause +
+* priv +
+* context +
+* iaddr +
+* iretire
 
 .List of Rules
 [cols="50%", options="header"]
@@ -173,11 +171,12 @@ RHTI signals referenced in this spec: +
 a|* When an event trace packet that contains an instruction address is emitted, that address must be output in F-ADDR format if it is the first packet containing an address emitted after:
 - enabling trace
 - previously indicating trace has ended
-- trcstate transitions to zero (from debug exit, security filter exit, unbounded Wait exit)
+- *trcstate* transitions to zero (from non-zero values of debug exit, security filter exit, unbounded Wait exit)
 - the resync timer has expired
 
-a|* If a PC is filtered out or blocked by security, +
-- the PC can either be omitted from a trace packet or the address set to 0 in a packet that includes the address. The trace decoder is responsible for interpreting address 0 as "unknown" or "excluded".
+a|* While *trcstate*=2'b10 meaning "inhibit trace for security reasons", no trace messages are recorded. 
+
+a|* If there is a case of a message with two PC addresses with one valid PC and one filtered out or blocked by security (e.g. jump or call), the PC blocked by security or filter can either be omitted from a trace packet (if one exists) or set to 0. The trace decoder is responsible for interpreting address 0 as "unknown" or "excluded".
 
 |===
 
@@ -192,106 +191,106 @@ When the count-down condition is reached, hardware asserts a *sync_needed* flag 
 .6+|Trace-on (Sync)
 |* Exit from Reset
 | CauseID=EXIT_RESET +
- PC of first instruction (NR) +
  PRIVILEGE mode, +
-Context ID (NR)
+Context ID (Optional) +
+PC of first instruction (Optional) +
 
 |* Exit from Debug Mode +
-(trcstate transition from 01 to 00)
+( *trcstate* transition from 2'b01 to 2'b00)
 | CauseID=EXIT_DEBUG +
- PC of first instruction after leaving debug (NR) +
  PRIVILEGE mode, +
-Context ID (NR)
+Context ID (Optional) +
+ PC of first instruction after leaving debug (Optional)
 
 |* Exit from Security Filter +
-(trcstate transition from 10 to 00)
+( *trcstate* transition from 2'b10 to 2'b00)
 | CauseID=EXIT_SECURITY +
- PC of first retired instruction after leaving Security Filter (NR) +
  PRIVILEGE mode, +
-Context ID (NR)
+Context ID (Optional)
+ PC of first retired instruction after leaving Security Filter (Optional)
 
 |* Exit from Unbounded Wait +
-(trcstate transition from 11 to 00)
+( *trcstate* transition from 2'b11 to 2'b00)
 | CauseID=EXIT_UNBOUNDED_WAIT +
- PC of first retired instruction after leaving Unbounded Wait (NR) +
  PRIVILEGE mode, +
-Context ID (NR)
+Context ID (Optional) +
+ PC of first retired instruction after leaving Unbounded Wait (Optional)
 
 |Address, PRIV, or Context ID unfiltered
 | CauseID=TRACE_ON_UNFILTERED +
- PC of first retired instruction after filtered-to-unfiltered  transition (NR) +
- PRIVILEGE mode, +
-Context ID (NR)
+PRIVILEGE mode, +
+Context ID (Optional) +
+ PC of first retired instruction after filtered-to-unfiltered  transition (Optional)
 
-|trace-on from trigger[] signal, SW writes to trTeControl bits, other
+|trace-on from *trigger* signal, SW writes to *trTeControl* bits, other
 | CauseID=TRACE_ON_TRIGGER +
- PC of first retired instruction after trace-on transition (NR) +
  PRIVILEGE mode, +
-Context ID (NR)
+Context ID (Optional) +
+ PC of first retired instruction after trace-on transition (Optional)
 
 .6+|Trace-off
 |* Enter Reset
 | CauseID=ENTER_RESET +
-PC = last instruction to execute before reset (NR) 
+PC = last instruction to execute before reset (Optional) 
 
 |* Enter Debug Mode +
-(trcstate=01)
+( *trcstate*=2'b01)
 | CauseID=ENTER_DEBUG +
-PC = address loaded into depc (but has not executed) (NR)
+PC = address loaded into depc (but has not executed) (Optional)
 
 |* Entry into Security Filter +
-(trcstate=10)
+( *trcstate*=2'b10)
 | CauseID=ENTER_SECURITY +
-PC = last retired instruction before entering Security Filter (NR)
+PC = last retired instruction before entering Security Filter (Optional)
 
 |* Unbounded Wait +
-(trcstate=11)
+( *trcstate*=2'b11)
 | CauseID=ENTER_UNBOUNDED_WAIT +
-PC = address of instruction such as WFI or WRS.NTO (NR)
+PC = address of instruction such as WFI or WRS.NTO (Optional)
 
 |* Address, PRIV, or Context ID Filtered
 | CauseID=TRACE_OFF_FILTERED +
- PC = last retired instruction before unfiltered-to-filtered transition (NR)
+ PC = last retired instruction before unfiltered-to-filtered transition (Optional)
 
-|* trace-off from trigger[] signal, SW writes to trTeControl bits, other
+|* trace-off from *trigger* signal, SW writes to *trTeControl* bits, other
 | CauseID=TRACE_OFF_TRIGGER +
- PC of last retired instruction before trace-off transition (NR)
+ PC of last retired instruction before trace-off transition (Optional)
 
 |Exception
 |Synchronous Faults, Traps, System Calls
-|PC is the address of the instruction that incurred the exception, i.e. *xepc* which equals iaddr[]+iretire[] (NR) +
-cause[] is what is loaded into the Exception Code field of xcause +
-PRIVILEGE mode; optimally, only when PRIV value has changed
+|*cause* is what is loaded into the Exception Code field of *xcause CSR* +
+PRIVILEGE mode; optimally, only when PRIV value has changed +
+PC is the address of the instruction that incurred the exception, i.e. *xepc CSR* which equals *iaddr*+*iretire* (Optional)
 
 |Interrupt
 |Asynchronous
-|PC is the address of the last retired instruction before the interrupt was taken (iaddr[]) (NR) +
- (Returning from trap will resume execution at the next instruction after this PC, unless modified by OS). +
-cause[] is what is loaded into the Exception Code field of xcause +
-PRIVILEGE mode; optimally only when PRIV value has changed
+|Returning from trap will resume execution at the next instruction after this PC, unless modified by OS. +
+*cause* is what is loaded into the Exception Code field of *xcause CSR* +
+PRIVILEGE mode; optimally only when PRIV value has changed +
+PC is the address of the last retired instruction before the interrupt was taken (*iaddr*) (Optional)
 
 |Return from trap
 |Return from exception or interrupt (MRET or SRET executed)
-|PCdest (R-ADDR) is address of instruction to begin execution after trap +
+|PCdest is address of instruction to begin execution after trap +
 PRIVILEGE mode +
-Context ID (NR)
+Context ID (Optional)
 
 |===
 
 ////
 values assigned to CauseID
-0 - EXIT_SECURITY
-1 - ENTER_SECURITY
-2 - EXIT_UNBOUND_WAIT
-3 - ENTER_UNBOUND_WAIT
-4 - EXIT_DEBUG
-5 - ENTER_DEBUG
-6 - EXIT_RESET
-7 - ENTER_RESET
-8 - TRACE_OFF_FILTERED
-9 - TRACE_ON_UNFILTERED
-10 - TRACE_ON_TRIGGER
-11 - TRACE_OFF_TRIGGER
+0 - ENTER_DEBUG
+1 - EXIT_RESET
+3 - EXIT_DEBUG
+4 - TRACE_OFF_TRIGGER
+5 - TRACE_ON_TRIGGER
+6 - ENTER_RESET
+7 - EXIT_SECURITY
+8 - ENTER_SECURITY
+9 - EXIT_UNBOUND_WAIT
+10 - ENTER_UNBOUND_WAIT
+11 - TRACE_OFF_FILTERED
+12 - TRACE_ON_UNFILTERED
 ////
 
 NOTE: Regarding the Event Trace decoder, for an interrupt, if the user wants to view the instruction that was interrupted from, the decoder will have to take the last retired PC value recorded from the interrupt, disassemble that instruction and from it, determine the next instruction executed. For sequential instructions, it is simply the next instruction.  For an inferrable jump, the address of the next instruction is determined from the opcode. For a conditional branch or uninferrable call, jump or return, the next instruction is not determinable. +
@@ -300,19 +299,19 @@ OR, the user can enable the Return from Trap event and the decoder will decode i
 
 === Control bits for enabling Trace-on and Trace-off events
 
-Each of the Trace-on (Sync) and Trace-off events in the table above can be enabled or disabled at run-time with control bits. There are separate bits for Trace-on and Trace-off transitions, and two GROUPs of type categories, for a total of 4 control bits. The groups are: +
-GROUP1: Reset, Debug, Security Filter, and Unbounded Wait, the last three of which are trcstate[1:0] transitions, and +
-GROUP2: Address, Privilege, or Context ID filtered/unfiltered, and Trace-on/off triggers.
+Each of the Trace-on (Sync) and Trace-off events in the table above can be enabled or disabled at run-time with control bits. There are separate bits for Trace-on and Trace-off transitions, and two groups of type categories, for a total of 4 control bits. The groups are: +
+
+* RHTI: Reset, Debug, Security Filter, and Unbounded Wait, the last three of which are *trcstate* transitions +
+* CORE: Address, Privilege, or Context ID filtered/unfiltered, and Trace-on/off triggers.
 
 Bits: +
 
-* 0: GROUP1_ENTER (Trace-off) +
-* 1: GROUP1_EXIT (Trace-on) +
-* 2: GROUP2_ENTER (Trace-off) +
-* 3: GROUP2_EXIT (Trace-on)
+* 0: RHTI_ENTER (Trace-off; trcstate >0) <<RHTI_ENTER>>
+* 1: RHTI_EXIT (Trace-on; trcstate=0) <<RHTI_EXIT>>
+* 2: CORE_ENTER (Trace-off) <<CORE_ENTER>>
+* 3: CORE_EXIT (Trace-on) <<CORE_EXIT>>
 
-
-Read-only implementation bits are defined for GROUP1 and 2 in the *trTeEvtFeatures* (later in this document) and the 4 Enable bits in the *trTeEvtControl* register. 
+There are two read-only implementation bits  defined for RHTI and CORE in the *trTeEvtFeatures RO* <<RHTICoreEnterImplemented>> and <<RHTICoreExitImplemented>> section.  There are also four Enable bits in the *trTeEvtControl* register. 
 
 === Function Events
 (((Event Types, function)))
@@ -340,7 +339,7 @@ The following table lists the packet types to support function Calls and Returns
 |------
 |dest (R-ADDR)
 |8 or 9
-|Source function can be derived from trace history however src address (i.e. line # of caller) is unknown. This call type is useful for capturing call stacks and decoded into a display such as a flame graph.
+|Source function can be derived from trace history however src address (i.e. line # of caller) is unknown. This call type is useful for capturing call stacks and decoding into a display such as a flame graph.
 
 |*CALL_PC*
 |PC (R-ADDR)
@@ -397,7 +396,7 @@ NOTE: If the triggerID is not provided, trace decoder software may be able to id
 [#User-Definable-Signal-Events]
 === User Definable Signal Events
 (((Event Types, User Definable Signals)))
-Signals are developer-defined, normally from the core, that are routed to the RHTI impdef[] (implementation-defined) bit array cite:[riscv-RHTI-spec-0.83(Optional sideband signals)]. This feature provides a means for a developer to customize Event Trace to mark when and where the processor was executing when any of the signals are asserted. The trace packet includes all the signal values when any one goes true.
+Signals are developer-defined, normally from the core, that are routed to the RHTI *impdef* (implementation-defined) bit array cite:[riscv-RHTI-spec-0.83((Optional) sideband signals)]. This feature provides a means for a developer to customize Event Trace to mark when and where the processor was executing when any of the signals are asserted. The trace packet includes all the signal values when any one goes true.
 
 === Periodic PC Sampling Events
 (((Event Types, Periodic PC Sampling)))
@@ -418,8 +417,8 @@ Features:
 
 * 8 external input signals, also called triggers or channels
 * recognize the rising edge on an input signal and generate a packet
-* (optional) user-programmed to recognize a falling edge
-* (optional) user-programmed to recognize either a rising or falling edge on the input signal, useful for timing the duration of a signal pulse.
+* (Optional) user-programmed to recognize a falling edge
+* (Optional) user-programmed to recognize either a rising or falling edge on the input signal, useful for timing the duration of a signal pulse.
 * includes a *cycles-interval* to compact multiple edges into one trace packet.  This is to prevent overloading the trace system with too many events in a short period of time when the signal is changing frequently. The logic, after desired edge is detected, begins the packet creation by latching the edge value and timestamp. If, during the cycles-interval, one or more additional signal edges occur, the packet records the signal as having multiple edges. When the cycles-interval expires, the packet is formatted and output to the trace sink.
 
 (Non-normative) The post-processing visualization (e.g. logic analyzer-like timing waveforms) shows the multi-edge packet as a "fuzzy" unit meaning it represents > 1 edge.  The cycles-interval count would indicate the relative width of this "fuzzy" edge. The recorded timestamp, however, does show the time location of the starting edge of the signal.
@@ -782,7 +781,6 @@ Note that a change in value will generate a trace-on or trace-off Event Trace pa
 |WARL
 |0
 
-
 |12
 |trTeEvtRetEn
 |0: don't trace; 1: trace returns
@@ -802,7 +800,6 @@ Note: Context writes are also enabled when the *trTeControl.trTeContext* bit is 
 |WARL
 |0
 
-
 |15
 |trTeEvtDbgTrigEn
 |0: don't trace; 1: trace debug trigger/watchpoints. The user sets up debugger hardware triggers with the Action value of 4 (Trace notify) that generates a trace packet when the trigger/watchpoint matches. This control bit enables or disables the generation of these trace messages.
@@ -817,7 +814,7 @@ Note: Context writes are also enabled when the *trTeControl.trTeContext* bit is 
 
 |17
 |trTeEvtPCSampEn
-|0: don't trace; 1: enable the tracing of periodic PC samples. The user sets up period of sampling and optionally the inclusion of randomizing the period.
+|0: don't trace; 1: enable the tracing of periodic PC samples. The user sets up period of sampling and (Optional)ly the inclusion of randomizing the period.
 |WARL
 |0
 
@@ -834,36 +831,55 @@ Note: Context writes are also enabled when the *trTeControl.trTeContext* bit is 
 |WARL
 |0
 
-|22:
+|20
+|[[RHTI_ENTER]] trTeEvtRHTIEnterEn
+|0: don't trace; 1: trace RHTI_ENTER (trace-off) events - *trcstate* 2'b00 to >0 transitions
+|WARL
+|0
+
+|21
+|[[RHTI_EXIT]] trTeEvtRHTIExitEn
+|0: don't trace; 1: trace RHTI_EXIT (trace-on) events - *trcstate* >0 to 0 transitions
+|WARL
+|0
+
+|22
+|[[CORE_ENTER]] trTeEvtCOREEnterEn
+|0: don't trace; 1: trace CORE_ENTER (trace-off) events - unfilter-to-filtered
+|WARL
+|0
+
+|23
+|[[CORE_EXIT]] trTeEvtCOREExitEn
+|0: don't trace; 1: trace CORE_EXIT (trace-on) events - filtered-to-unfiltered
+|WARL
+|0
+
+|25:24
 |Reserved
 |Reserved for future Event Type enables
 |
 |
 
-|23
+|26
 |trTeEvtPCSampRandEn
 |0: do not enable randomizing of sample period; 1: enable randomizing of sample period. The random count is added to the powers-of-2 count down set by the user. An LFSR is used to generate the random count. The width of the random count is user selectable (recommended at 6 bits), but fixed at design time.
 |WARL
 |0
 
-|27:24
+|30:27
 |trTeEvtSampDuration
 |Periodic sample duration for PC sampling events. Interval duration is exponential in powers of 2 - cycles = 2^(trTeEvtSamp  Duration+6). i.e. range is 2^6 to 2^21 (64 to ~2 million cycles). For a 1GHz clock, the range is 64ns to 2ms.
 |WARL
 |0
 
-|28
+|31
 | [[EventLockout]]trTeEvtLockout
 |0: ignore Trace Encoder FIFO-AF (almost-full) condition +
 1: when Trace Encoder FIFO-AF feedback signal indicates "almost full", stop generating events. This is a front-end throttle to prevent the Trace Encoder FIFO from filling up and using the Encoder back-end to stop tracing, which generates an error packet when tracing is resumed. When enabled, this lockout affects all external inputs to the encoder including Debug trigger/watchpoints, User definable Signals, External Signals (triggers), and Performance Counter selectors.
 |WARL
 |0
 
-|31:29
-|Reserved
-|
-|
-|
 |===
 
 NOTE: For the setup of *trTeEvtExceptionEn* and *trTeEvtInterruptEn*, the return from an exception or interrupt are common and called a "trap return". Hardware tracing cannot distinguish between a return caused by an interrupt or an exception so if one or the other is turned off with these control bits, all trap returns will still be generated as EVT packets. The Trace decoder must deal with trap returns that may not have an associated exception or interrupt event. Privilege level filtering can be used to selectively quash some of them. The user may also choose to turn off the tracing of trap returns separately.
@@ -871,7 +887,7 @@ NOTE: For the setup of *trTeEvtExceptionEn* and *trTeEvtInterruptEn*, the return
 ==== trTeEvtFeatures: Event Trace Features RO Register (trBaseEncoder+0x104)
 
 .Event Trace Features Read-only Register - *trTeEvtFeatures* (32b)
-[cols="8%,22%,~,5%,10%", options="header"]
+[cols="9%,22%,~,5%,10%", options="header"]
 |===
 ^|Bits ^|Field ^|Description ^|RW ^|Reset
 |0
@@ -916,40 +932,52 @@ NOTE: For the setup of *trTeEvtExceptionEn* and *trTeEvtInterruptEn*, the return
 |RO
 |1 (SD)
 
-|10:7
+|7
+|[[RHTICoreEnterImplemented]]trTeEvtRHTICoreEnterImpl
+|RHTI_ENTER and CORE_ENTER trace-off implemented +
+ Read as 1 if RHTI_ENTER and CORE_ENTER are implemented; i.e. trace-off is signaled when RHTI *trcstate* transitions to >0 value or core conditions (addr, priv, contextID, trace triggers) enter filter state
+|RO
+|0 (SD)
+
+|8
+|[[RHTICoreExitImplemented]]trTeEvtRHTICoreExitImpl
+|Read as 1 if RHTI_EXIT and CORE_EXIT are implemented, i.e. trace-on is signaled when RHTI *trcstate* transitions to 0 value or core conditions (addr, priv, contextID, trace triggers) enter unfilter state
+|RO
+|0 (SD)
+
+|12:9
 | [[PPCsImplemented]]trTeEvtPPCsImpl
 |Number of Profiling Performance Counters implemented (0-15)
 |RO
 |8 (SD)
 
-|11
-|trTeEvtPPCtype
+|13
+|trTeEvtPPCType
 |Type of Profiling Performance Counters implemented: +
  0: independent counters; 1: based on hpmcounters
 |RO
 |0 (SD)
-
-|12
+  
+|14
 |trTeEvtPPCSelType
 |Type of Profiling Performance Counter selectors implemented: +
  0: independent selectors; 1: based on mhpmeventX
 |RO
 |0 (SD)
 
-
-|13
+|15
 | [[DebugTriggerIDImpl]]trTeEvtDbgTrigIDImpl
-|Read as 1 if Debug Trigger ID is implemented in RHTI (or manually)
+|Read as 1 if Debug Trigger ID is implemented in RHTI (or signals manually added outside RHTI)
 |RO
 |0 (SD)
 
-|16-14
+|18-16
 | [[SelectorsImplemented]]trTeEvtSelectorsImpl
 |Number of Performance Counter selectors implemented for Event Trace (0-7)
 |RO
 |0 (SD)
 
-|31:17
+|31:19
 |Reserved | | |
 |===
 SD = System Dependent. Reset value of a field is dependent on the build.
@@ -1068,9 +1096,9 @@ This action only works if Event Trace is disabled.
 
 This set of registers is only applicable if the implementation includes independent PPC counters <<Alternative-2a>> or <<Alternative-2b>>. The recommended width of each counter is 24 bits. They are delta, saturating counters that, for Event Trace, count performance events for the duration of each Event Trace event that is then packetized and sent into the trace stream. (Unfortunately the term "event" is an overloaded term in this context.)
 
-This register access is an optional feature. If implemented, these registers are memory-mapped to allow for read/write access and that does not require cpu instructions to access them (as CSR-based HPM counters require).
+This register access is an (Optional) feature. If implemented, these registers are memory-mapped to allow for read/write access and that does not require cpu instructions to access them (as CSR-based HPM counters require).
 
-The mapping of these registers to MMIO space is optional. The purposes are:
+The mapping of these registers to MMIO space is (Optional). The purposes are:
 
 1. read/write access for DV-based testing, in-circuit diagnostic testing, and
 

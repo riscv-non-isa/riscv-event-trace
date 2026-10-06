@@ -2,7 +2,7 @@
 == N-Trace Message Definitions
 (((Event Trace, N-Trace messages)))
 
-NOTE: the N-trace specification uses the term "message" to refer to the data output by the trace encoder thus this chapter will also use that term.  Other documents use the term "packet" so the other chapters of this document will use the term "packet" to refer to the data output by the trace encoder.  The terms are interchangeable and both refer to the same thing.
+NOTE: The N-trace specification uses the term "message" to refer to the data output by the trace encoder thus this chapter will also use that term.  Other documents use the term "packet" so the other chapters of this document will use the term "packet" to refer to the data output by the trace encoder.  The terms are interchangeable and both refer to the same thing.
 
 This file (N-Trace-packets.adoc) defines the Event Trace messages that extend N-Trace cite:[riscv-N-Trace-spec-1.0].
 
@@ -13,15 +13,16 @@ This file (N-Trace-packets.adoc) defines the Event Trace messages that extend N-
 |0x22 (34) (compressed), +
 0x23 (35) (synchronized)
 |EVT Trace Messages for non-function events +
-* EVTSRC=0: Sync Enable +
-* EVTSRC=1: Sync Disable +
+* EVTSRC=0: Trace-on (Sync) +
+* EVTSRC=1: Trace-off +
 * EVTSRC=2: Exception +
 * EVTSRC=3: Interrupt +
 * EVTSRC=4: Return from trap +
 * EVTSRC=5: Debug Trigger/Watchpoint +
-* EVTSRC=6: Periodic PC Sampling +
-* EVTSRC=7: External Signal (trigger) +
-* EVTSRC=8: Perf Counter Selector Occurrence
+* EVTSRC=6: User Definable Signals +
+* EVTSRC=7: Periodic PC Sampling +
+* EVTSRC=8: External Signal (trigger) +
+* EVTSRC=9: Perf Counter Selector Occurrence
 
 |0x24 (36)
 | CALL_SYNC Function Event
@@ -60,7 +61,7 @@ This file (N-Trace-packets.adoc) defines the Event Trace messages that extend N-
 * *TSTAMP* is the N-Trace accumulating, running timestamp. Its clock is required to provide accurate short-duration execution timing, with a 10ns minimum resolution and a preferred 1ns resolution (100MHz - 1GHz). TSTAMP minimum width should be 40 bits which provides 18 minutes of duration at 1GHz clock rate. If Event Trace is to run for hours, then 48 bits provides 78 hours.
 * *cfg* in the Bits column means the number of bits is configurable at build time. The primary example is the number of bits for the SRC field. This represents the total number of Harts in the SoC.
 * *N-Trace* uses a byte-sized data format where 6 bits are payload and 2 bits called MSEO bits define the message framing. 00 = first or middle bytes, 01 = end of a variable field, 11 = end of a message/packet.
-* *F-ADDR* means the full address is included in the message. *U-ADDR* means the unique part of the address is included in the message.  Both are output with leading zero suppression.
+* *F-ADDR* means the full address is included in the message. *U-ADDR* means the unique part of the address is included in the message.  Both are output with leading zero suppression. *U-ADDR* is referred to as *R-ADDR* (Relative Address) in other parts of this document.
 
 === Non-Function Event Trace Message Formats
 (((N-Trace, EVT message formats)))
@@ -104,74 +105,83 @@ Note: EVTSRC+EVTCNT equal 1 byte of N-TRACE message output
 |===
 
 ==== Event Trace non-Function Messages, per-EVTSRC (type)
+
+Values assigned to *CauseID* for N-Trace +
+0 - ENTER_DEBUG +
+1 - EXIT_RESET +
+3 - EXIT_DEBUG
+4 - TRACE_OFF_TRIGGER +
+5 - TRACE_ON_TRIGGER +
+6 - ENTER_RESET +
+7 - EXIT_SECURITY +
+8 - ENTER_SECURITY +
+9 - EXIT_UNBOUND_WAIT +
+10 - ENTER_UNBOUND_WAIT +
+11 - TRACE_OFF_FILTERED +
+12 - TRACE_ON_UNFILTERED
+
 .Event Trace Message Fields for non-function events
 [cols="12%,10%,10%,10%,11%,~", options="header"]
 |===
 ^|Event ^|EVTSRC ^|EVTCNT ^|EVTPC ^|EVTDATA ^|Description
 
-|Sync Enable
-(((N-Trace, Event, Sync Enable Message)))
+|Trace-on (Sync)
+(((N-Trace, Event, Trace-on (Sync) Message)))
 |0
 |1
 |PC
-|SYNC
-|EVTPC is always F-ADDR (TCODE=0x23) +
+|CauseID
+|EVTPC follows the rules defined in Chapter 3 +
 PC=instruction responsible for trace-on. +
-SYNC field, must be compatible w/N-Trace Table 25: +
-(1) = Exit from Reset +
-(3) = exit-debug. PC=first instruction to execute after debug mode. +
-(5) = event trace enable. +
-(others) Reserved +
-Note: some cores may not have logic to recognize "Exit from Reset". Start of execution can use the "event trace enable" encoding. +
+CauseID field: +
+EXIT_RESET +
+EXIT_DEBUG - PC=first instruction to execute after debug mode +
+TRACE_ON_TRIGGER +
+EXIT_SECURITY +
+EXIT_UNBOUND_WAIT +
+TRACE_ON_UNFILTERED +
 
-
-|Sync Disable
-(((N-Trace, Event, Sync Disable Message)))
+|Trace-off
+(((N-Trace, Event, Trace-off Message)))
 |1
 |1
 |PC
-|EVCODE
-|EVCODE field (compatible w/N-Trace Table 24): +
-EVTPC is U-ADDR (TCODE=0x23) +
-(0) = enter-debug. PC=address loaded into depc (has not executed). +
-(4) = event trace disabled. PC=instruction responsible for trace-off. +
-(6) = enter-reset. PC=last instruction to execute before reset.
-(others) reserved
+|*CauseID*
+|EVTPC follows the rules defined in Chapter 3 +
+CauseID field: +
+ENTER_DEBUG +
+TRACE_OFF_TRIGGER +
+ENTER_RESET +
+ENTER_SECURITY +
+ENTER_UNBOUND_WAIT +
+TRACE_OFF_FILTERED +
 
 |Exception
 (((N-Trace, Event, Exception Message)))
 |2
 |1
 |PC
-|cause
-|(ITYPE=1) PC is what is loaded into xepc (the address of the instruction that caused the exception), cause is what is loaded into the Exception Code field of xcause. cause signals are defined in Table 1 of RHTI spec (see References).
+|*cause*
+|(ITYPE=1) PC is the address of the instruction that incurred the exception, i.e. *xepc CSR* which equals *iaddr*+*iretire* +
+*cause* is what is loaded into the Exception Code field of *xcause*. cause signals are defined in Table 1 of RHTI spec cite:[riscv-RHTI-spec-0.83]
 
 |Interrupt
 (((N-Trace, Event, Interrupt Message)))
 |3
 |1
 |PC
-|cause
-|(ITYPE=2) PC is what is loaded into xepc, cause is what is loaded into the Exception Code field of xcause.
+|*cause*
+|(ITYPE=2) PC is the address of the last retired instruction before the interrupt was taken (*iaddr*) +
+*cause* is what is loaded into the Exception Code field of *xcause*.
 
 |Return from trap
 (((N-Trace, Event, Return from Trap Message)))
 |4
-|1
-|PC
-|PCdest
-|(ITYPE=3) Return from exception or interrupt (MRET or SRET)
-(to distinguish from normal function return)
-This is generated when both PC's are not filtered by privilege mode.
-
-|Return from trap
-(((N-Trace, Event, Return from Trap Message - Variant)))
-|4
 |0
 |PCdest
 |---
-|(Variant of above) Return from exception or interrupt (MRET or SRET)
-Generated when the source PC is filtered by privilege mode (but PCdest is not).
+|Return from exception or interrupt (MRET or SRET executed) +
+PCdest is address of instruction to begin execution after trap +
 
 |Debug Trigger/ +
 Watchpoint w/TRIG_ID
@@ -198,8 +208,8 @@ For *trTeEvtFeatures.trTeEvtDbgTrigIDImpl* <<DebugTriggerIDImpl>> = 0, the hardw
 |6
 |0
 |PC
-|impdef[] signals value
-|This event samples the PC address of the last instruction retired at the time of the assertion of one of the impdef[] signals cite:[riscv-RHTI-spec-0.83(Optional sideband signals)].
+|*impdef* signals value
+|This event samples the PC address of the last instruction retired at the time of the assertion of one of the *impdef* signals cite:[riscv-RHTI-spec-0.83(Optional sideband signals)].
 
 |Periodic PC Sampling
 (((N-Trace, Event, Periodic PC Sampling Message)))
@@ -216,7 +226,7 @@ For *trTeEvtFeatures.trTeEvtDbgTrigIDImpl* <<DebugTriggerIDImpl>> = 0, the hardw
 |PC
 |ES_VAL
 |*ES_VAL*[4:0] = {SIG_ID[2:0],SIG_VAL[1:0]} where SIG_VAL is rising (0), falling (1), both (2), multiple edges (3). +
-Generated when external signal edge on this channel (SIG_ID) is detected by the Event Trace encoder. The PC is the address of the closest red instruction when the signal is recognized. Timestamp must be enabled, and its value is latched at the occurrence of the signal edge. *trTeEvtExtSigControl.trTeEvtExtSigPCMode* = 1 <<ExtSigPCMode>> to include the PC in the message.
+Generated when external signal edge on this channel (SIG_ID) is detected by the Event Trace encoder. The PC is the address of the closest retired instruction when the signal is recognized. Timestamp must be enabled, and its value is latched at the occurrence of the signal edge. *trTeEvtExtSigControl.trTeEvtExtSigPCMode* = 1 <<ExtSigPCMode>> to include the PC in the message.
 
 |External Signal (trigger) no PC
 (((N-Trace, Event, External Signal Message wo/PC)))
@@ -254,7 +264,8 @@ NOTE: If only the destination address of an event is recorded in the message, th
 |Dest Addr +
 (U-ADDR)
 |8 or 9
-|Traces both Src and Dest addresses. The second address is XOR compressed. Full (absolute) timestamp if enabled.
+|Traces both Src and Dest addresses. The second address is XOR compressed. Full (absolute) timestamp if enabled. +
+*trTeEvtCallMode*=0
 
 |CALL_FULL
 |37
@@ -263,7 +274,8 @@ NOTE: If only the destination address of an event is recorded in the message, th
 |Dest Addr +
 (U-ADDR)
 |8 or 9
-|Traces both Src and Dest compressed (unique) addrs; relative timestamp if enabled.
+|Traces both Src and Dest compressed (unique) addrs; relative timestamp if enabled. +
+*trTeEvtCallMode*=0
 
 |CALL_DEST
 |38
@@ -272,7 +284,8 @@ NOTE: If only the destination address of an event is recorded in the message, th
 (U-ADDR)
 |8 or 9
 |itype=8 means indirect (uninferrable) call or co-routine swap.
-Source function can be derived from trace history however Src address (i.e. line # of caller) is unknown.
+Source function can be derived from trace history however Src address (i.e. line # of caller) is unknown. +
+*trTeEvtCallMode*=1
 
 |CALL_PC
 |39
@@ -280,7 +293,8 @@ Source function can be derived from trace history however Src address (i.e. line
 (U-ADDR)
 |-----
 |9
-|inferrable call so destination obtained from opcode if binary available
+|inferrable call so destination obtained from opcode if binary available +
+*trTeEvtCallMode*=2
 
 |RET_FULL
 |40
@@ -289,7 +303,8 @@ Source function can be derived from trace history however Src address (i.e. line
 |Dest Addr +
 (U-ADDR)
 |13
-|Traces both Src and Dest (return to) addresses
+|Traces both Src and Dest (return to) addresses +
+*trTeEvtRetMode*=0
 
 |RET_DEST
 |41
@@ -297,14 +312,16 @@ Source function can be derived from trace history however Src address (i.e. line
 |Dest Addr +
 (U-ADDR)
 |13
-|return-to address; caller (function) determined from symbolic address range of destination address and/or from history.
+|return-to address; caller (function) determined from symbolic address range of destination address and/or from history. +
+*trTeEvtRetMode*=1
 
 |RET
 |42
 |------
 |------
 |13
-|Function returned; the return destination is not important.
+|Function returned; the return destination is not important. +
+*trTeEvtRetMode*=2
 |===
 
 Recommended priority of implementation +
@@ -611,9 +628,5 @@ The RHTI spec cite:[riscv-RHTI-spec-0.83(Trace State)] added Trace State signal 
 *10* Inhibiting trace for security reasons +
 *11* Unbounded wait - pausing trace for an unbounded amount of time (e.g. executing WFI or WFE instructions)
 
-These states, when they occur over the RHTI, generate the N-trace ProgTraceCorrelation Message which is emitted when the trace is disabled or stopped.  These additions are to the EVCODE field:
+These state and state transitions are documented in Chapter 3 as to the "abstract" trace-on and trace-off messages necessary to generate. This chapter documents the N-Trace messages to be generated for these state transitions.
 
-*5* = Trace disabled for security reasons +
-*6* = Trace paused for an unbounded amount of time
-
-In addition, the *CDF* field includes a new value of *2*, for Event Trace, whose value means "do not generate the I-CNT or the HIST fields."

@@ -1,11 +1,13 @@
 = RISC-V Event Trace Specification
-Authors: Bruce Ableidinger, Global Foundries/MIPS
+Authors: Bruce Ableidinger, GlobalFoundries/MIPS +
+Iain Robertson, Tessent/Siemens EDA +
+Robert Chyla, GlobalFoundries/MIPS
 include::../docs-resources/global-config.adoc[]
 :docgroup: RISC-V Event Trace Task Group
 :description: RISC-V Event Trace Specification
 :company: RISC-V.org
-:revdate: 03/23/2026
-:revnumber: 0.0.1
+:revdate: 10/6/2026
+:revnumber: 0.0.2
 :revremark: This document is under development. Expect potential changes. Visit http://riscv.org/spec-state for further details.
 :revinfo:
 :url-riscv: http://riscv.org

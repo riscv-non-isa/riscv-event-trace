@@ -7,3 +7,63 @@ Event Trace is an extension to the RISC-V Instruction Trace that provides hardwa
 Event Trace extends the existing Instruction Trace while also leveraging its common packet types and trace sink options.
 
 The Event Trace extension introduces new memory-mapped registers for setting up read-only contigurations, dynamical selection of trace events to trace, submodes of operation, hardware filters, and accessing its running status.
+
+[[sec:terminology]]
+=== Terminology
+
+The following terms have a specific meaning in this specification.
+
+* *branch*: an instruction which conditionally changes the execution
+flow
+* *CSR*: control/status register
+* *decoder*: a piece of software that takes the trace packets emitted by
+the encoder and reconstructs the execution flow of the code executed by
+the RISC-V hart
+* *discontinuity*: a change in the program counter that is anything other than an automatic increment to the next instruction located contiguously in memory
+- *inferable discontinuity*: a discontinuity in the program counter resulting from a branch or *direct jump*
+- *uninferable discontinuity*: a discontinuity in the program counter that is not inferable (see above)
+* *E-Trace*: Abbreviation of _Efficient Trace for RISC-V_
+* *ELF*: executable and linkable format
+* *encoder*: a piece of hardware that takes in instruction execution
+information from a RISC-V hart and transforms it into trace packets
+* *exception*: an unusual condition occurring at run time associated
+with an instruction in a RISC-V hart
+* *hart*: a RISC-V hardware thread
+* *final instruction*: the instruction retired immediately before tracing stops.
+* *last instruction*: in a block of sequentially retired instructions, the instruction at the end of the sequence
+* *interrupt*: an external asynchronous event that may cause a RISC-V
+hart to experience an unexpected transfer of control
+* *ISA*: instruction set architecture
+* *jump*: an instruction which unconditionally changes the execution
+flow
+- *direct jump*: an instruction which unconditionally changes the
+execution flow by changing the PC by a constant value
+- *indirect jump*: an instruction which unconditionally changes the
+execution flow by changing the PC to a computed value
+- *inferable jump*: a jump where the target address is supplied via a
+constant embedded within the jump opcode
+- *uninferable jump*: a jump which is not inferable (see above)
+* *LSB*: least significant bit
+* *MSB*: most significant bit
+* *packet*: the atomic unit of encoded trace information emitted by the
+encoder
+* *PC*: program counter
+* *program counter*: a register containing the address of the
+instruction being executed
+* *retire*: the final stage of executing an instruction, when the
+machine state is updated and the `minstret` CSR is updated (sometimes referred to as ’commit’ or
+’graduate’)
+* *RHTI* RISC-V Hart to Trace Encoder Interface
+* *trace decoder*: see *decoder*
+* *trace encoder*: seee *encoder*
+* *trap*: the transfer of control to a trap handler caused by either an exception or an interrupt
+
+
+=== Nomenclature
+
+In the following sections items in *bold* are signals or fields within a
+packet.
+
+Items in *_bold italics_* are mnemonics for instructions defined in the RISC-V ISA
+
+Items `lowlighted` are CSRs or other registers defined in the RISC-V ISA

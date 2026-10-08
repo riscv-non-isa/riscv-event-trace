@@ -7,3 +7,4 @@ pdf/riscv-event-trace(5-29-26).pdf
 .gitignore
 .vscode/
 .vscode/settings.json
+.vscode/\nanalysis/\n

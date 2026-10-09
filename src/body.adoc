@@ -153,16 +153,16 @@ NOTE: One purpose of a Sync is to re-establish a Full Address of an executed ins
 
 Note: Context and Context ID are used interchangeably in this document.
 
-Definition: *CauseID*: traced value identifying the cause of a Trace-on (Sync) or Trace-off event. The Trace Decoder uses it to label the cause of the message. This document uses symbolic names for ID values; actual assigned values can be different between E-Trace and N-Trace. 
+Definition: *CauseID*: traced value identifying the cause of a Trace-on (Sync) or Trace-off event. The Trace Decoder uses it to label the cause of the message. This document uses symbolic names for ID values; actual assigned values can be different between E-Trace and N-Trace.
 
 RHTI signals referenced in this section: +
-* trcstate +
-* trigger +
-* cause +
-* priv +
-* context +
-* iaddr +
-* iretire
+* *trcstate* +
+* *trigger* +
+* *cause* +
+* *priv* +
+* *context* +
+* *iaddr* +
+* *iretire*
 
 .List of Rules
 [cols="50%", options="header"]
@@ -171,10 +171,10 @@ RHTI signals referenced in this section: +
 a|* When an event trace packet that contains an instruction address is emitted, that address must be output in F-ADDR format if it is the first packet containing an address emitted after:
 - enabling trace
 - previously indicating trace has ended
-- *trcstate* transitions to zero (from non-zero values of debug exit, security filter exit, unbounded Wait exit)
+- *trcstate* transitions to zero (from non-zero values of debug, security prohibition, unbounded wait)
 - the resync timer has expired
 
-a|* While *trcstate*=2'b10 meaning "inhibit trace for security reasons", no trace messages are recorded. 
+a|* While *trcstate*=2'b10 meaning "inhibit trace for security reasons", no trace messages are recorded.
 
 a|* If there is a case of a message with two PC addresses with one valid PC and one filtered out or blocked by security (e.g. jump or call), the PC blocked by security or filter can either be omitted from a trace packet (if one exists) or set to 0. The trace decoder is responsible for interpreting address 0 as "unknown" or "excluded".
 
@@ -183,31 +183,32 @@ a|* If there is a case of a message with two PC addresses with one valid PC and 
 NOTE: *resync timer* A periodic count is defined by *trTeInstSyncMax* and the value of trTeInstSyncMode value counts by packets, clock cycles, or instructions before a synchronization F-ADDR PC message is required. +
 When the count-down condition is reached, hardware asserts a *sync_needed* flag (defined in this specification).  The next packet output requires the PC be an F-ADDR then *sync_needed* flag is reset.
 
+[[tab:nonfunc-events]]
 .Event Types (non-function) and Message Contents
 [cols="15%,35%,~", options="header"]
 |===
 ^|Event ^|Cause ^| Outputs
 
 .6+|Trace-on (Sync)
-|* Exit from Reset
+|Exit from Reset
 | CauseID=EXIT_RESET +
  PRIVILEGE mode, +
 Context ID (Optional) +
 PC of first instruction (Optional) +
 
-|* Exit from Debug Mode +
+|Exit from Debug Mode +
 ( *trcstate* transition from 2'b01 to 2'b00)
 | CauseID=EXIT_DEBUG +
  PRIVILEGE mode, +
 Context ID (Optional) +
  PC of first instruction after leaving debug (Optional)
 
-|* Exit from Security Filter +
+|Exit from Security Inhibition +
 ( *trcstate* transition from 2'b10 to 2'b00)
 | CauseID=EXIT_SECURITY +
  PRIVILEGE mode, +
 Context ID (Optional)
- PC of first retired instruction after leaving Security Filter (Optional)
+ PC of first retired instruction after leaving Security Inhibition (Optional)
 
 |* Exit from Unbounded Wait +
 ( *trcstate* transition from 2'b11 to 2'b00)
@@ -229,53 +230,54 @@ Context ID (Optional) +
  PC of first retired instruction after trace-on transition (Optional)
 
 .6+|Trace-off
-|* Enter Reset
+|Enter Reset
 | CauseID=ENTER_RESET +
-PC = last instruction to execute before reset (Optional) 
+PC = last instruction to execute before reset (Optional)
 
-|* Enter Debug Mode +
+|Enter Debug Mode +
 ( *trcstate*=2'b01)
 | CauseID=ENTER_DEBUG +
-PC = address loaded into depc (but has not executed) (Optional)
+PC = last retired instruction before entering debug mode (Optional)
 
-|* Entry into Security Filter +
+|Entry Security Inhibition +
 ( *trcstate*=2'b10)
 | CauseID=ENTER_SECURITY +
-PC = last retired instruction before entering Security Filter (Optional)
+PC = last retired instruction before entering Security Inhibition (Optional)
 
-|* Unbounded Wait +
+|Unbounded Wait +
 ( *trcstate*=2'b11)
 | CauseID=ENTER_UNBOUNDED_WAIT +
-PC = address of instruction such as WFI or WRS.NTO (Optional)
+PC = address of last instruction retired before *_WFI_* or *_WRS.NTO_* (Optional)
 
-|* Address, PRIV, or Context ID Filtered
+|Address, PRIV, or Context ID Filtered
 | CauseID=TRACE_OFF_FILTERED +
  PC = last retired instruction before unfiltered-to-filtered transition (Optional)
 
-|* trace-off from *trigger* signal, SW writes to *trTeControl* bits, other
+|trace-off from *trigger* signal, SW writes to *trTeControl* bits, other
 | CauseID=TRACE_OFF_TRIGGER +
  PC of last retired instruction before trace-off transition (Optional)
 
 |Exception
 |Synchronous Faults, Traps, System Calls
-|*cause* is what is loaded into the Exception Code field of *xcause CSR* +
+|*cause* is what is loaded into the Exception Code field of `xcause` CSR +
 PRIVILEGE mode; optimally, only when PRIV value has changed +
-PC is the address of the instruction that incurred the exception, i.e. *xepc CSR* which equals *iaddr*+*iretire* (Optional)
+PC is the address of the instruction that incurred the exception, i.e. `xepc` CSR which equals *iaddr*+*iretire* (Optional)
 
 |Interrupt
 |Asynchronous
 |Returning from trap will resume execution at the next instruction after this PC, unless modified by OS. +
-*cause* is what is loaded into the Exception Code field of *xcause CSR* +
+*cause* is what is loaded into the Exception Code field of `xcause` CSR +
 PRIVILEGE mode; optimally only when PRIV value has changed +
 PC is the address of the last retired instruction before the interrupt was taken (*iaddr*) (Optional)
 
 |Return from trap
-|Return from exception or interrupt (MRET or SRET executed)
+|Return from exception or interrupt (*_MRET_* or *_SRET_* executed)
 |PCdest is address of instruction to begin execution after trap +
 PRIVILEGE mode +
 Context ID (Optional)
 
 |===
+
 
 ////
 values assigned to CauseID
@@ -311,63 +313,36 @@ Bits: +
 * 2: CORE_ENTER (Trace-off) <<CORE_ENTER>>
 * 3: CORE_EXIT (Trace-on) <<CORE_EXIT>>
 
-There are two read-only implementation bits  defined for RHTI and CORE in the *trTeEvtFeatures RO* <<RHTICoreEnterImplemented>> and <<RHTICoreExitImplemented>> section.  There are also four Enable bits in the *trTeEvtControl* register. 
+There are two read-only implementation bits  defined for RHTI and CORE in the *trTeEvtFeatures RO* <<RHTICoreEnterImplemented>> and <<RHTICoreExitImplemented>> section.  There are also four Enable bits in the *trTeEvtControl* register.
 
 === Function Events
 (((Event Types, function)))
 
 The following table lists the packet types to support function Calls and Returns, with different types and numbers of parameters. ITYPE details can be found in the RHTI spec cite:[riscv-RHTI-spec-0.83(Table 5)].
 
-.Event Trace Message Types for Calls and Returns
-[cols="15%,15%,15%,10%,~", options="header"]
+[[tab:callret-events]]
+.Call and Return Event Types and Message Contents
+[cols="15%,35%,~", options="header"]
 |===
-^|Name ^|Source ^|Destination ^|ITYPE ^|Description
-
-|*CALL_SYNC*
-|PC (F-ADDR)
-|dest (R-ADDR)
-|8 or 9
-|Traces both src and dest addresses. The second address can be compressed. Full (absolute) timestamp (if TS enabled).
-
-|*CALL_FULL*
-|PC (R-ADDR)
-|dest (R-ADDR)
-|8 or 9
-|Traces both src and dest compressed (unique) addrs; relative timestamp (if TS enabled).
-
-|*CALL_DEST*
-|------
-|dest (R-ADDR)
-|8 or 9
-|Source function can be derived from trace history however src address (i.e. line # of caller) is unknown. This call type is useful for capturing call stacks and decoding into a display such as a flame graph.
-
-|*CALL_PC*
-|PC (R-ADDR)
-|------
-|9
-|Inferrable call so dest obtained from opcode if binary available. This call type can be selected if the user wants to know the symbolic line number of the calling function.
-
-|*RET_FULL*
-|PC (R-ADDR)
-|dest (R-ADDR)
-|13
-|Traces both src and dest (return to) addresses
-
-|*RET_DEST*
-|------
-|dest (R-ADDR)
-|13
-|return-to address; caller (function) determined from symbolic address range of destination address and/or from history.
-
-|*RET*
-|------
-|------
-|13
-|Function returned to is determined from history. If caller was CALL_PC (inferrable caller), decoder can determine return destination address from 2-byte or 4-byte opcode.
+^|Event ^| Outputs ^| Description
+|*CALL_SRCTGT* | *itype* of call (8 or 9) +
+                 PC of call +
+                 PC of target | Traces both call and call-target addresses
+|*CALL_SRC* | *itype* of call (9) +
+                 PC of call | Inferrable call so target obtained from opcode if binary available. This call type can be selected if the user wants to know the symbolic line number of the calling function.
+| *CALL_TGT* | *itype* of call (8 or 9) +
+                 PC of target | Called function can be derived from binary however call address (i.e. line # of caller) is unknown. This call type is useful for capturing call stacks and decoding into a display such as a flame graph.
+|*RET_SRCTGT* | *itype* of return (13) +
+                 PC of return +
+                 PC of target | Traces both return and return-target addresses
+| *RET_TGT* | *itype* of return (13) +
+                 PC of target | Function being returned from  determined from symbolic address range of target address and/or from history.
+| *RET* | *itype* of return (13) +
+                 PC of target | Function being returned from   determined from history. If packet reporting call was CALL_SRC, decoder can determine return destination address from opcode.
 |===
 
-If Calls/Returns are supported, Event Trace requires implementation of CALL_SYNC, CALL_FULL, and RET_FULL. +
-CALL_DEST, CALL_PC, RET_DEST and RET are useful for reducing bandwidth.
+If Calls/Returns are supported, Event Trace requires implementation of CALL_SRCTGT and RET_SRCTGT. +
+CALL_TGT, CALL_SRC, RET_TGT and RET are useful for reducing bandwidth and support is optional.
 
 === Context + Privilege Level Events
 (((Event Types, context and privilege level)))
@@ -957,7 +932,7 @@ NOTE: For the setup of *trTeEvtExceptionEn* and *trTeEvtInterruptEn*, the return
  0: independent counters; 1: based on hpmcounters
 |RO
 |0 (SD)
-  
+
 |14
 |trTeEvtPPCSelType
 |Type of Profiling Performance Counter selectors implemented: +

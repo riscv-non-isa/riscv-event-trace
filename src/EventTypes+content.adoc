@@ -1,4 +1,4 @@
-// 9-21-26 7pm 
+// 9-21-26 7pm
 //
 == Event Types and Message Contents
 
@@ -8,7 +8,7 @@ NOTE: One purpose of a Sync is to re-establish a Full Address of an executed ins
 
 Note: Context and Context ID are used interchangeably in this document.
 
-Definition: *CauseID*: traced value identifying the cause of a Trace-on (Sync) or Trace-off event. The Trace Decoder uses it to label the cause of the message. This document uses symbolinc names for ID values; actual assigned values can be different between E-Trace and N-Trace. 
+Definition: *CauseID*: traced value identifying the cause of a Trace-on (Sync) or Trace-off event. The Trace Decoder uses it to label the cause of the message. This document uses symbolinc names for ID values; actual assigned values can be different between E-Trace and N-Trace.
 
 RHTI signals referenced in this spec: +
 * trcstate[] +
@@ -87,7 +87,7 @@ Context ID (NR)
 .6+|Trace-off
 |* Enter Reset
 | CauseID=ENTER_RESET +
-PC = last instruction to execute before reset (NR) 
+PC = last instruction to execute before reset (NR)
 
 |* Enter Debug Mode +
 (trcstate=01)
@@ -167,4 +167,4 @@ Bits: +
 * 3: GROUP2_EXIT (Trace-on)
 
 
-Read-only implementation bits are defined for GROUP1 and 2 in the *trTeEvtFeatures* (later in this document) and the 4 Enable bits in the *trTeEvtControl* register. 
+Read-only implementation bits are defined for GROUP1 and 2 in the *trTeEvtFeatures* (later in this document) and the 4 Enable bits in the *trTeEvtControl* register.

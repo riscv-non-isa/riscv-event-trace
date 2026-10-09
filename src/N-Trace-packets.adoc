@@ -629,4 +629,3 @@ The RHTI spec cite:[riscv-RHTI-spec-0.83(Trace State)] added Trace State signal 
 *11* Unbounded wait - pausing trace for an unbounded amount of time (e.g. executing WFI or WFE instructions)
 
 These state and state transitions are documented in Chapter 3 as to the "abstract" trace-on and trace-off messages necessary to generate. This chapter documents the N-Trace messages to be generated for these state transitions.
-

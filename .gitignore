@@ -6,3 +6,6 @@
 /.vscode/*
 /src/.vscode/*
 .gitignore
+.vscode/
+.vscode/settings.json
+.vscode/\nanalysis/\n

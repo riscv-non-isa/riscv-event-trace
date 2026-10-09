@@ -2,8 +2,9 @@
 /images/*
 /pdf/*
 /pdfs/*
-src/N-Trace-packets.adoc
-pdf/riscv-event-trace(5-29-26).pdf
+/analysis/*
+/.vscode/*
+/src/.vscode/*
 .gitignore
 .vscode/
 .vscode/settings.json

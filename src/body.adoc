@@ -490,17 +490,17 @@ RISC-V programmable performance counters have selector registers (programmed wit
 
 *Single event vs. multi-cycle duration.* Some counter event types are singular events - they are true for one cpu cycle indicating an occurrence such as an intruction retired.  Some event types are true for multiple cycles indicating a condition that stays true for a duration, where a performance counter accumulates that number of cycles while the condition is true.
 
-*Level-to-Edge Conversion.* This document assumed selector outputs are level sensitive. The Event Trace hardware requires edge sensitivity, thus it needs to convert the level to an edge to trigger an event to be recorded by Event Trace. The occurrence of the event can remain at a high level but one one instance of the event is recorded. (Another way of describing this is to convert a multi-cycle level into a single-cycle pulse).
+*Level-to-Edge Conversion.* This document assumed selector outputs are level sensitive. The Event Trace hardware requires edge sensitivity, thus it needs to convert the level to an edge to trigger an event to be recorded by Event Trace. The occurrence of the event can remain at a high level but one instance of the event is recorded. (Another way of describing this is to convert a multi-cycle level into a single-cycle pulse).
 
 *Stretching logic high levels.* Event Trace hardware must accommodate signals that can change level on every CPU cycle.  If the clock used for the Trace Encoder runs at a divided ratio to the CPU clock, then the Event Trace hardware may require stretch logic to convert single-cpu-cycle levels into a level recognizable by the edge detector.
 
-*Single value output.* Another programmable performance counter attribute is that some events report greater than 1 value for a single cycle.  This can occur, for example, when counting retired instructions or even a class of instructions like loads that may retire more than one per cycle. A simplification for Event Trace is to treat all selector outputs as a single value of 0 or 1 (converting > 1 to 1 which can be done with an OR gate). An asserted selector output can be thought of as a code marker.
+*Single value output.* Another programmable performance counter attribute is that some events report greater than 1 value for a single cycle.  This can occur, for example, when counting retired instructions or even a class of instructions like loads or alu ops that may retire more than one per cycle. A simplification for Event Trace is to treat all selector outputs as a single value of 0 or 1 (converting > 1 to 1 which can be done with an OR gate). An asserted selector output can be thought of as a code marker.
 
 *Tracing perf counter events.* These (mhpmeventX) selector outputs are routed to the Event Trace hardware to generate a trace packet (when enabled).  The trace packet latches the most recent retired instruction PC and timestamp. This enables tracing of where in the executing code a performance event occurs such as a cache miss, branch mispredict, or any other countable event that can be selected by a performance counter selector.
 
 *Enabling selector recording.* An Event Trace control register <<Performance-Selector-Control>> includes an enable bit for each performance counter selector included in Event Trace.
 
-There are a class of programmable performance counter events that can occur with high frequency.  To avoid generating a trace event for every one which could overload the trace system, the selector event hardware includes a *cycles-interval* timer <<select-cycles-interval>> which programs an interval in which the hardware counts occurrences of the event.  At the end of the interval, Event Trace constructs a packet that includes the selector ID, the latched timestamp when the first event occurred, and the count. The duration of the cycles-interval timer is user selectable, with a minimum and maximum value.
+There is a class of programmable performance counter events that can occur with high frequency.  To avoid generating a trace event for every one which could overload the trace system, the selector event hardware includes a *cycles-interval* timer <<select-cycles-interval>> which programs an interval in which the hardware counts occurrences of the event.  At the end of the interval, Event Trace constructs a packet that includes the selector ID, the latched timestamp when the first event occurred, and the count. The duration of the cycles-interval timer is user selectable, with a minimum and maximum value.
 
 The counter is defined to be 24 bits (increments-of-6 work best for N-Trace cite:[riscv-N-Trace-spec-1.0]), and is a saturating counter so that it does not roll over and cause loss of information.
 
@@ -1295,37 +1295,58 @@ NOTE: The counter is not accessible as a memory-mapped register. It is part of t
 .Event Trace Performance Selector Control - *trTeEvtPerfSelectControl* (32b)
 [cols="8%,22%,~,8%,8%", options="header"]
 |===
-^|Bits ^|Field ^|Description ^|RW ^|Reset
+^|Bit(s) ^|Field ^|Description ^|RW ^|Reset
 |0
 |trTeEvtPerfSel0
-|0: don't trace; 1: trace rising edge of selector output; count level (high) during time interval
+|0: don't trace; 1: trace rising edge of selector output; count (high) level  during time interval
 |WARL
 |0
 
 |1
 |trTeEvtPerfSel1
-|0: don't trace; 1: trace rising edge of selector output; count level (high) during time interval
+|0: don't trace; 1: trace rising edge of selector output; count (high) level during time interval
 |WARL
 |0
 
 |2
 |trTeEvtPerfSel2
-|0: don't trace; 1: trace rising edge of selector output; count level (high) during time interval
+|0: don't trace; 1: trace rising edge of selector output; count (high) level during time interval
 |WARL
 |0
 
 |3
 |trTeEvtPerfSel3
-|0: don't trace; 1: trace rising edge of selector output; count level (high) during time interval
+|0: don't trace; 1: trace rising edge of selector output; count (high) level during time interval
 |WARL
 |0
 
-|7:4
-|Reserved | | |
+|4
+trTeEvtPerfSel4
+|0: don't trace; 1: trace rising edge of selector output; count (high) level  during time interval
+|WARL
+|0
+
+|5
+trTeEvtPerfSel5
+|0: don't trace; 1: trace rising edge of selector output; count (high) level during time interval
+|WARL
+|0
+
+|6
+trTeEvtPerfSel6
+|0: don't trace; 1: trace rising edge of selector output; count (high) level during time interval
+|WARL
+|0
+
+|7
+trTeEvtPerfSel7
+|0: don't trace; 1: trace rising edge of selector output; count (high) level during time interval
+|WARL
+|0
 
 |11:8
 |[[select-cycles-interval]]trTeEvtPerfSelInterval
-|*cycles-interval* during which perf selector level (high) events are counted. Interval duration is selectable in powers of 2 +
+|*cycles-interval* during which perf selector (high) level events are counted. Interval duration is selectable in powers of 2 +
  *cycles-interval* = *2^(trTeEvtPerfSelInterval + 6)* +
 Range is 2^6 to 2^21, i.e. 64 cycles to ~2 million cycles in powers-of-2 values. For a 1GHz clock, the range is 64ns to 2ms. Common for all Perf Selects.
 |WARL

@@ -240,9 +240,12 @@ Generated when external signal edge on this channel (SIG_ID) is detected by the 
 (((N-Trace, Event, Performance Counter Selector Message)))
 |9
 |1
-|SEL_ID
-|Count
-|*SEL_ID* is the Selector (channel) recorded. *Count* is the number of cycles the signal has a high value (i.e. level sensitive) during the interval window, defined by the control register *trTeEvtControl.trTeEvtPerfSelInterval* <<select-cycles-interval>>.
+|PC
+|SEL_DATA
+|PC is the address of the last instruction retired at the time of the first occurrence of the event, which starts the interval counter. +
+*SEL_ID* is the Selector (channel) recorded (0-7). +
+ *SEL_COUNT* (24b) is the number of counted cycles that the performance counter selector has been at a high level during the interval window. (Duration defined by *trTeEvtControl.trTeEvtPerfSelInterval* <<select-cycles-interval>>). +
+ SEL_DATA = {SEL_COUNT, SEL_ID}
 |===
 
 === Event Trace Message Formats for Calls and Returns

@@ -142,7 +142,7 @@ External signal tracing is primarily for a few (up to 8) signals that don't tran
 
 For cpu events that can occur in high-frequency bursts such as cache misses, the trace packet captures a count of the number of occurrences of the event over a user-selectable interval of time.
 |===
-
+[#Event-Types]
 == Event Types and Message Contents
 === Non-function Events
 (((Event Types, non-function)))
@@ -164,6 +164,7 @@ RHTI signals referenced in this section: +
 * *iaddr* +
 * *iretire*
 
+[#List-of-Rules]
 .List of Rules
 [cols="50%", options="header"]
 |===
@@ -710,18 +711,18 @@ Note that a change in value will generate a trace-on or trace-off Event Trace pa
 
 |4:3
 |trTeEvtCallMode
-|0: use messages that include both source and destination addresses for calls (CALL_SYNC, CALL_FULL). These generate more bytes (than modes 1, 2), however the decoder can determine the symbolic line # where calls are made and returned to without requiring a binary image. (Required if Call/Ret implemented) +
-1: Generate CALL_DEST for both direct and indirect calls. +
-2: least bandwidth: uses CALL_DEST for indirect calls, CALL_PC for direct (inferrable) calls. Most aggressive on saving bandwidth +
+|0: use messages that include both source and destination addresses for calls (CALL_SRCTGT). These generate more bytes (than modes 1, 2), however the decoder can determine the symbolic line # where calls are made and returned to without requiring a binary image. (Required if Call/Ret implemented) +
+1: Generate CALL_TGT for both direct and indirect calls. +
+2: least bandwidth: uses CALL_TGT for indirect calls, CALL_SRC for direct (inferrable) calls. Most aggressive on saving bandwidth +
 3: reserved
 |WARL
 |0
 
 |6:5
 |trTeEvtRetMode
-|0: use messages that include both source and destination addresses for returns (RET_FULL). These generate more bytes (than modes 1, 2), however the decoder can determine the symbolic line # where return is made and returned to without requiring a binary image. (Required if Call/Ret implemented) +
-1: generate RET_DEST for returns. +
-2: least bandwidth: uses RET with no addresses when return address matches the call, otherwise RET_DEST. +
+|0: use messages that include both source and destination addresses for returns (RET_SRCTGT). These generate more bytes (than modes 1, 2), however the decoder can determine the symbolic line # where return is made and returned to without requiring a binary image. (Required if Call/Ret implemented) +
+1: generate RET_TGT for returns. +
+2: least bandwidth: uses RET with no addresses when return address matches the call, otherwise RET_TGT. +
 3: reserved
 |WARL
 |0
@@ -946,13 +947,13 @@ NOTE: For the setup of *trTeEvtExceptionEn* and *trTeEvtInterruptEn*, the return
 |RO
 |0 (SD)
 
-|18-16
+|19-16
 | [[SelectorsImplemented]]trTeEvtSelectorsImpl
-|Number of Performance Counter selectors implemented for Event Trace (0-7)
+|Number of Performance Counter selectors implemented for Event Trace (0-8)
 |RO
 |0 (SD)
 
-|31:19
+|31:20
 |Reserved | | |
 |===
 SD = System Dependent. Reset value of a field is dependent on the build.
@@ -1177,7 +1178,7 @@ For XLEN=32, access is through the address of trTeEvtPPCEvent__i__ + 4. +
 
 Event Trace supports up to 8 external signals that can be traced as events. The user programs the edge detection for each signal (don't trace, rising, falling, or both) in the *trTeEvtExtSigEnables* register. When the corresponding signal edge is detected, an Event Trace packet is generated with the signal ID and the PPC values, if enabled.
 
-NOTE: These fields are WARL; the value of the field is always 0 if the feature is not implemented, thus by writing 1, 2, or 3 to each field, the WARL return value indicates if the feature is implemented. The reset value is also 0 for all fields which means that by default no external signals will be traced until the user enables them.
+NOTE: These fields are WARL; the value of the field is always 0 if the feature is not implemented, thus by writing 1, 2, or 3 to each field, the WARL return value indicates if the external signal is implemented, per channel. It is required that implemented channels are contiguous, beginning with ExtSig0. The reset value is also 0 for all fields which means that by default no external signals will be traced until the user enables them.
 
 .Event Trace External Signal Control - *trTeEvtExtSigControl* (32b)
 [cols="8%,25%,~,8%,8%", options="header"]
@@ -1285,9 +1286,13 @@ NOTE: The counter is not accessible as a memory-mapped register. It is part of t
   {bits: 1, name:'trTeEvtPerfSel1'},
   {bits: 1, name:'trTeEvtPerfSel2'},
   {bits: 1, name:'trTeEvtPerfSel3'},
+  {bits: 1, name:'trTeEvtPerfSel4'},
+  {bits: 1, name:'trTeEvtPerfSel5'},
+  {bits: 1, name:'trTeEvtPerfSel6'},
+  {bits: 1, name:'trTeEvtPerfSel7'},
   {bits: 4, name:'Reserved'},
   {bits: 4, name:'trTeEvtPerfSelInterval'},
-  {bits: 20, name:'Reserved'},
+  {bits: 16, name:'Reserved'},
 ], config:{lanes: 4, hspace:1024}}
 ....
 
@@ -1321,25 +1326,25 @@ NOTE: The counter is not accessible as a memory-mapped register. It is part of t
 |0
 
 |4
-trTeEvtPerfSel4
+|trTeEvtPerfSel4
 |0: don't trace; 1: trace rising edge of selector output; count (high) level  during time interval
 |WARL
 |0
 
 |5
-trTeEvtPerfSel5
+|trTeEvtPerfSel5
 |0: don't trace; 1: trace rising edge of selector output; count (high) level during time interval
 |WARL
 |0
 
 |6
-trTeEvtPerfSel6
+|trTeEvtPerfSel6
 |0: don't trace; 1: trace rising edge of selector output; count (high) level during time interval
 |WARL
 |0
 
 |7
-trTeEvtPerfSel7
+|trTeEvtPerfSel7
 |0: don't trace; 1: trace rising edge of selector output; count (high) level during time interval
 |WARL
 |0

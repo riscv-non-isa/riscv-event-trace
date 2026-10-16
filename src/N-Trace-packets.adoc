@@ -25,22 +25,22 @@ This file (N-Trace-packets.adoc) defines the Event Trace messages that extend N-
 * EVTSRC=9: Perf Counter Selector Occurrence
 
 |0x24 (36)
-| CALL_SYNC Function Event
+| CALL_SRCTGT_SYNC Function Event
 
 |0x25 (37)
-| CALL_FULL Function Event
+| CALL_SRCTGT Function Event
 
 |0x26 (38)
-| CALL_DEST Function Event
+| CALL_TGT Function Event
 
 |0x27 (39)
-| CALL_PC Function Event
+| CALL_SRC Function Event
 
 |0x28 (40)
-| RET_FULL Return Event
+| RET_SRCTGT Return Event
 
 |0x29 (41)
-| RET_DEST Return Event
+| RET_TGT Return Event
 
 |0x2A (42)
 | RET Function Event
@@ -260,7 +260,7 @@ NOTE: If only the destination address of an event is recorded in the message, th
 |===
 |Name |TCODE |Source |Destination |ITYPE |Description
 
-|CALL_SYNC
+|CALL_SRCTGT_SYNC
 |36
 |PC +
 (F-ADDR)
@@ -270,7 +270,7 @@ NOTE: If only the destination address of an event is recorded in the message, th
 |Traces both Src and Dest addresses. The second address is XOR compressed. Full (absolute) timestamp if enabled. +
 *trTeEvtCallMode*=0
 
-|CALL_FULL
+|CALL_SRCTGT
 |37
 |PC +
 (U-ADDR)
@@ -280,7 +280,7 @@ NOTE: If only the destination address of an event is recorded in the message, th
 |Traces both Src and Dest compressed (unique) addrs; relative timestamp if enabled. +
 *trTeEvtCallMode*=0
 
-|CALL_DEST
+|CALL_TGT
 |38
 |-----
 |Dest Addr +
@@ -290,7 +290,7 @@ NOTE: If only the destination address of an event is recorded in the message, th
 Source function can be derived from trace history however Src address (i.e. line # of caller) is unknown. +
 *trTeEvtCallMode*=1
 
-|CALL_PC
+|CALL_SRC
 |39
 |PC +
 (U-ADDR)
@@ -299,7 +299,7 @@ Source function can be derived from trace history however Src address (i.e. line
 |inferrable call so destination obtained from opcode if binary available +
 *trTeEvtCallMode*=2
 
-|RET_FULL
+|RET_SRCTGT
 |40
 |PC +
 (U-ADDR)
@@ -309,7 +309,7 @@ Source function can be derived from trace history however Src address (i.e. line
 |Traces both Src and Dest (return to) addresses +
 *trTeEvtRetMode*=0
 
-|RET_DEST
+|RET_TGT
 |41
 |
 |Dest Addr +
@@ -328,15 +328,15 @@ Source function can be derived from trace history however Src address (i.e. line
 |===
 
 Recommended priority of implementation +
-1: CALL_SYNC, CALL_FULL, RET_FULL +
-2: CALL_PC, RET +
-3: CALL_DEST, RET_DEST
+1: CALL_SRCTGT_SYNC, CALL_SRCTGT, RET_SRCTGT +
+2: CALL_SRC, RET +
+3: CALL_TGT, RET_TGT
 
-====  CALL_SYNC Function Event
-(((N-Trace, CALL_SYNC message)))
+====  CALL_SRCTGT_SYNC Function Event
+(((N-Trace, CALL_SRCTGT_SYNC message)))
 Used to synchronize messages, outputting new absolute address for any call type (8, 9)
 
-.CALL_SYNC Function Event
+.CALL_SRCTGT_SYNC Function Event
 [cols="10%,20%,~", width=90%, options="header"]
 |===
 |Bits |Field |Description
@@ -362,11 +362,11 @@ Used to synchronize messages, outputting new absolute address for any call type 
 |Absolute timestamp value
 |===
 
-====  CALL_FULL Function Event
-(((N-Trace, CALL_FULL message)))
+====  CALL_SRCTGT Function Event
+(((N-Trace, CALL_SRCTGT message)))
 Trace both source and destination addresses of any call type (8, 9)
 
-.CALL_FULL Function Event
+.CALL_SRCTGT Function Event
 [cols="10%,20%,~", width=90%, options="header"]
 |===
 |Bits |Field |Description
@@ -392,11 +392,11 @@ Trace both source and destination addresses of any call type (8, 9)
 |Relative timestamp value (offset from last reported absolute or relative timestamp)
 |===
 
-==== CALL_DEST Function Event
-(((N-Trace, CALL_DEST message)))
+==== CALL_TGT Function Event
+(((N-Trace, CALL_TGT message)))
 For Uninferrable call
 
-.CALL_DEST Function Event
+.CALL_TGT Function Event
 [cols="10%,20%,~", width=90%, options="header"]
 |===
 |Bits |Field |Description
@@ -418,11 +418,11 @@ For Uninferrable call
 |Relative timestamp value
 |===
 
-====  CALL_PC Function Event
-((((N-Trace, CALL_PC message)))
+====  CALL_SRC Function Event
+((((N-Trace, CALL_SRC message)))
 For Inferrable call
 
-.CALL_PC Function Event
+.CALL_SRC Function Event
 [cols="10%,20%,~", width=90%, options="header"]
 |===
 |Bits |Field |Description
@@ -444,11 +444,11 @@ For Inferrable call
 |Relative timestamp value
 |===
 
-====  RET_FULL Return Event
-((((N-Trace, RET_FULL message)))
+====  RET_SRCTGT Return Event
+((((N-Trace, RET_SRCTGT message)))
 Trace both source and destination addresses of return when caller is known.
 
-.RET_FULL Return Event
+.RET_SRCTGT Return Event
 [cols="10%,20%,~", width=90%, options="header"]
 |===
 |Bits |Field |Description
@@ -474,11 +474,11 @@ Trace both source and destination addresses of return when caller is known.
 |Relative timestamp value
 |===
 
-====  RET_DEST Return Event
-((((N-Trace, RET_DEST message)))
+====  RET_TGT Return Event
+((((N-Trace, RET_TGT message)))
 Output destination address only, to reduce bandwidth.
 
-.RET_DEST Return Event
+.RET_TGT Return Event
 [cols="10%,20%,~", width=90%, options="header"]
 |===
 |Bits |Field |Description
@@ -527,7 +527,7 @@ Trace hardware can maintain a one-level stack of the last caller PC address (+2 
 
 Messages that include the Program Counter (PC) are predominantly U-ADDRes.  Periodically, however, the full address (F-ADDR) must be output to provide a synchronization point for the trace decoder. The period for generating a synchronization message is defined by the N-Trace register *trTeControl.trTeInstSyncMax* cite:[riscv-trace-control-spec-1.0(Trace Encoder Control Interface)]. The count is 2^(trTeInstSyncMax+4).
 
-Hardware counts the number of Event Trace messages that include a PC and outputs a synchronization message when the count reaches the programmed value. Messages that can include an F-ADDR include all EVT (TCODE=0x23) messages that include a PC address and CALL_SYNC.
+Hardware counts the number of Event Trace messages that include a PC and outputs a synchronization message when the count reaches the programmed value. Messages that can include an F-ADDR include all EVT (TCODE=0x23) messages that include a PC address and CALL_SRCTGT_SYNC.
 
 ===  Profiling Performance Counter (PPC) Recording
 (((N-Trace, Performance Counter Recording message)))
@@ -622,7 +622,7 @@ N-Trace MTIME_SYNC Message to record mtime and trace timestamp simultaneously fo
 |F (Full) timestamp value
 |===
 
-[#]
+[#Inhibiting-Trace]
 === Inhibiting Trace for Security and Unbounded Wait reasons
 (((N-Trace, Inhibiting Trace Message)))
 
@@ -631,4 +631,4 @@ The RHTI spec cite:[riscv-RHTI-spec-0.83(Trace State)] added Trace State signal 
 *10* Inhibiting trace for security reasons +
 *11* Unbounded wait - pausing trace for an unbounded amount of time (e.g. executing WFI or WFE instructions)
 
-These state and state transitions are documented in Chapter 3 as to the "abstract" trace-on and trace-off messages necessary to generate. This chapter documents the N-Trace messages to be generated for these state transitions.
+These state values and state transitions are documented in the <<nonfunc-events, nonfunctional events>> section as to the "abstract" trace-on and trace-off messages necessary to generate. It also documents general rules <<List-of-Rules, List of Rules>> for these state transitions.

@@ -30,17 +30,21 @@ The Event Trace debug trigger/watchpoint event is limited to one trigger match p
 |===
 
 //[[Performance Counter Selector Output]]
-=== HPMeventX Output
-(((RHTI Extensions, HPMeventX Output)))
+=== hpmeventX Output from core
+(((RHTI Extensions, hpmeventX Output)))
 
-.Optional sideband event selector outputs *HPMEventX* for Event Trace Encoder
-[cols="35%, 10%, ~"]
+.Optional sideband event selector outputs *hpmeventX* for Event Trace Encoder
+[cols="40%,~,~"]
 |===
 ^|*Signal* ^|*Group* ^|*Function*
-|*mhpmeventXOutput*[_eventNum_p-1_:0]
-| O | Field that carries (routes) the least significant "Num" Hardware Performance Monitor (HPM) mhpmEventX selector outputs, where Num is _eventNum_p_. These signal outputs may be used for profiling performance counter delta counting or Selector-based event generation or both.
+|*mhpmeventXOutput*[_eventNum_p-1_*_width_:0]
+| O | Field that routes perf counter selector outputs to the Event Trace Unit. +
+_width_ is the width in bits of every selector. The width can vary depending on the core implementation. It encodes the largest number of perf counter events that can occur in once cycle. An example is the number of instructions retired per cycle. +
 
-If HPM mhpmeventX selectors are being used (Alternative 2), _eventNum_p_ can range from 1 to 8.
+_eventNum_p_ is the number of mhpmeventX selector outputs implemented <<Alternative-1>> (max is 8), or it could be independent perf event selectors <<Alternative-2>> implemented in the core and routed to the Event Trace encoder. +
+
+ The signal outputs in this field may be used for PPCs delta counters <<Profiling-Performance-Counters>> or Selector-based event generation <<Performance-Counter-Selector-Based-Events>> or both.
+
 |===
 
 [#Instruction Retired Count]
@@ -48,7 +52,7 @@ If HPM mhpmeventX selectors are being used (Alternative 2), _eventNum_p_ can ran
 (((RHTI Extensions, Instruction Retired Count)))
 
 .Optional sideband encoder *InstRetCount* output signals
-[cols="35%, 10%, ~"]
+[cols="30%, ~, ~"]
 |===
 ^|*Signal* ^|*Group* ^|*Function*
 |*instretcount*[_countwidth_p-1_:0]

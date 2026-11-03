@@ -632,3 +632,41 @@ The RHTI spec cite:[riscv-RHTI-spec-0.83(Trace State)] added Trace State signal 
 *11* Unbounded wait - pausing trace for an unbounded amount of time (e.g. executing WFI or WFE instructions)
 
 These state values and state transitions are documented in the <<nonfunc-events, nonfunctional events>> section as to the "abstract" trace-on and trace-off messages necessary to generate. It also documents general rules <<List-of-Rules, List of Rules>> for these state transitions.
+
+=== Summary of TCODE Usage (non-normative)
+
+The following table provides a summary of the TCODE values used by the original Nexus specification,N-Trace messages, and Event Trace extensions
+
+
+
+[cols=3, options="header"]
+|===
+|Version
+|TCODEs Defined
+|Reserved or Unused
+
+|Nexus (IEEE-ISTO 5001)
+|0-15, 20-35
+|16-19, 36-55 +
+56-62 Vendor-defined
+
+|N-Trace
+|2-4, 8-9, 11-12, 27-30, 33
+|56-62 Vendor-defined
+
+|Event Trace Extensions
+|16-17 (2) from Reserve, +
+ 34-35 In-Circuit Trace, +
+ 36-42 (7) from Reserve
+|Remaining unused +
+ 18-19 (2) +
+43-55 (13)
+
+|RIT (RISC-V Instrumentation Trace)
+|7 (Data Acquisition, or DQM)
+|---
+|Data Trace for N-Trace (future)
+|5 (Data Trace - Data Write) +
+6 (Data Trace - Data Read)
+|---
+|===

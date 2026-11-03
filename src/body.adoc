@@ -1,4 +1,4 @@
-//10-6-26 4am
+//11-2-26 7pm
 
 [[body]]
 == Features
@@ -178,7 +178,6 @@ a|* When an event trace packet that contains an instruction address is emitted, 
 a|* While *trcstate*=2'b10 meaning "inhibit trace for security reasons", no trace messages are recorded.
 
 a|* If there is a case of a message with two PC addresses with one valid PC and one filtered out or blocked by security (e.g. jump or call), the PC blocked by security or filter can either be omitted from a trace packet (if one exists) or set to 0. The trace decoder is responsible for interpreting address 0 as "unknown" or "excluded".
-
 |===
 
 NOTE: *resync timer* A periodic count is defined by *trTeInstSyncMax* and the value of trTeInstSyncMode value counts by packets, clock cycles, or instructions before a synchronization F-ADDR PC message is required. +
@@ -230,7 +229,7 @@ Context ID (Optional) +
 Context ID (Optional) +
  PC of first retired instruction after trace-on transition (Optional)
 
-.6+|Trace-off
+.6+|Trace-off [#trace-off]
 |Enter Reset
 | CauseID=ENTER_RESET +
 PC = last instruction to execute before reset (Optional)
@@ -543,49 +542,55 @@ Most Trace Encoders will include a FIFO for buffering trace events and to smooth
 
 This is a front-end throttle to prevent the Trace Encoder FIFO from filling up and using the Encoder back-end to stop tracing (which generates an error packet when tracing is resumed). The lockout affects all external inputs to the encoder (when enabled) including Debug trigger/watchpoints <<Debug-Trigger-Watchpoint-Events>>, User Definable Signals <<User-Definable-Signal-Events>>, External Signals (triggers) <<External-Signal-Events>>, and Performance Counter selectors <<Performance-Counter-Selector-Based-Events>>. The control register to enable or disable this feedback mechanism is <<EventLockout>>.
 
+[#Profiling-Performance-Counters]
 == Profiling Performance Counters (PPCs)
 (((Profiling Performance Counters, description)))
 
-* PPCs are defined in Event Trace as delta counters, counters that are recorded at the time of an event, simultaneously reset to zero, then begin counting again. This is a requirement to keep the counter values smaller to reduce trace bandwidth and storage.  Post-processing of the trace data can reconstruct event counts across multiple event sequences to provide accumulated totals.  An example would be inclusive function call-return counts, where snippets of code execute in a function then more counts for functions that it calls.  "Self" or "exclusive" counts, i.e. only counts attributed to the code of the function itself would only accumulate counts from calls to other functions and from returns to calls of other functions.
+*Delta PPCs are independent counters specific to Event Trace. They are separate from and not reliant on hpmcounters.*
 
-Two mechanisms for implementing delta counters are:
+* Event Trace defines Profiling Performance Counters (PPCs) as delta counters that are:
+** recorded at the time of an event with a count between the previous event and current event
+** simultaneously reset to zero then begin counting again - a design choice to keep the counter values smaller to reduce trace bandwidth and storage.
+** PPCs are required to be gated off when tracing is gated off to ensure that no events are counted while tracing is inactive. Causes of trace inactivity are itemized in <<trace-off>>.
+** counters saturate at their maximum all-ones value to avoid roll-over.
 
-* Delta counters based on hpmcounters, or
+* Post-processing of the trace data can reconstruct event counts across multiple event sequences to provide accumulated totals.  
+** *inclusive* counts for a function are defined as the sum of all events between the entry to the function and the exit from the function, including the time executing all functions it calls directly or indirectly.
+** *exclusive* or *self* counts for a function are defined as those events that make up execution of only the function itself. Calls to other functions are not included. So as an example (for C=call, R=return), if C1 calls C2 many times, C1 exclusive/self counts are the sum of C1-to-C2, R2-to-C2, R2-to-C2..., and when C1 returns, R2-to-R1.
 
-* Delta counters based on independent (Event Trace) counters, i.e. not reliant on hpmcounters
+(((Event Selectors)))
 
-Implementers have the option to implement one or the other these mechanisms.
+=== Event Selector Implementation Options for PPCs
 
+The event selectors and the control registers which determine which performance events are counted by the profiling performance counters can be based on existing HPM event selector control registers (mhpmeventX) or implemented as independent MMIO registers, mapped as part of the Event Trace unit. Developers have the option to implement one or the other of these mechanisms.
+
+(((Event Selectors, Alternative 1 mhpmeventX)))
 [#Alternative-1]
-=== Alternative 1: Delta counters based on hpmcounters
-The first mechanism may appear to save hardware costs by using existing hpmcounters, however the disadvantages can be:
+==== Alternative 1: Event selectors for PPCs share the existing mhpmeventX CSRs
 
-1) delta counts are generated when a new event occurs, which terminates the previous event and the delta count is assigned to that terminated event.  Generating delta counts requires additional latching of the running performance counter at the end of the terminating event and the beginning of the next event so it can be subtracted from the counter at the time that event terminates, to produce the delta count.
+This alternative relies on sharing the HPM event selectors (mhpmeventXs) with performance counters. The outputs of these selectors - mhpmevent3 through mhpmevent10 (assuming 8 performance counters) - in addition to supplying the HPM counters, are routed through the RHTI interface to the Event Trace encoder. The duplicated outputs from the mhpmeventX selectors in the HPM module thus supply the Event Trace unit.
 
-2) these counters become a shared resource between traditional software-controlled performance counters and their use with Event Trace. In other words, if Event Trace is being used with these counters, they are not available to be used as traditional performance counters for software to read and write.
+Notes:
 
-3) hpmcounters are CSRs and located in the core.  To implement delta counts requires either routing the outputs of each of these counters to the Trace Encoder to latch and subtract the start and end values or, adding this logic into the core and routing the delta count to the Trace Encoder.  Both options require additional wires and routing complexity; the latter option of generating the delta counters in the core then requires only 24 wires per counter to be rounted to the Trace Encoder.
+ * The number of wires for each mhpmeventX output depends on the number of ocurrences that can happen per-cycle. For example, a 2-issue cpu that retires up to 2 instructions per cycle would require 2 wires for each mhpmeventX output.
 
-No additional control registers are required for this configuration since the hpmcounters are being used to generate the delta counts.
+* Alternative 1 saves hardware costs but requires the sharing of these HPM performance counter selectors. This sharing still allows for performance counters to be used at the same time as Event Trace uses them, however, it means that the settings for these mhpmeventX selectors have to be the same for both uses.
 
-[#Alternative-2a]
-=== Alternative 2a: Delta counters based on independent Event Trace counters (not reliant on hpmcounters), not reliant on mhpmeventX selectors
+* Programming the event selectors requires writing to the mhpmeventX CSRs, which affects both the HPM counters and the Event Trace unit simultaneously.
 
-For Event Trace, independent profiling performance counters can be implemented as delta counters, with the output latched then reset to zero at the start of the next event. These delta counters saturate at their maximum all-ones value to avoid roll-over.
+(((Event Selectors, Alternative 2 Independent)))
+[#Alternative-2] 
+==== Alternative 2: Separate, independent Event Trace performance event selectors for PPCs
 
-Alternative 2a, independent PPCs, also implement their own event selectors (see <<Performance-Counter-Selector-Based-Events>>) and thus make them completely indpendent of the HPM unit.
+PPC event selectors (see <<Performance-Counter-Selector-Based-Events>>) are implemented as duplicate multiplexers to the HPM selectors and the selected performance event(s) is(are) controlled by Event Trace MMIO registers, each 64 bits wide.
 
-NOTE: The previous section covered the Event trace feature "Event Trace Performance Counter Selector-Based Events" which generates a trace packet when an enabled performance counter selector output is a "1" level. The PPCs are a way of counting selector events and capturing the summed counts at the termination of an event, thus compacting these occurrences into a count. If this feature is implemented then the same selector outputs that generate Event Trace Performance Counter Selector-Based Events can also be routed to the PPCs to count the occurrences of these events between Event Trace events.
+The physical layout of the selectors can be the developer's choice - they can be close to the HPM unit in the core or integrated within the Event Trace unit itself, further away from the core. There may be a dependency on the selector registers themselves and the MMIO bus that writes their contents.
 
+NOTE: The assumption of the independent performance event selectors (Alternative 2) is that these selector multiplexers and their control registers are equivalent in function to the HPM mhpmeventX selectors.  This does not necessarily have to be the case; the perf events could be a subset or even superset of the HPM events. However this specification does not mandate this equivalence and the definition of selectable events is outside the scope of this document.
 
-[#Alternative-2b]
-=== Alternative 2b: Delta counters based on independent (Event Trace) counters (not reliant on hpmcounters), however reliant on mhpmeventX selectors
+NOTE: The previous section covered the Event trace feature "Event Trace Performance Counter Selector-Based Events" which generates a trace packet when an enabled performance counter selector output is a "1" level. The PPCs are a different way of counting selector events by capturing the summed counts at the termination of an event, thus compacting these occurrences into a count. If implemented, the same selector outputs are used for both purposes, i.e., the outputs that generate Event Trace Performance Counter Selector-Based Events are also routed to the PPCs to count the occurrences of these events between Event Trace events.
 
-Alternative 2b, independent PPCs, relies on HPM event selectors (mhpmeventXs) routing the outputs of the mhpmeventX selectors in the HPM module to the Event Trace unit.
-
-This option saves hardware costs but requires the sharing of performance counter resources of the HPM unit. Note that this sharing still allows for performance counters to be used at the same time as Event Trace uses them. It just means that the settings for these mhpmeventX selectors have to be the same for both uses.
-
-==== Recommended features of Profiling Performance Counters (PPCs) for Event Trace (non-normative)
+==== Recommended features of Profiling Performance Counters (PPCs) (non-normative)
 (((Profiling Performance Counters, recommended features)))
 
 * 24-bit delta counters, max of 8
@@ -595,26 +600,33 @@ This option saves hardware costs but requires the sharing of performance counter
 * as a secondary use, provide a control register field to latch PPCs thus allowing JTAG control and readout of PPCs periodically.  Since they are memory-mapped, this performance counter sampling can be done with no cpu intervention which is not possible with CSR-based performance counters.
 
 === Fixed Counter - Instructions Retired
-A very common and useful performance measurement is IPC - instructions per cycle.  This ratio indicates the instruction throughput of the core and identifies the actual code performance relative to the ideal.  For example, if a core is a 2-issue/2-instruction retire per cycle core then its ideal and maximum performance would be IPC=2.  Numbers less than 2 indicate how far from the ideal it is performing.  Measuring IPC per function with Event Trace provides a reasonably-fine granular view of performance, and sorting function results by IPC will identify which functions are furthest from the ideal and thus have the most to gain by improving their performance.
+A very common and useful performance measurement is IPC - instructions per cycle.  This ratio indicates the instruction throughput of the core and identifies the actual code performance relative to the ideal.  For example, if a core is a 2-issue/2-instruction retire per cycle core then its ideal and maximum performance would be IPC=2.  Numbers less than 2 indicate how far from the ideal it is performing.  Measuring IPC per function with Event Trace provides a reasonably-fine grain view of performance, and sorting function results by IPC will identify which functions are furthest from the ideal and thus have the most to gain by improving their performance.
+
+One option for developers is to implement a *Fixed counter - Instructions Retired* 24-bit saturating PPC. If included, it reduces the number of perf event selectors and control registers by one. This counter must be able to count > 1 instruction per cycle if the core retires more than 1 instruction per cycle.
 
 The current RHTI specification cite:[riscv-RHTI-spec-0.83] does not include a signal set for reporting the number of instructions retired in each cycle.  The proposal for adding this signal set is here - <<Instruction_Retired_Count, Instruction Retired Count>>.
 
-An implementer can include the *Fixed counter - Instructions Retired* feature without the RHTI spec by accessing and routing these signals from the HPM unit to the Trace Encoder.
+However, since counting instructions retired is a RISC-V requirement (the *minstret* CSR  is hpmcounter1, a 64-bit performance counter documented in section 3.1.10 Hardware Performance Monitor, RISC-V Privileged Architecture Manual) counting instret is already implemented in the core and the wire(s) simply needs to be routed to the Event Trace Encoder PPC.
 
-NOTE: Counting instructions retired is a RISC-V requirement, which is the *minstret* CSR (instructions retired is hpmcounter1), a 64b performance counter (section 3.1.10 Hardware Performance Monitor, RISC-V Privileged Architecture Manual). In other words, it is already implemented in the core. The signal set simply needs to be routed to the Event Trace Encoder.
+One note is that this fixed instructions-retired counter may not have the ability to filter counts by privilege level. It depends on the capabilities of the underlying *minstret* counter and whether Smcntrpmf (Cycle and Instret Privilege Mode Filter, Chapter 7 of Privileged Architecture Manual) option is implemented.
 
-If the developer is using Alternative 2 (independent counters), one choice is to dedicate the first 24-bit counter for counting retired instructions between events, with the same delta saturating counter mechanism as other PPCs.  This provides a max count of 16 million instructions between events. This counter must be able to count > 1 instruction per cycle if the core retires more than 1 instruction per cycle. One disadvantage of this is that the *minstret* counter does not support count filtering by privilege level whereas a programmable counter can, if a selector (mhpmeventX) has a value that includes counting instructions retired.
-
-NOTE: *Counting cycles.* For IPC ratio calculations, the number of cycles between events is also required.  The timestamp may or *may not* be counting cpu cycles.  If it does not, the Event Trace Decoder must be informed what the fixed ratio of timestamp ticks to CPU cycles is so it can convert timestamp counts into cycle counts. One hardware method for recording the timestamp-to-cycle ratio is to implement the <<tab:MTIME_SYNC, Time Sync Packet>>.
-
+NOTE: *Counting cycles.* For IPC ratio calculations, the number of cycles between events is also required.  The timestamp may or *may not* be counting cpu cycles.  If it does not, the Event Trace Decoder must be informed as to what the fixed ratio of timestamp ticks to CPU cycles so it can convert timestamp counts into cycle counts. One hardware method for recording the timestamp-to-cycle ratio is to implement the <<tab:MTIME_SYNC, Time Sync Packet>>.
 
 == Event Trace-specific Hardware Filtering
 (((Event Trace, hardware filtering)))
 
 === Leaf Function Filtering
-Leaf function filtering is the hardware filtering of call-return pairs which meet a time duration "less-than N cycles" threshold in order to reduce trace bandwidth and save storage for short functions that are less interesting to trace.
+Leaf function filtering is the hardware filtering (removal from the trace stream) of call-return pairs which meet a time duration "less-than N cycles" threshold; the purpose is to reduce trace bandwidth and memory usage, tossing out short duration functions that may be less interesting to trace.  Removal requires the delta times and PPC values to be added back into the previous event (as if the two events never occurred).
 
-More documentation to follow.
+Let 'C' = call and 'R' = return. For a C-R sequence, both the delta times for C and R must be added back into the previous event, whether it was a C or R. So hardware has to keep the states (timestamp and PPCs) of the 2 previous events. When the next event occurs, it must 1) detect if the last 2 events are C-R and 2) compare the delta time of the R for < N.
+
+If both are true, the delta values of the C and R events must be added back into the previous event's delta time and PPCs; the previous event could be a C or R event.
+
+So the 3-sequence patterns are C1-C2-R1 and R1-C1-R2 that require the summation of the last C and R delta values (C2+R1 and C1+R2) into the first C1 or R1 event before packetization. (Implementation will need to evaluate if it will take less hardware to maintain temporary running absolute values and a subtractor rather than requiring two adds (or 2 adders for the timestamp and each PPC).
+
+If the C-R sequence does not meet the "less-than N cycles" threshold, the events are not removed thus the x-C-R events, all three, must be packetized and streamed into the trace.
+
+The 3-sequence patterns that do not meet the x-C-R sequence are: R-C-C, R-R-C, R-R-R, C-R-R, C-R-C, and C-C-C, where the C-R of the C-R-x sequences were not removed.
 
 == Control Register Map
 [#control-register-map]
@@ -664,11 +676,11 @@ Sets the number of PPCs output with each Event Type enabled.
 
 |trTeEvtPPCCounter__i__
 |0x20, 0x28, 0x30, 0x38, x040, x048, 0x50, 0x58
-a|24b PPC Counter access registers (if developer chooses <<Alternative-2a>> or <<Alternative-2b>> - independent PPCs)
+a|24b PPC Counter access registers
 
 |trTeEvtPPCEvent__i__
 |0x60, 0x68, 0x70, 0x78, x080, x088, 0x90, 0x98
-|64b PPC Event Selector Registers (if developer chooses independent selectors vs using mhpmeventX selectors). For XLEN = 32, the upper 32b of each register are accessible with the address of trTeEvtPPCEvent__i__ + 4.
+|64b PPC Event Selector Registers (if developer chooses <<Alternative-2>>). For XLEN = 32, the upper 32b of each register are accessible with the address of trTeEvtPPCEvent__i__ + 4.
 
 |trTeEvtExtSigControl
 |0xA0
@@ -839,7 +851,8 @@ Note: Context writes are also enabled when the *trTeControl.trTeContext* bit is 
 
 |26
 |trTeEvtPCSampRandEn
-|0: do not enable randomizing of sample period; 1: enable randomizing of sample period. The random count is added to the powers-of-2 count down set by the user. An LFSR is used to generate the random count. The width of the random count is user selectable (recommended at 6 bits), but fixed at design time.
+|0: do not enable randomizing of sample period; 1: enable randomizing of sample period. The random count is added to the powers-of-2 count down set by the user. An LFSR is used to generate the random count. The width of the random count is user selectable (recommend 6 bits), but fixed at design time. +
+While locked out, 
 |WARL
 |0
 
@@ -852,7 +865,11 @@ Note: Context writes are also enabled when the *trTeControl.trTeContext* bit is 
 |31
 | [[EventLockout]]trTeEvtLockout
 |0: ignore Trace Encoder FIFO-AF (almost-full) condition +
-1: when Trace Encoder FIFO-AF feedback signal indicates "almost full", stop generating events. This is a front-end throttle to prevent the Trace Encoder FIFO from filling up and using the Encoder back-end to stop tracing, which generates an error packet when tracing is resumed. When enabled, this lockout affects all external inputs to the encoder including Debug trigger/watchpoints, User definable Signals, External Signals (triggers), and Performance Counter selectors.
+1: when Trace Encoder FIFO-AF feedback signal indicates "almost full", stop generating events. This is a front-end throttle to prevent the Trace Encoder FIFO from filling up and using the Encoder back-end to stop tracing, which generates an error packet when tracing is resumed. When enabled, this lockout affects all external inputs to the encoder including Debug trigger/watchpoints, User definable Signals, External Signals (triggers), and Performance Counter selectors. +
+
+While locked out, the Trace Encoder will not generate any events, effectively pausing the event trace until the FIFO-AF condition is cleared. The FIFO-AF condition should include some hysteresis to prevent rapid toggling of the lockout state. +
+
+*trTeEvtMissed* counter is incremented whenever an event is discarded due to the Trace Encoder being unable to accept it, either because the backend is full or the FIFO-AF condition is asserting back pressure.
 |WARL
 |0
 
@@ -960,11 +977,11 @@ SD = System Dependent. Reset value of a field is dependent on the build.
 
 ==== trTeEvtMissed: Missed Register (trBaseEncoder+0x108)
 
-*Event Missed.* This register defines a 16 bit *Counter* which is incremented whenever an event is discarded because the Encoder cannot accept the event. The cause can be the encoder backend if full or the FIFO_AF (almost full, i.e. back pressure) signal is telling the event sourcing hardware to halt event generation until the backend has sufficient room to accept more events. +
+This register defines a 16 bit *Events Missed Counter* which is incremented whenever an event is discarded because the Encoder cannot accept the event. The cause can be the encoder backend if full or the FIFO_AF (almost full, i.e. back pressure) signal is telling the event sourcing hardware to halt event generation until the backend has sufficient room to accept more events. +
 
 * The counter is 16 bits and is saturating. +
 * The counter can be read and cleared by software. +
-* Setting *trTeEvtControl.trTeEvtTracing*, i.e. starting event trace, will also clear this counter.
+* Setting *trTeEvtControl.trTeEvtTracing*, i.e. starting event trace, clears this counter.
 
 ==== trTeLeafFilterControl: Leaf Function Filter Control Register (trBaseEncoder+0x10C)
 
@@ -1070,11 +1087,11 @@ This action only works if Event Trace is disabled.
 
 === PPC Counter Registers - *trTeEvtPPCCounter__i__* (24b) (trBaseEncoder+0x150-0x198)
 
-This set of registers is only applicable if the implementation includes independent PPC counters <<Alternative-2a>> or <<Alternative-2b>>. The recommended width of each counter is 24 bits. They are delta, saturating counters that, for Event Trace, count performance events for the duration of each Event Trace event that is then packetized and sent into the trace stream. (Unfortunately the term "event" is an overloaded term in this context.)
+The recommended width of each counter is 24 bits. They are delta, saturating counters that, for Event Trace, count performance events for the duration of each Event Trace event that is then packetized and sent into the trace stream. (Unfortunately the term "event" is an overloaded term in this context.)
 
-This register access is an (Optional) feature. If implemented, these registers are memory-mapped to allow for read/write access and that does not require cpu instructions to access them (as CSR-based HPM counters require).
+Accessing PPC counters through these registers is an optional feature. If implemented, these registers are memory-mapped (MMIO) to allow for read/write access from software (including an external processor if MMIO space is mapped) or external debug interface.
 
-The mapping of these registers to MMIO space is (Optional). The purposes are:
+The purpose of the MMIO mapping of these registers is:
 
 1. read/write access for DV-based testing, in-circuit diagnostic testing, and
 
@@ -1082,9 +1099,7 @@ The mapping of these registers to MMIO space is (Optional). The purposes are:
 
 The registers exist in the design as Capture registers.  When a new Event Trace event occurs, each of the profiling performance counters must be latched in order for the counter to be zeroed and ready to begin counting on the next cycle. Then the Trace Encoder must create a packet packet with each of the PPCs put into the packet, sequentially.  This requires that all the PPCs be latched simultaneously.
 
-If MMIO access is implemented, software can first snapshot the counters then read the Capture registers sequentially, until the next snapshot. The snapshot action is done with a write to a specific control register (s)
-
-The *trTeEvtPPCCounter__i__* registers are similar to hpmcounterX counters of the HPM (Hardware Performance Monitor). This set of registers is based on the PPC <<Alternative-2a>> or <<Alternative-2b>> where the PPCs are independent Profiling Performance counters.
+If MMIO access is implemented, software can first snapshot the *trTeEvtPPCCounter__i__* counters then read the Capture registers sequentially, until the next snapshot. The snapshot action is done with a write to a specific control register.
 
 .Event Trace *trTeEvtPPCounter__i__* Capture Registers (24b)
 [cols="10%,15%,8%,8%,8%,~", options="header"]
@@ -1095,7 +1110,7 @@ The *trTeEvtPPCCounter__i__* registers are similar to hpmcounterX counters of th
 |[23:0]
 |RW
 |Undef
-|Counter 0 and 1 can be access as one 64b read with PPCCounter0 in the lower 32 bits and PPCCounter1 in the upper 32 bits.
+|Counter 0 and 1 can be access as one 64b read with PPCCounter0 in the lower 32 bits and PPCCounter1 in the upper 32 bits. (bits [31:24] are always 0)
 
 |0x124
 |PPCCounter1
@@ -1149,7 +1164,7 @@ The *trTeEvtPPCCounter__i__* registers are similar to hpmcounterX counters of th
 
 === PPC Event Selector Registers: *trTeEvtPPCEvent__i__* (64b) (trBaseEncoder+0x160-0x198)
 
-The *trTeEvtPPCEvent__i__* registers are equivalent to the *mhpmeventX* selectors of the HPM (Hardware Performance Monitor). This set of registers is based on the PPC <<Alternative-2a>> where the PPCs and event selectors are independent.
+The *trTeEvtPPCEvent__i__* registers are equivalent to the *mhpmeventX* selectors of the HPM (Hardware Performance Monitor). This set of registers is based on the PPC <<Alternative-2>> where the PPCs and event selectors are independent.
 
 The Event Trace developer has the choice of using mhpmeventX selectors (components of the HPM - Hardware Performance Monitor) or implementing PPCEvent__i__ selectors which are independent of the HPM. Each PPCEvent__i__ selector register is 64 bits and is identical programmatically to mhpmeventX selectors of the HPM (with one exception that the interrupt bit 63 status/control bit is undefined). These registers can be read/written as 64-bit registers or as address-adjacent 32-bit low/high registers.
 
@@ -1265,9 +1280,9 @@ This field is common for all signals.
 
 ==== trTeEvtPerfSelectControl: Performance Selector Control Register (trBaseEncoder+0x1A4)
 
-The Event Trace Performance Selector feature supports the conversion of a HPM (Hardware Performance Monitor) selector (mhpmeventX) output assertion into an Event Trace packet, and records the number of additional times this happens in a user-selectable interval. In other words, the signal from an mhpmeventX routed to and counted by a standard programmable performance counter is also routed to the Trace Encoder to be recognized and recorded, with timestamp, in the trace timeline.
+The Event Trace Performance Selector feature supports the conversion of an HPM (Hardware Performance Monitor) selector (mhpmeventX) <<Alternative-1> or independent perf event selectors <<Alternative-2>> output assertion into an Event Trace packet, and records the number of additional times this happens in a user-selectable interval. In other words, the signal from an mhpmeventX or independent selector is routed to and counted by a standard programmable performance counter and is also routed to the Trace Encoder to be recognized and recorded, with timestamp, in the trace timeline.
 
-Performance counters count these occurrences; this Event Trace feature does much more - it records the instruction at the time of the occurrence and the timestamp creates a time history of these occurrences.  In addition, if the event occurs frequently, the hardware compresses these into a "first occurrence" and count, recording the number of times the event occurs within the user-specified interval that can be visualized as frequency of occurrence over a time history. The purpose of the interval is to reduce the number of events recorded when the event occurs frequently, for example, counting load instructions.
+Performance counters count these occurrences; this Event Trace feature does much more - it records the instruction at the time of the occurrence, and the timestamp creates a time history of these occurrences.  In addition, if the event occurs frequently, the hardware compresses these into a "first occurrence" and count, recording the number of times the event occurs within the user-specified interval that can be visualized as frequency of occurrence over a time history. The purpose of the interval is to reduce the number of events recorded when the event occurs frequently, for example, counting load instructions.
 
 The start of the event requires a rising edge on the Select signal but the counting of the event during the interval is done by counting the level (high) of the signal.
 

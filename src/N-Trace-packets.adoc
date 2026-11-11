@@ -130,7 +130,7 @@ Values assigned to *CauseID* for N-Trace +
 |0
 |1
 |PC
-|CauseID
+|*CauseID*
 |EVTPC follows the rules defined in Chapter 3 +
 PC=instruction responsible for trace-on. +
 CauseID field: +
@@ -189,7 +189,7 @@ Watchpoint w/TRIG_ID
 |5
 |1
 |PC
-|TRIG_ID
+|*TRIG_ID*
 |When a debug trigger/watchpoint matches, the PC is normally the address of the instruction that caused the match, although for a watchpoint, it can be after when comparing on the data portion of a load or store. In multi-issue cores, this message may report the address of a later instruction retired in the same cycle. +
 For *trTeEvtFeatures.trTeEvtDbgTrigIDImpl* <<DebugTriggerIDImpl>> = 1, the *TRIG_ID* is the trigger number and is recorded in the EVTDATA field.
 
@@ -251,92 +251,110 @@ Generated when external signal edge on this channel (SIG_ID) is detected by the 
 === Event Trace Message Formats for Calls and Returns
 (((N-Trace, Event, Call and Return message)))
 
+There are two TCODE message types for function calls and returns: synchronous and non-synchronizing. The former uses the ICT (in-circuit trace) message with EVTSRC=10 to record both source and target addresses with the source being a Full address (F-ADDR). All other call/return types use a new TCODE to encode these types.
+
 The following table lists the message types to support function Calls and Returns, with different types and numbers of parameters. These are defined separately from the non-functional EVT messages to provide the most compact messaging.
+
+.ICT Event Trace Message for Synchronous Call, TCODE=35
+[cols="12%,10%,10%,10%,11%,~", options="header"]
+|===
+^|Event ^|EVTSRC ^|EVTCNT ^|EVTPC ^|EVTDATA ^|Description
+|CALL_FULL_SYNC
+|10
+|1
+|Source +
+ (F-ADDR)
+|Target +
+(U-ADDR)
+|Traces both Source and Target addresses. The target address is XOR compressed. Full (absolute) timestamp if enabled. +
+|===
 
 NOTE: If only the destination address of an event is recorded in the message, the decoder must determine the source address from the execution binary and the previous messages recorded. In some cases, it will not be possible to determine the exact source address when a function is called in many different places in the calling function. If the user wants the precise source and destination addresses then they must set the appropriate Event Trace modes (and there are separate modes for calls and returns), with the understanding that these messages include more bytes.
 
-.Event Trace Message Types for Calls and Returns
-[cols="15%,10%,15%,15%,10%,~", options="header"]
+.Event Trace Message for non-synchronizing Calls and Returns; TCODE = 36
+[cols="12%,10%,10%,10%,11%,~", options="header"]
 |===
-|Name |TCODE |Source |Destination |ITYPE |Description
+|Name |Mode |Source |Target |ITYPE |Description
 
-|CALL_SRCTGT_SYNC
-|36
-|PC +
-(F-ADDR)
-|Dest Addr +
-(U-ADDR)
-|8 or 9
-|Traces both Src and Dest addresses. The second address is XOR compressed. Full (absolute) timestamp if enabled. +
-*trTeEvtCallMode*=0
-
-|CALL_SRCTGT
-|37
-|PC +
-(U-ADDR)
-|Dest Addr +
-(U-ADDR)
-|8 or 9
-|Traces both Src and Dest compressed (unique) addrs; relative timestamp if enabled. +
-*trTeEvtCallMode*=0
-
-|CALL_TGT
-|38
-|-----
-|Dest Addr +
-(U-ADDR)
-|8 or 9
-|itype=8 means indirect (uninferrable) call or co-routine swap.
-Source function can be derived from trace history however Src address (i.e. line # of caller) is unknown. +
-*trTeEvtCallMode*=1
+|
+|0
+|
+|
+|
+|Reserved
 
 |CALL_SRC
-|39
-|PC +
+|1
+|Src PC +
 (U-ADDR)
 |-----
 |9
 |inferrable call so destination obtained from opcode if binary available +
 *trTeEvtCallMode*=2
 
-|RET_SRCTGT
-|40
-|PC +
+|CALL_TGT
+|2
+|-----
+|Tgt Addr +
 (U-ADDR)
-|Dest Addr +
+|8 or 9
+|itype=8 means indirect (uninferrable) call or co-routine swap.
+Source function can be derived from trace history however Src address (i.e. line # of caller) is unknown. +
+*trTeEvtCallMode*=1
+
+|CALL_FULL
+|3
+|Src PC +
 (U-ADDR)
+|Tgt Addr +
+(U-ADDR)
+|8 or 9
+|Traces both Source and Target compressed (unique) addrs; relative timestamp if enabled. +
+*trTeEvtCallMode*=0
+
+|RET
+|4
+|------
+|------
 |13
-|Traces both Src and Dest (return to) addresses +
-*trTeEvtRetMode*=0
+|Function returned, no src or tgt address in message. The return destination is derived from a previous call message trace history. +
+*trTeEvtRetMode*=2
+
+|
+|5
+|
+|
+|
+|Reserved
 
 |RET_TGT
-|41
-|
-|Dest Addr +
+|6
+|------
+|Tgt Addr +
 (U-ADDR)
 |13
 |return-to address; caller (function) determined from symbolic address range of destination address and/or from history. +
 *trTeEvtRetMode*=1
 
-|RET
-|42
-|------
-|------
+|RET_FULL
+|7
+|Source PC +
+(U-ADDR)
+|Target +
+(U-ADDR)
 |13
-|Function returned; the return destination is not important. +
-*trTeEvtRetMode*=2
+|Traces both Src and Dest (return to) addresses +
+*trTeEvtRetMode*=0
+
 |===
 
 Recommended priority of implementation +
-1: CALL_SRCTGT_SYNC, CALL_SRCTGT, RET_SRCTGT +
+1: CALL_FULL_SYNC, CALL_FULL, RET_FULL +
 2: CALL_SRC, RET +
 3: CALL_TGT, RET_TGT
 
-====  CALL_SRCTGT_SYNC Function Event
-(((N-Trace, CALL_SRCTGT_SYNC message)))
-Used to synchronize messages, outputting new absolute address for any call type (8, 9)
-
-.CALL_SRCTGT_SYNC Function Event
+==== Event Trace Message Summary for Calls and Returns (non-synchronizing)
+.Event Trace Message Summary for Calls and Returns; TCODE = 36
 [cols="10%,20%,~", width=90%, options="header"]
 |===
 |Bits |Field |Description
@@ -349,177 +367,21 @@ Used to synchronize messages, outputting new absolute address for any call type 
 |SRC
 |Source Hart of this message (width is trTeSrcBits)
 
-|var
-|Src Addr
-|PC: F-ADDR (F=full)
+|3
+|Mode
+|See previous table for Mode assignments
 
 |var
-|Dest Addr
-|U-ADDR
+|Src Addr
+|PC: U-ADDR (may not be included)
+
+|var
+|Target Addr
+|U-ADDR (may not be included)
 
 |var,cfg
 |TSTAMP
 |Absolute timestamp value
-|===
-
-====  CALL_SRCTGT Function Event
-(((N-Trace, CALL_SRCTGT message)))
-Trace both source and destination addresses of any call type (8, 9)
-
-.CALL_SRCTGT Function Event
-[cols="10%,20%,~", width=90%, options="header"]
-|===
-|Bits |Field |Description
-
-|*6*
-|*TCODE*
-|*Value = 0x25 (37)*
-
-|cfg
-|SRC
-|Source Hart of this message (width is trTeSrcBits)
-
-|var
-|Src Addr
-|PC: U-ADDR (U=unique part of address)
-
-|var
-|Dest Addr
-|U-ADDR
-
-|var,cfg
-|TSTAMP
-|Relative timestamp value (offset from last reported absolute or relative timestamp)
-|===
-
-==== CALL_TGT Function Event
-(((N-Trace, CALL_TGT message)))
-For Uninferrable call
-
-.CALL_TGT Function Event
-[cols="10%,20%,~", width=90%, options="header"]
-|===
-|Bits |Field |Description
-
-|*6*
-|*TCODE*
-|*Value = 0x26 (38)*
-
-|cfg
-|SRC
-|Source Hart of this message (width is trTeSrcBits)
-
-|var
-|Dest Addr
-|U-ADDR
-
-|var,cfg
-|TSTAMP
-|Relative timestamp value
-|===
-
-====  CALL_SRC Function Event
-((((N-Trace, CALL_SRC message)))
-For Inferrable call
-
-.CALL_SRC Function Event
-[cols="10%,20%,~", width=90%, options="header"]
-|===
-|Bits |Field |Description
-
-|*6*
-|*TCODE*
-|*Value = 0x27 (39)*
-
-|cfg
-|SRC
-|Source Hart of this message (width is trTeSrcBits)
-
-|var
-|PC
-|U-ADDR (itype=9; destination is inferrable from opcode)
-
-|var,cfg
-|TSTAMP
-|Relative timestamp value
-|===
-
-====  RET_SRCTGT Return Event
-((((N-Trace, RET_SRCTGT message)))
-Trace both source and destination addresses of return when caller is known.
-
-.RET_SRCTGT Return Event
-[cols="10%,20%,~", width=90%, options="header"]
-|===
-|Bits |Field |Description
-
-|*6*
-|*TCODE*
-|*Value = 0x28 (40)*
-
-|cfg
-|SRC
-|Source Hart of this message (width is trTeSrcBits)
-
-|var
-|PC Addr
-|U-ADDR
-
-|var
-|Dest Addr
-|U-ADDR
-
-|var,cfg
-|TSTAMP
-|Relative timestamp value
-|===
-
-====  RET_TGT Return Event
-((((N-Trace, RET_TGT message)))
-Output destination address only, to reduce bandwidth.
-
-.RET_TGT Return Event
-[cols="10%,20%,~", width=90%, options="header"]
-|===
-|Bits |Field |Description
-
-|*6*
-|*TCODE*
-|*Value = 0x29 (41)*
-
-|cfg
-|SRC
-|Source Hart of this message (width is teImpl.nSrcBits)
-
-|var
-|Dest Addr
-|U-ADDR of destination address
-
-|var,cfg
-|TSTAMP
-|Relative timestamp value
-|===
-
-====  Function RET Event
-((((N-Trace, Function RET message)))
-Trace hardware can maintain a one-level stack of the last caller PC address (+2 or +4) which is compared to the return destination address. If a match, the return matches the call so addresses are not needed for decode.  This is the most compact message since no source or destination address is required.
-
-.RET Function Event
-[cols="10%,20%,~", width=90%, options="header"]
-|===
-|Bits |Field |Description
-
-|*6*
-|*TCODE*
-|*Value = 0x2A (42)*
-
-|cfg
-|SRC
-|Source Hart of this message (width is trTeSrcBits)
-
-|var,cfg
-|TSTAMP
-|Relative timestamp value
 |===
 
 === Periodic Synchronization Messages
@@ -628,8 +490,8 @@ N-Trace MTIME_SYNC Message to record mtime and trace timestamp simultaneously fo
 
 The RHTI spec cite:[riscv-RHTI-spec-0.83(Trace State)] added Trace State signal group *trcstate[1:0]* to replace the *halted* signal to provide additional conditions.  Extended values are:
 
-*10* Inhibiting trace for security reasons +
-*11* Unbounded wait - pausing trace for an unbounded amount of time (e.g. executing WFI or WFE instructions)
+*2'b10* Inhibiting trace for security reasons +
+*2'b11* Unbounded wait - pausing trace for an unbounded amount of time (e.g. executing WFI or WFE instructions)
 
 These state values and state transitions are documented in the <<nonfunc-events, nonfunctional events>> section as to the "abstract" trace-on and trace-off messages necessary to generate. It also documents general rules <<List-of-Rules, List of Rules>> for these state transitions.
 
@@ -655,12 +517,11 @@ The following table provides a summary of the TCODE values used by the original 
 |56-62 Vendor-defined
 
 |Event Trace Extensions
-|16-17 (2) from Reserve, +
+|16-17, 36 (3) from Reserve, +
  34-35 In-Circuit Trace, +
- 36-42 (7) from Reserve
 |Remaining unused +
  18-19 (2) +
-43-55 (13)
+37-55 (19)
 
 |RIT (RISC-V Instrumentation Trace)
 |7 (Data Acquisition, or DQM)

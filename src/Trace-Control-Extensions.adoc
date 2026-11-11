@@ -1,7 +1,7 @@
 //[[Trace Control Extensions for Event Trace]]
 == Trace Control Extensions for Event Trace
 
-This file (Trace-Control-Extensions.adoc) defines the extensions required to the "RISC-V-Trace-Control-Interface.pdf" spec to support Event Trace.
+This chapter (from Trace-Control-Extensions.adoc) defines the extensions required to the "RISC-V-Trace-Control-Interface.pdf" spec to support Event Trace.
 
 The Trace Control Interface spec, Table 4 cite:[riscv-trace-control-spec-1.0(Table 4)], has several reserved address ranges labeled "Reserved for future standard extension". The Event Trace fits into one of those and currently allocates and uses addresses *0x100-0x1A4*. Thus Event Trace control registers starting point is an offset from the Trace Encoder base address, i.e. *trTeEventBase = trBaseEncoder+0x100*.
 
@@ -17,9 +17,9 @@ which is defined in the RISC-V Trace Control Interface spec as *"Protocol define
 === Time Synchronization Message for simultaneously recording mtime & timestamp
 (((N-Trace, Time Synchronization Message)))
 
-This message is common for N-Trace and E-Trace Instruction Trace and its purpose is to record mtime and trace timestamp simultaneously for Trace message synchronization. This message is generated periodically based on a configurable interval of N- or E-Trace messages, and also aperiodically after certain events such as trace-on, exit debug, exit reset, ProgTraceSync message, and immediately after trace has stopped or halted.
+This message is common for both N-Trace and E-Trace Instruction Trace formats, and its purpose is to record mtime and trace timestamp simultaneously for Trace message synchronization. This message is generated periodically based on a configurable interval of N- or E-Trace messages, and also aperiodically after certain events such as trace-on, exit debug, exit reset, ProgTraceSync message, and immediately after trace has stopped or halted.
 
-*MTIME_SYNC Periodic Generation* The period for generating MTIME_SYNC is defined by a field in the register *trTsControl* inside the TimeStamp (TS) sub-component of Instruction Trace. The field, [14:10], of the ratified spec is Reserved. The lower 4 bits are, in this spec, being relabeled *trTsControl.trTsSyncMax*. This controls the interval for generating the MTIME_SYNC message based on a count of the number of N-Trace messages output.
+*MTIME_SYNC Periodic Generation* The period for generating MTIME_SYNC is defined by a field in the register *trTsControl* inside the TimeStamp (TS) sub-component of Instruction Trace. The field, [14:10], of the ratified spec is Reserved. The lower 4 bits are, in this spec, being relabeled *trTsControl.trTsSyncMax*. This controls the interval for generating the MTIME_SYNC message based on a count of the number of Trace messages output.
 
 *Interval Count* The interval count is 2^(7+trTsSyncMax) where *trTsSyncMax* usable values ranges from 1 to 15, where 0 is *"off"*. This provides a range from 2^8 (256) to 2^22 (~4x10^6). Note that this field is WARL so some of the upper values could be left out to reduce hardware.
 
@@ -33,12 +33,12 @@ This message is common for N-Trace and E-Trace Instruction Trace and its purpose
 |13:10
 |trTsSyncMax
 |*0*: MTIME_SYNC disabled +
-*1-15*: Period for generating MTIME_SYNC message is 2^(*7*+trTsSyncMax) N-Trace messages
+*1-15*: Period for generating MTIME_SYNC message is 2^(*7*+trTsSyncMax) messages
 |WARL
 |0
 |===
 
-*Engineering (non-normative) NOTE:* MTIME_SYNC can be implemented by using a 16-input multiplexer; the first input selects always-0, the remaining 15 inputs connect to the appropriate divide-by-2 taps of the binary counter of N-Trace messages, starting at bit 7 and ending at bit 22, with the 4 bits of trTsSyncMax as the mux selector. This logic then generates an output pulse of MTIME_SYNC at the rising edge of the mux output. As mentioned, a narrower mux could be used in the actual implementation to save on hardware. A 10-input mux would have a max period of 2^17, or 128K of N-Trace messages.
+*Engineering (non-normative) NOTE:* MTIME_SYNC can be implemented by using a 16-input multiplexer; the first input selects always-0, the remaining 15 inputs connect to the appropriate divide-by-2 taps of the binary counter of Trace messages, starting at bit 7 and ending at bit 22, with the 4 bits of trTsSyncMax as the mux selector. This logic then generates an output pulse of MTIME_SYNC at the rising edge of the mux output. As mentioned, a narrower mux could be used in the actual implementation to save on hardware. A 10-input mux would have a max period of 2^17, or 128K of Trace messages.
 
 === MTIME_SYNC Aperiodic Generation
 

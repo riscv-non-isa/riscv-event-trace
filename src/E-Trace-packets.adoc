@@ -158,4 +158,32 @@ instruction address.
 |===
 [[sec:format0]]
 === Format 0 packets
-Plan to define for Performance counters.
+This packet is used for Performance Counters.
+
+.Packet format 0
+[align="center",float="center",cols="<11%,<24%,<~",options="header"]
+|===
+| *Field name*| *Bits*| *Description*
+|*format*| 2| 00 (perf-ctr): performance counters
+|*tranche*| _tranch_width_p_| Number of tranches to follow.
+|*count_byte*| 8| Byte 0 of counter 0 .
+|*next_count*| 1| When set, following *count_byte* field is for the next counter.
+| : | :| :
+|*count_byte*| 8| Penulitmate byte.
+|*next_count*| 1| When set, following *count_byte* field is for the next counter.
+|*count_byte*| 8| Last byte of final non-zero counter.
+|===
+
+[[sec:tranche]]
+==== Format 0 tranche field
+The width of this field is zero by default (i.e the field is omitted).  If non-zero, the width must be discoverable.
+
+Upto 8 24-bit counters will require 216 bits total, and will fit within a single packet (maximum payload length is between 30 and 31 bytes depending on *SrcID* length).  However, if there are more counters, or longer counters, such that the total number of bits required exceeds this then they will be split across a tranche of  packets.  For example, if two packets are required to send all the counters, then this field will be 1 bit wide, and it will be set to 1 for the first packet and 0 for the second.  The 1st packet will always start with counter 0, and the final packet will end with the highest numbered counter.
+
+[[sec:count]]
+==== Format 0 count_byte and next_count fields
+To avoid having to send the complete value of each counter, count values are "sign-compressed", which is to say that the full count value for a counter can be retrieved by sign extending the final received byte for that counter.  For example, the value of a 24-bit counter can be represented as 1, 2 or 3 bytes after compression.
+
+The packet payload comprises the sign-compressed values of all counters, counter 0 first, up to counter N.  As the number of bytes needed for each counter varies according to the sign-compression, it is necessary to indicate where the boundaries between count values occur in the overall payload.  To achieve this, for each byte of counter data, 9 bits of message payload are used: a *count_byte* followed by *next_count*.  *next_count* is 0 if the next byte is a continuation of the current counter, and 1 if the next byte is for the next counter.  Note that there is no *next_count* field after the final byte of counter data.
+
+Normally there will be at least one 9-bit *count_byte* - *next_count* pair per counter.  However, high-order counters that are zero can be omitted completely to further improve efficiency.  For example, if there are 8 counters but counters 7, 6 and 5 are all zero, then all fields above the final *count_byte* for counter 4 can be omitted.  The decoder can deduce that these are zero because the packet will have contained data for counters 0 through 4 only.

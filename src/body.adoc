@@ -554,7 +554,7 @@ This is a front-end throttle to prevent the Trace Encoder FIFO from filling up a
 ** PPCs are required to be gated off when tracing is gated off to ensure that no events are counted while tracing is inactive. Causes of trace inactivity are itemized in <<trace-off>>.
 ** counters saturate at their maximum all-ones value to avoid roll-over.
 
-* Post-processing of the trace data can reconstruct event counts across multiple event sequences to provide accumulated totals.  
+* Post-processing of the trace data can reconstruct event counts across multiple event sequences to provide accumulated totals.
 ** *inclusive* counts for a function are defined as the sum of all events between the entry to the function and the exit from the function, including the time executing all functions it calls directly or indirectly.
 ** *exclusive* or *self* counts for a function are defined as those events that make up execution of only the function itself. Calls to other functions are not included. So as an example (for C=call, R=return), if C1 calls C2 many times, C1 exclusive/self counts are the sum of C1-to-C2, R2-to-C2, R2-to-C2..., and when C1 returns, R2-to-R1.
 

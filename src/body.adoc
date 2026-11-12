@@ -1,4 +1,4 @@
-//11-11-26 12pm
+//11-12-26 4am
 
 [[body]]
 == Features
@@ -1085,7 +1085,7 @@ or PPCInstret
 |[23:0]
 |RW
 |Undef
-|PPCInstret, if implemented, is the first PPC (PPCCounter0) and is fixed at counting instructions retired. +  
+|PPCInstret, if implemented, is the first PPC (PPCCounter0) and is fixed at counting instructions retired. +
 Counter 0 and 1 can be access as one 64b (RV64) read with PPCCounter0 in the lower 32 bits and PPCCounter1 in the upper 32 bits. (bits [31:24] and [63:56] are always 0)
 
 |0x124

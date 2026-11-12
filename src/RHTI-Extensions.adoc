@@ -8,7 +8,7 @@ This file (RHTI-Extensions.adoc) defines extensions to the "RISC-V Hart to Trace
 === Trigger/Watchpoint ID
 (((RHTI Extensions, Trigger/Watchpoint ID)))
 
-As explained in the RHTI cite:[riscv-RHTI-spec-0.83] section of the specification, the debug module of the RISC-V hart may have a "Trigger Unit", also named "Trigger Module" in the RISC-V Debug specification cite:[riscv-debug-spec-1.0]. A 4-bit action field defines what happens when a trigger/watchpoint match occurs. Encoded codes 2-5 are for trace use.  The value 4 is *Trace-notify*.
+As explained in the RHTI cite:[riscv-RHTI-spec-0.83] "Using trigger outputs from the Debug Module" section of that specification, the debug module of the RISC-V hart may have a "Trigger Unit", also named "Trigger Module" in the RISC-V Debug specification cite:[riscv-debug-spec-1.0] (Chpt. Sdtrig). A 4-bit action field defines what happens when a trigger/watchpoint match occurs. Encoded codes 2-5 are for trace use.  The value 4 is *Trace-notify*.
 
 The RHTI defines trigger +[2]+ signal to be *Trace-notify*.  When asserted, it indicates a match on one of the programmed hw triggers.
 
@@ -34,7 +34,7 @@ The Event Trace debug trigger/watchpoint event is limited to one trigger match p
 (((RHTI Extensions, hpmeventX Output)))
 
 .Optional sideband event selector outputs *hpmeventX* for Event Trace Encoder
-[cols="~,~,~"]
+[cols="~,10%,~"]
 |===
 ^|*Signal* ^|*Group* ^|*Function*
 |*mhpmeventXOutput*[ +
@@ -54,7 +54,7 @@ _eventNum_p_ is the number of mhpmeventX selector outputs implemented (max is 8)
 
 .Optional sideband encoder *InstRetCount* output signals
 //[cols="30%, 10%, ~"]
-[cols="~,~,~"]
+[cols="~,10%,~"]
 |===
 ^|*Signal* ^|*Group* ^|*Function*
 |*instretcount*[_countwidth_p_-1:0]

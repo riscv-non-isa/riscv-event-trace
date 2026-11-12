@@ -3,7 +3,7 @@
 
 This chapter (from Trace-Control-Extensions.adoc) defines the extensions required to the "RISC-V-Trace-Control-Interface.pdf" spec to support Event Trace.
 
-The Trace Control Interface spec, Table 4 cite:[riscv-trace-control-spec-1.0(Table 4)], has several reserved address ranges labeled "Reserved for future standard extension". The Event Trace fits into one of those and currently allocates and uses addresses *0x100-0x1A4*. Thus Event Trace control registers starting point is an offset from the Trace Encoder base address, i.e. *trTeEventBase = trBaseEncoder+0x100*.
+The Trace Control Interface spec, Table 4 cite:[riscv-trace-control-spec-1.0] (Table 4), has several reserved address ranges labeled "Reserved for future standard extension". The Event Trace fits into one of those and currently allocates and uses addresses *0x100-0x1A4*. Thus Event Trace control registers starting point is an offset from the Trace Encoder base address, i.e. *trTeEventBase = trBaseEncoder+0x100*.
 
 === Event Trace Control Register Mode Field
 
@@ -11,7 +11,7 @@ This document defines Event Trace as a sub-component of the Trace Encoder. Event
 
 *trTeControl.trTeInstMode = 4* +
 
-which is defined in the RISC-V Trace Control Interface spec as *"Protocol defined trace mode"* cite:[riscv-trace-control-spec-1.0(Trace Encoder Control Interface)].
+which is defined in the RISC-V Trace Control Interface spec as *"Protocol defined trace mode"* cite:[riscv-trace-control-spec-1.0] (Trace Encoder Control Interface).
 
 [#time-sync-message]
 === Time Synchronization Message for simultaneously recording mtime & timestamp

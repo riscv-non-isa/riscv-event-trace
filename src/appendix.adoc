@@ -22,7 +22,7 @@
 == Event Trace Global and per-Event Filtering (non-normative)
 (((Filtering, Global and per-Event)))
 
-These global and per-event filters are documented in the *RISC-V Trace Control Interface Specification* cite:[riscv-trace-control-spec-1.0(Ch. 6.3)]. These are documented here since they are already documented and the specification ratified.
+These global and per-event filters are documented in the *RISC-V Trace Control Interface Specification* cite:[riscv-trace-control-spec-1.0] (Ch. 6.3). These are documented here since they are already documented and the specification ratified.
 
 There are several types of useful Event Trace filters that can be provided by hardware to reduce the volume of trace data and focus on relevant information.  While these registers and associated hardware are optional, [underline]#they are required to be included in the implementation of Trace hardware.#
 
@@ -133,7 +133,7 @@ For *trTeCompjControl* and *trTeCompjMatchLow* below, j=0 which defines the firs
 |[63:32] bits of Ecause (high) value
 |===
 
-Table of (encoded) Exception cause values (from RISC-V Instruction Set Manual: Vol II).
+Table of (encoded) Exception cause values (from RISC-V Instruction Set Manual: Vol II cite:[riscv-privileged-spec-1.0]).
 
 .Exception cause values
 [cols="4%,12%,12%,12%,4%,12%,12%,12%", options="header"]
@@ -182,7 +182,7 @@ NOTE: Several of the registers are "shared" with Ecause filtering, thus the name
 |    [63:32] bit mask; set bit(s) to 1 to match encoded values 32 to 63 of Interrupt cause
 |===
 
-The (encoded) Interrupt cause values (from the RISC-V Instruction Set Manual: Vol II) are located in Table 16 - mcause, Table 37 - scause, and Table 50 when the hypervisor extension is implemented.  Below is Table 50:
+The (encoded) Interrupt cause values (from the RISC-V Instruction Set Manual: Vol II cite:[riscv-privileged-spec-1.0]) are located in Table 16 - mcause, Table 37 - scause, and Table 50 when the hypervisor extension is implemented.  Below is Table 50:
 
 //[cols="35%,60%", width=50%, options="header"]
 [%autowidth,options="header"]

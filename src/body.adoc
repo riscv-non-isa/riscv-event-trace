@@ -26,8 +26,9 @@
 
 === Event Types
 (((Event Types)))
-A list of the events types that can be traced with Event Trace is shown in the table below.  Each type can be independently enabled or disabled for tracing.
+A list of the events types that can be traced with Event Trace is shown in the table below <<List-of-Event-Trace-Event-Types>>.  Each type can be independently enabled or disabled for tracing.
 
+[#List-of-Event-Trace-Event-Types]
 .List of Event Trace Event Types
 [cols="20%,80%", options="header"]
 |===
@@ -191,7 +192,7 @@ When the count-down condition is reached, hardware asserts a *sync_needed* flag 
 |===
 ^|Event ^|Cause ^| Outputs
 
-.6+|Trace-on (Sync)
+.6+a|[#Trace-on,Trace on]Trace-on (Sync) 
 |Exit from Reset
 | CauseID=EXIT_RESET +
  PRIVILEGE mode, +
@@ -231,7 +232,7 @@ Context ID (Optional) +
 Context ID (Optional) +
  PC of first retired instruction after trace-on transition (Optional)
 
-.6+|Trace-off [#trace-off]
+.6+a|[#trace-off,Trace off]Trace-off
 |Enter Reset
 | CauseID=ENTER_RESET +
 PC = last instruction to execute before reset (Optional)
@@ -303,7 +304,7 @@ OR, the user can enable the Return from Trap event and the decoder will decode i
 
 === Control bits for enabling Trace-on and Trace-off events
 
-Each of the Trace-on (Sync) and Trace-off events in the table above can be enabled or disabled at run-time with control bits. There are separate bits for Trace-on and Trace-off transitions, and two groups of type categories, for a total of 4 control bits. The groups are: +
+Each of the Trace-on (Sync) <<Trace-on>> and Trace-off events <<Trace-off>> in the table above can be enabled or disabled at run-time with control bits. There are separate bits for Trace-on and Trace-off transitions, and two groups of type categories, for a total of 4 control bits. The groups are: +
 
 * RHTI: Reset, Debug, Security Filter, and Unbounded Wait, the last three of which are *trcstate* transitions +
 * CORE: Address, Privilege, or Context ID filtered/unfiltered, and Trace-on/off triggers.
@@ -322,7 +323,8 @@ There are two read-only implementation bits  defined for RHTI and CORE in the *t
 
 The following table lists the packet types to support function Calls and Returns, with different types and numbers of parameters. ITYPE details can be found in the RHTI spec cite:[riscv-RHTI-spec-0.83] (Table 5).
 
-[#callret-events]]
+[#callret-events]
+[#tab:callret-events]
 .Call and Return Event Types and Message Contents
 [cols="12%,22%,~", options="header"]
 |===
@@ -365,7 +367,7 @@ A Debug Module can (and most often does) include a Trigger Module cite:[riscv-de
 
 For Event Trace, the *Trace-notify* action, when programmed by the user and enabled in Event Trace, results in a packet packet output that includes the PC of the instruction that hit the trigger/watchpoint and a timestamp, plus PPCs if enabled. Thus Event Trace will record these Debug Triggers, and depending on the specific implementation of hardware debug triggers, can be amarker for instruction address/addresses executed or when certain data addresses have been accessed.
 
-The RHTI Extensions Chapter <<Trigger/Watchpoint ID>> defines the *triggerID* signals for identifying which programmed trigger/watchpoint condition was met. The *triggerID* value will be included in the trace packet to identify which trigger/watchpoint caused the trace event.
+The RHTI Extensions Chapter <<Trigger/Watchpoint-ID>> defines the *triggerID* signals for identifying which programmed trigger/watchpoint condition was met. The *triggerID* value will be included in the trace packet to identify which trigger/watchpoint caused the trace event.
 
 NOTE: If the triggerID is not provided, trace decoder software may be able to identify and fill in the triggerID in the trace output.  This first requires saving the trigger comparator setup for each trigger - primarily the execution or data address comparison value. The trace decoder, with this information, can then match the recorded PC in the trace packet to the list of programmed trigger values and fill in the triggerID.
 
@@ -599,11 +601,11 @@ One option for developers is to implement the first PPC (i.e. PPCCounter0) as *P
 
 The current RHTI specification cite:[riscv-RHTI-spec-0.83] does not include a signal set for reporting the number of instructions retired in each cycle. The proposal for adding this signal set is here - <<Instruction-Retired-Count, Instruction Retired Count>>.
 
-However, since counting instructions retired is a RISC-V requirement (the *minstret* CSR  is mhpmcounter1, a 64-bit performance counter documented in section 3.1.10 Hardware Performance Monitor, RISC-V Privileged Architecture Manual) counting instret is already implemented in the core and the wire(s) simply needs to be routed to the Event Trace Encoder PPC.
+However, since counting instructions retired is a RISC-V requirement (the *minstret* CSR  is mhpmcounter1, a 64-bit performance counter documented in section 3.1.10 Hardware Performance Monitor, RISC-V Privileged Architecture Manual cite:[riscv-privileged-spec-1.0]) counting instret is already implemented in the core and the wire(s) simply needs to be routed to the Event Trace Encoder PPC.
 
-One note is that this fixed instructions-retired counter may not have the ability to filter counts by privilege level. It depends on the capabilities of the underlying *minstret* counter and whether Smcntrpmf (Cycle and Instret Privilege Mode Filter, Chapter 7 of Privileged Architecture Manual) option is implemented.
+One note is that this fixed instructions-retired counter may not have the ability to filter counts by privilege level. It depends on the capabilities of the underlying *minstret* counter and whether Smcntrpmf (Cycle and Instret Privilege Mode Filter, Chapter 7 of Privileged Architecture Manual cite:[riscv-privileged-spec-1.0]) option is implemented.
 
-NOTE: *Counting cycles.* For IPC ratio calculations, the number of cycles between events is also required.  The timestamp may or *may not* be counting cpu cycles.  If it does not, the Event Trace Decoder may need to be informed as to what the fixed ratio of timestamp ticks to CPU cycles so it can convert timestamp counts into cycle counts. Alternatively, a hardware method for recording the timestamp-to-cycle ratio is to implement the <<tab:MTIME_SYNC, Time Sync Packet>>.
+NOTE: *Counting cycles.* For IPC ratio calculations, the number of cycles between events is also required.  The timestamp may or *may not* be counting cpu cycles.  If it does not, the Event Trace Decoder may need to be informed as to what the fixed ratio of timestamp ticks to CPU cycles so it can convert timestamp counts into cycle counts. Alternatively, a hardware method for recording the timestamp-to-cycle ratio is to implement the <<MTIME-SYNC, Time Sync Packet>>, <<time-sync-message>>.
 
 == Event Trace-specific Hardware Filtering
 (((Event Trace, hardware filtering)))
@@ -712,18 +714,18 @@ Note that a change in value will generate a trace-on or trace-off Event Trace pa
 
 |4:3
 |trTeEvtCallMode
-|0: use messages that include both source and destination addresses for calls (CALL_SRCTGT). These generate more bytes (than modes 1, 2), however the decoder can determine the symbolic line # where calls are made and returned to without requiring a binary image. (Required if Call/Ret implemented) +
-1: Generate CALL_TGT for both direct and indirect calls. +
-2: least bandwidth: uses CALL_TGT for indirect calls, CALL_SRC for direct (inferrable) calls. Most aggressive on saving bandwidth +
+|0: Generate CALL_FULL message which includes both srcPC and tgtPC. Includes more bytes than modes 1, 2, however the decoder can determine the symbolic line # where calls are made and returned to without requiring a binary image. (This mode is required if Call/Ret implemented) +
+1: Generate CALL_TGT for both direct/inferrable (ITYPE=9) and indirect/uninferrable (ITYPE=8) calls. +
+2: Generates CALL_SRC message for direct/inferrable calls and CALL_TGT for indirect calls. Most aggressive on saving bandwidth +
 3: reserved
 |WARL
 |0
 
 |6:5
 |trTeEvtRetMode
-|0: use messages that include both source and destination addresses for returns (RET_SRCTGT). These generate more bytes (than modes 1, 2), however the decoder can determine the symbolic line # where return is made and returned to without requiring a binary image. (Required if Call/Ret implemented) +
+|0: Generate RET_FULL message which includes both srcPC and tgtPC. Includes more bytes than modes 1, 2, however the decoder can determine the symbolic line # where return is made and returned to without requiring a binary image. (Required if Call/Ret implemented) +
 1: generate RET_TGT for returns. +
-2: least bandwidth: uses RET with no addresses when return address matches the call, otherwise RET_TGT. +
+2: fewest bytes: uses RET_STACK with no srcPC or tgtPC when return address matches the call, otherwise RET_TGT. (Requires hardware to maintain a call stack to compare and match against return address; depth is user-definable but requires at least one entry) +
 3: reserved
 |WARL
 |0
@@ -1229,17 +1231,19 @@ This field is common for all signals.
 
 ==== trTeEvtPerfSelectControl: Performance Selector Control Register (trBaseEncoder+0x164)
 
-The Event Trace Performance Selector feature supports the conversion of an HPM (Hardware Performance Monitor) selector (mhpmeventX) <<Alternative-1>> or independent perf event selectors <<Alternative-2>> output assertion into an Event Trace packet, and records the number of additional times this happens in a user-selectable interval. In other words, the signal from an mhpmeventX or independent selector is routed to and counted by a standard programmable performance counter and is also routed to the Trace Encoder to be recognized and recorded, with timestamp, in the trace timeline.
+The Event Trace Performance Selector feature supports the conversion of an HPM (Hardware Performance Monitor) selector (mhpmeventX) output assertion into an Event Trace packet, and records the number of additional times this happens (if any) in a user-selectable interval. In other words, the signal from an mhpmeventX is routed to and counted by a standard programmable performance counter and is also routed to the Trace Encoder to be recognized and recorded, with timestamp, in the trace timeline.
 
-Performance counters count these occurrences; this Event Trace feature does much more - it records the instruction at the time of the occurrence, and the timestamp creates a time history of these occurrences.  In addition, if the event occurs frequently, the hardware compresses these into a "first occurrence" and count, recording the number of times the event occurs within the user-specified interval that can be visualized as frequency of occurrence over a time history. The purpose of the interval is to reduce the number of events recorded when the event occurs frequently, for example, counting load instructions.
+Performance counters count these occurrences and are recorded at each EVT event. The Performance Selector trace records the occurrence of the event and timestamp to mark its occurrence in the trace timeline (like a waveform view). 
+
+In addition, if the Performance Selector output event occurs frequently, the hardware compresses these into a "first occurrence" and count, recording the number of times the event occurs within the user-specified interval that can be visualized as frequency of occurrence over a time history. The purpose of the interval is to reduce the number of events recorded when the event occurs frequently, for example, counting load instructions.
 
 The start of the event requires a rising edge on the Select signal but the counting of the event during the interval is done by counting the level (high) of the signal.
 
 The logic for this event type requires a counter to count the number of cycles the signal is high during the interval. The counter is saturating (stops counting when reaching maximum value).  The recommended width is 24 bits and leading-zero suppression for recording the value in the trace packet.
 
-NOTE: The trace packet requires that the PC (address of latest retired instruction) and timestamp be latched at first occurrence of the selector event edge; the counter counts the high level during the interval, then the packet combines the PC, event count, and starting timestamp when the interval ends.
+NOTE: The trace packet requires that the PC (address of latest retired instruction) and timestamp be latched at first occurrence of the selector event edge; the counter counts the selector signal is at a high level during the interval, then the packet combines the PC, event count, and starting timestamp when the interval ends.
 
-NOTE: The counter is not accessible as a memory-mapped register. It is part of the Perf Selector Event Trace logic and the value is stored in the packet and reset to zero at the end of the interval. For reasons of access for DV, it may be of interest to make it read/write-able as a memory-mapped register, but that is not part of this specification.
+NOTE: The counter is not accessible as a memory-mapped register. It is part of the Perf Selector Event Trace logic and the value is stored in the packet and reset to zero at the end of the interval. For reasons of access for DV, it may be of interest to make it read/write-able as a memory-mapped register, but this is not part of this specification.
 
 .Event Trace Performance Selector Control - *trTeEvtPerfSelectControl* (32b)
 [%unbreakable]

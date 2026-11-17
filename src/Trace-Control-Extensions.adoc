@@ -1,9 +1,6 @@
-//[[Trace Control Extensions for Event Trace]]
 == Trace Control Extensions for Event Trace
 
-This chapter (from Trace-Control-Extensions.adoc) defines the extensions required to the "RISC-V-Trace-Control-Interface.pdf" spec to support Event Trace.
-
-The Trace Control Interface spec, Table 4 cite:[riscv-trace-control-spec-1.0] (Table 4), has several reserved address ranges labeled "Reserved for future standard extension". The Event Trace fits into one of those and currently allocates and uses addresses *0x100-0x1A4*. Thus Event Trace control registers starting point is an offset from the Trace Encoder base address, i.e. *trTeEventBase = trBaseEncoder+0x100*.
+This chapter (from Trace-Control-Extensions.adoc) defines the extensions required to the RISC-V-Trace-Control-Interface specification cite:[riscv-trace-control-spec-1.0] to support Event Trace.  Table 4 has several reserved address ranges labeled "Reserved for future standard extension". The Event Trace currently allocates and uses addresses *0x100-0x1A4*. Thus Event Trace control registers starting point is an offset from the Trace Encoder base address, i.e. *trTeEventBase = trBaseEncoder+0x100*.
 
 === Event Trace Control Register Mode Field
 
@@ -32,8 +29,8 @@ This message is common for both N-Trace and E-Trace Instruction Trace formats, a
 
 |13:10
 |trTsSyncMax
-|*0*: MTIME_SYNC disabled +
-*1-15*: Period for generating MTIME_SYNC message is 2^(*7*+trTsSyncMax) messages
+|*0*: *MTIME_SYNC* disabled +
+*1-15*: Period for generating *MTIME_SYNC* message is 2^(*7*+trTsSyncMax) messages
 |WARL
 |0
 |===
@@ -42,7 +39,7 @@ This message is common for both N-Trace and E-Trace Instruction Trace formats, a
 
 === MTIME_SYNC Aperiodic Generation
 
-If enabled, an MTIME_SYNC message shall be generated sometime after (when is not critical):
+If enabled, an *MTIME_SYNC* message shall be generated sometime after (when is not critical):
 
 1. a trace-on, exit debug, or exit reset message
 2. immediately after trace has stopped or halted (this needs to be timely)

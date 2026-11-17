@@ -12,23 +12,25 @@ This chapter (N-Trace-packets.adoc) defines the Event Trace messages that extend
 ^| Value ^|Description
 |0x22 (34) (compressed), +
 0x23 (35) (synchronized)
-|EVT Trace Messages for non-function events +
-* EVTSRC=0: Trace-on (Sync) +
-* EVTSRC=1: Trace-off +
-* EVTSRC=2: Exception +
-* EVTSRC=3: Interrupt +
-* EVTSRC=4: Return from trap +
-* EVTSRC=5: Debug Trigger/Watchpoint +
-* EVTSRC=6: User Definable Signals +
-* EVTSRC=7: Periodic PC Sampling +
-* EVTSRC=8: External Signal (trigger) +
-* EVTSRC=9: Perf Counter Selector Occurrence +
+a| EVT Trace Messages for non-function events
 
-EVT Trace Message for Call function +
+* EVTSRC=0: Trace-on (Sync)
+* EVTSRC=1: Trace-off
+* EVTSRC=2: Exception
+* EVTSRC=3: Interrupt
+* EVTSRC=4: Return from trap
+* EVTSRC=5: Debug Trigger/Watchpoint
+* EVTSRC=6: User Definable Signals
+* EVTSRC=7: Periodic PC Sampling
+* EVTSRC=8: External Signal (trigger)
+* EVTSRC=9: Perf Counter Selector Occurrence +
+|0x23 (35) (synchronized)
+ a|EVT Trace Message for function call synchronization
+
 * EVTSRC=10: Call src+tgt, sync'ed
 
 |0x24 (36)
-| CALL_FULL_SYNC Function Event
+| Call/Return Function Events (non-synchronizing)
 
 |0x11 (17)
 | Profiling Performance Counter Recording
@@ -42,7 +44,7 @@ EVT Trace Message for Call function +
 
 === Informational (non-normative)
 
-* *SRC* width is a hardware build-time configuration based on the total number of harts, defined in the Trace Control Interface Spec as trTeSrcBits
+* *SRC* width is a hardware build-time configuration based on the total number of harts, defined in the Trace Control Interface Spec as trTeSrcBits cite:[riscv-trace-control-spec-1.0] (Table 11)
 * *TSTAMP* is the N-Trace accumulating, running timestamp. Its clock is required to provide accurate short-duration execution timing, with a 10ns minimum resolution and a preferred 1ns resolution (100MHz - 1GHz). TSTAMP minimum width should be 40 bits which provides 18 minutes of duration at 1GHz clock rate. If Event Trace is to run for hours, then 48 bits provides 78 hours.
 * *cfg* in the Bits column means the number of bits is configurable at build time. The primary example is the number of bits for the SRC field. This represents the total number of Harts in the SoC.
 * *N-Trace* uses a byte-sized data format where 6 bits are payload and 2 bits called MSEO bits define the message framing. 00 = first or middle bytes, 01 = end of a variable field, 11 = end of a message/packet.
@@ -51,7 +53,7 @@ EVT Trace Message for Call function +
 === Non-Function Event Trace Message Formats
 (((N-Trace, EVT message formats)))
 
-Event Trace has defined a new N-Trace message called EVT that covers non-call/ret event types. There are two types: EVT compressed (TCODE=34) and synchronized (TCODE=35). Note that this message type has the same TCODEs and format as the Nexus Trace ICT (in-circuit trace) messages.
+Event Trace defines a new N-Trace message called EVT that covers non-call/ret event types and one function call synchronization event. There are two types: EVT compressed (TCODE=34) and synchronized (TCODE=35). Note that this message type has the same TCODEs and format as the Nexus Trace ICT (in-circuit trace) messages.
 
 .EVT Trace Messages for non-function events
 [cols="10%,15%,~", options="header"]
@@ -62,7 +64,7 @@ Event Trace has defined a new N-Trace message called EVT that covers non-call/re
 |*TCODE*
 |*Value = 0x22 (34) (compressed) or 0x23 (35) (synchronized)*
 
-|Cfg
+|cfg
 |SRC
 |Source Hart of this message (width is trTeSrcBits)
 
@@ -72,7 +74,8 @@ Event Trace has defined a new N-Trace message called EVT that covers non-call/re
 
 |2
 |EVTCNT
-|0=One field (EVTPC), 1=Two fields (EVTPC, EVTDATA), 2-3=reserved +
+|0=One field (EVTPC) +
+ 1=Two fields (EVTPC, EVTDATA), 2-3=reserved +
 Note: EVTSRC+EVTCNT equal 1 byte of N-TRACE message output
 
 |var
@@ -85,16 +88,17 @@ Note: EVTSRC+EVTCNT equal 1 byte of N-TRACE message output
 
 |var,cfg
 |TSTAMP
-|(TCODE=0x22) Relative timestamp value
+|(TCODE=0x22) Relative timestamp value +
 (TCODE=0x23) Absolute timestamp value
 |===
 
 ==== Event Trace non-Function Messages, per-EVTSRC (type)
 [#nonfunc-events]
+[#tab:nonfunc-events]
 Values assigned to *CauseID* for N-Trace +
 0 - ENTER_DEBUG +
 1 - EXIT_RESET +
-3 - EXIT_DEBUG
+3 - EXIT_DEBUG +
 4 - TRACE_OFF_TRIGGER +
 5 - TRACE_ON_TRIGGER +
 6 - ENTER_RESET +
@@ -116,7 +120,7 @@ Values assigned to *CauseID* for N-Trace +
 |1
 |PC
 |*CauseID*
-|EVTPC follows the rules defined in Chapter 3 +
+|EVTPC follows the rules <<List-of-Rules>> defined in Chapter 3 +
 PC=instruction responsible for trace-on. +
 CauseID field: +
 EXIT_RESET +
@@ -242,18 +246,18 @@ There are two TCODE message types for function calls and returns: synchronous an
 [cols="12%,10%,10%,10%,11%,~", options="header"]
 |===
 ^|Event ^|EVTSRC ^|EVTCNT ^|EVTPC ^|EVTDATA ^|Description
-|CALL_FULL_SYNC
+|CALL_SYNC
 |10
 |1
-|Source +
+|srcPC +
  (F-ADDR)
-|Target +
+|tgtPC +
 (U-ADDR)
-|Traces both Source and Target addresses. The target address is XOR compressed. Full (absolute) timestamp if enabled. +
+|Traces both srcPC and tgtPC addresses. The tgtPC is XOR compressed. Full (absolute) timestamp (if enabled). +
 |===
 
 ==== Event Trace Message for Calls and Returns (non-synchronizing)
-.Event Trace Message Fields for Calls and Returns; TCODE = 36
+.Event Trace Message Fields for Calls and Returns
 [cols="~,~,~", width=70%, options="header"]
 |===
 |Bits |Field |Description
@@ -267,16 +271,16 @@ There are two TCODE message types for function calls and returns: synchronous an
 |Source Hart of this message (width is trTeSrcBits)
 
 |3
-|Mode
+|MODE
 |See table below for Mode assignments
 
 |var
-|Src Addr
-|PC: U-ADDR (may not be included depending on the Mode field)
+|srcPC
+|U-ADDR (may not be included depending on the MODE field)
 
 |var
-|Target Addr
-|U-ADDR (may not be included depending on the Mode field)
+|tgtPC
+|U-ADDR (may not be included depending on the MODE field)
 
 |var,cfg
 |TSTAMP
@@ -284,55 +288,49 @@ There are two TCODE message types for function calls and returns: synchronous an
 
 |===
 
-The following table lists all the Call and Return Modes for TCODE=36. All addresses are U-ADDR (Unique). These provide the most compact messages.
+The following table lists all the Call and Return Modes for TCODE=36. All addresses are U-ADDR and timestamp is relative (if enabled). These provide the most compact messages.
 
-.Event Trace Message with Mode assignments for Calls and Returns (non-synchronizing), TCODE = 36
-[cols="12%,10%,10%,10%,11%,~", options="header"]
-|===
-|Name |Mode |Source |Target |ITYPE |Description
+.Event Trace Message with Mode assignments for Calls and Returns (non-synchronizing)
+[cols="12%,10%,10%,10%,~", options="header"]
+|=== 
+|Name |Mode |Source |Target |Description
 |
 |0
-|
 |
 |
 |Reserved
 
 |CALL_SRC
 |1
-|Src PC
+|srcPC
 |-----
-|9
-|inferrable call so destination obtained from opcode if binary available +
-*trTeEvtCallMode*=2
+|*trTeEvtCallMode=2* +
+inferrable call (ITYPE=9) so target obtained from opcode if binary available, otherwise target unknown +
 
 |CALL_TGT
 |2
 |-----
-|Tgt Addr
-|8 or 9
-|itype=8 means indirect (uninferrable) call or co-routine swap.
-Source function can be derived from trace history however Src address (i.e. line # of caller) is unknown. +
-*trTeEvtCallMode*=1
+|tgtPC
+|*trTeEvtCallMode=1* +
+Generated for direct/inferrable call (ITYPE=9) and indirect/uninferrable call or co-routine swap (ITYPE=8). Means tgtPC recorded but no srcPC so call history determines call stack (and source line # of caller is not determinable).
 
 |CALL_FULL
 |3
-|Src PC
-|Tgt Addr
-|8 or 9
-|Traces both Source and Target compressed (unique) addrs; relative timestamp if enabled. +
-*trTeEvtCallMode*=0
+|srcPC
+|tgtPC
+|*trTeEvtCallMode=0* AND inferrable call (ITYPE=9), or +
+*trTeEvtCallMode=2* AND uninferrable call (ITYPE=8) +
+Traces both srcPC and tgtPC.
 
-|RET
+|RET_STACK
 |4
 |------
 |------
-|13
-|Function returned, no src or tgt address in message. The return destination is derived from a previous call message trace history. +
-*trTeEvtRetMode*=2
+|*trTeEvtRetMode=2* +
+Function return (ITYPE=13), no srcPC or tgtPC in message; fewest bytes generated. (Requires hardware to maintain a call stack to compare and match against return address (tgtPC); stack depth is user-definable but requires at least one entry).
 
 |
 |5
-|
 |
 |
 |Reserved
@@ -340,34 +338,29 @@ Source function can be derived from trace history however Src address (i.e. line
 |RET_TGT
 |6
 |------
-|Tgt Addr
-|13
-|return-to address; caller (function) determined from symbolic address range of destination address and/or from history. +
-*trTeEvtRetMode*=1
+|tgtPC
+|*trTeEvtRetMode=1* +
+Return-to address (tgtPC) (ITYPE=13) i.e. caller (function) is known and can be determined from symbolic address range of target address or from trace history.
 
 |RET_FULL
 |7
-|Source PC
-|Target
-|13
-|Traces both Src and Dest (return to) addresses +
-*trTeEvtRetMode*=0
+|srcPC
+|tgtPC
+|*trTeEvtRetMode=0* +
+(ITYPE=13) Traces both srcPC and tgtPC
 
 |===
 
-Recommended priority of implementation +
-1: CALL_FULL_SYNC, CALL_FULL, RET_FULL +
-2: CALL_SRC, RET +
-3: CALL_TGT, RET_TGT
-
-NOTE: If only the destination address of an event is recorded in the message, the decoder must determine the source address from the execution binary and the previous messages recorded. In some cases, it will not be possible to determine the exact source address when a function is called in multiple places in the calling function. If the user wants the precise source and destination addresses then they must set the Call mode to trTeEvtCallMode=0 with the understanding that these messages generate more bytes.
+NOTE: Assuming the decoder has range information for each function, if only the target address of a function call is recorded (trTeEvtCallMode=1), the called function can be identified and labeled. Only trace history will identify the calling function and it will not be possible to determine the  source address when a function is called in the calling function. This may be acceptable for how the user intends to use the trace. +
+For a function return with only the target address recorded (trTeEvtRetMode=1), the decoder can label the function it returned to including the line number (if in the symbol table). +
+If the user wants the precise source and target address locations in the decoded output, they must use trTeEvtCallMode=0 and trTeEvtRetMode=0 with the understanding that these messages generate more bytes.
 
 === Periodic Synchronization Messages
 ((((N-Trace, Periodic Synchronization messages)))
 
 Messages that include the Program Counter (PC) are predominantly U-ADDRes.  Periodically, however, the full address (F-ADDR) must be output to provide a synchronization point for the trace decoder. The period for generating a synchronization message is defined by the N-Trace register *trTeControl.trTeInstSyncMax* cite:[riscv-trace-control-spec-1.0] (Chpt. Trace Encoder Control Interface). The count is 2^(trTeInstSyncMax+4).
 
-Hardware counts the number of Event Trace messages that include a PC and outputs a synchronization message when the count reaches the programmed value. Messages that can include an F-ADDR include all EVT (TCODE=0x23) messages that include a PC address and CALL_FULL_SYNC.
+Hardware counts the number of Event Trace messages that include a PC and outputs a synchronization message when the count reaches the programmed value. Messages that can include an F-ADDR include all EVT (TCODE=0x23) messages that include a PC address and CALL_SYNC.
 
 ===  Profiling Performance Counter (PPC) Recording
 (((N-Trace, Performance Counter Recording message)))
@@ -376,7 +369,7 @@ This message is used to record the Event Trace Profiling Performance Counter (PP
 
 This message is generally output immediately after an event message when PPCs are enabled for that message. Thus it does not include a timestamp since the event message itself includes a timestamp, if enabled.
 
-The number of PPCs implemented is defined in the control register *trTeEvtFeatures.trTeEvtPPCsImpl* <<PPCsImplemented>>. The number of PPCs to actively record per message is defined by the control register *trTePPCEnables.trTeEvtPPCNumTrace* <<PPCsToTrace>>. (Hardware must limit  the number of PPCs to record does not exceed the number of PPCs implemented.) Thus this message can output a variable number of counters.  The N-Trace message format defines the end of a message. See Chapter "MSEO Sequences" in  cite:[riscv-N-Trace-spec-1.0)]
+The number of PPCs implemented is defined in the control register *trTeEvtFeatures.trTeEvtPPCsImpl* <<PPCsImplemented>>. The number of PPCs to actively record per message is defined by the control register *trTePPCEnables.trTeEvtPPCNumTrace* <<PPCsToTrace>>. (Hardware must limit  the number of PPCs to record does not exceed the number of PPCs implemented.) Thus this message can output a variable number of counters.  The N-Trace message format defines the end of a message. See Chapter "MSEO Sequences" in  cite:[riscv-N-Trace-spec-1.0]
 
 .Profiling Performance Counter Recording
 [cols="10%,20%,~", options="header"]
@@ -454,7 +447,7 @@ N-Trace MTIME_SYNC Message to record mtime and trace timestamp simultaneously fo
 |Source Hart of this message (width is trTeSrcBits)
 
 |var
-|mtime
+|MTIME
 |F (Full) mtime value
 
 |var,cfg

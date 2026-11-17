@@ -167,10 +167,10 @@ a|(ITYPE=1) PC is the address of the instruction that incurred the exception, i.
 (((N-Trace, Event, Return from Trap Message)))
 |4
 |0
-|PCdest
+|tgtPC
 |---
 |Return from exception or interrupt (MRET or SRET executed) +
-PCdest is address of instruction to begin execution after trap +
+tgtPC is address of instruction to begin execution after trap +
 
 |Debug Trigger/ +
 Watchpoint w/TRIG_ID
@@ -243,7 +243,7 @@ Generated when external signal edge on this channel (SIG_ID) is detected by the 
 There are two TCODE message types for function calls and returns: synchronous and non-synchronizing. The former uses the ICT (in-circuit trace) message with EVTSRC=10 to record both source and target addresses with the source being a Full address (F-ADDR). All other call/return types use TCODE=36 to encode these types.
 
 .ICT Event Trace Message for Synchronous Call, TCODE=35
-[cols="12%,10%,10%,10%,11%,~", options="header"]
+[cols="15%,10%,10%,10%,11%,~", options="header"]
 |===
 ^|Event ^|EVTSRC ^|EVTCNT ^|EVTPC ^|EVTDATA ^|Description
 |CALL_SYNC
@@ -292,7 +292,7 @@ The following table lists all the Call and Return Modes for TCODE=36. All addres
 
 .Event Trace Message with Mode assignments for Calls and Returns (non-synchronizing)
 [cols="12%,10%,10%,10%,~", options="header"]
-|=== 
+|===
 |Name |Mode |Source |Target |Description
 |
 |0

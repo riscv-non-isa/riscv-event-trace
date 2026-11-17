@@ -1,4 +1,4 @@
-//11-12-26 4am
+//11-17-26 5am
 
 [[body]]
 == Features
@@ -159,13 +159,7 @@ Note: Context and Context ID are used interchangeably in this document.
 Definition: *CauseID*: traced value identifying the cause of a Trace-on (Sync) or Trace-off event. The Trace Decoder uses it to label the cause of the message. This document uses symbolic names for ID values; actual assigned values can be different between E-Trace and N-Trace.
 
 RHTI signals referenced in this section: +
-* *trcstate* +
-* *trigger* +
-* *cause* +
-* *priv* +
-* *context* +
-* *iaddr* +
-* *iretire*
+*trcstate*, *trigger*, *cause*, *priv*, *context*, *iaddr*, *iretire*
 
 [#List-of-Rules]
 .List of Rules
@@ -192,7 +186,7 @@ When the count-down condition is reached, hardware asserts a *sync_needed* flag 
 |===
 ^|Event ^|Cause ^| Outputs
 
-.6+a|[#Trace-on,Trace on]Trace-on (Sync) 
+.6+|Trace-on (Sync)
 |Exit from Reset
 | CauseID=EXIT_RESET +
  PRIVILEGE mode, +
@@ -232,7 +226,7 @@ Context ID (Optional) +
 Context ID (Optional) +
  PC of first retired instruction after trace-on transition (Optional)
 
-.6+a|[#trace-off,Trace off]Trace-off
+.6+|Trace-off
 |Enter Reset
 | CauseID=ENTER_RESET +
 PC = last instruction to execute before reset (Optional)
@@ -311,10 +305,10 @@ Each of the Trace-on (Sync) <<Trace-on>> and Trace-off events <<Trace-off>> in t
 
 Bits: +
 
-* 0: RHTI_ENTER (Trace-off; trcstate >0) <<RHTI_ENTER>>
-* 1: RHTI_EXIT (Trace-on; trcstate=0) <<RHTI_EXIT>>
-* 2: CORE_ENTER (Trace-off) <<CORE_ENTER>>
-* 3: CORE_EXIT (Trace-on) <<CORE_EXIT>>
+* 0: RHTI_ENTER (Trace-off; trcstate >0) <<RHTI-ENTER>>
+* 1: RHTI_EXIT (Trace-on; trcstate=0) <<RHTI-EXIT>>
+* 2: CORE_ENTER (Trace-off) <<CORE-ENTER>>
+* 3: CORE_EXIT (Trace-on) <<CORE-EXIT>>
 
 There are two read-only implementation bits  defined for RHTI and CORE in the *trTeEvtFeatures RO* <<RHTICoreEnterImplemented>> and <<RHTICoreExitImplemented>> section.  There are also four Enable bits in the *trTeEvtControl* register.
 
@@ -326,7 +320,7 @@ The following table lists the packet types to support function Calls and Returns
 [#callret-events]
 [#tab:callret-events]
 .Call and Return Event Types and Message Contents
-[cols="12%,22%,~", options="header"]
+[cols="15%,22%,~", options="header"]
 |===
 ^|Event ^| Outputs ^| Description
 |*CALL_FULL* | *itype* of call (8 or 9) +
@@ -811,25 +805,25 @@ Note: Context writes are also enabled when the *trTeControl.trTeContext* bit is 
 |0
 
 |20
-|[#RHTI_ENTER] trTeEvtRHTIEnterEn
+a|[#RHTI-ENTER] trTeEvtRHTIEnterEn
 |0: don't trace; 1: trace RHTI_ENTER (trace-off) events - *trcstate* 2'b00 to >0 transitions
 |WARL
 |0
 
 |21
-|[#RHTI_EXIT] trTeEvtRHTIExitEn
+a|[#RHTI-EXIT] trTeEvtRHTIExitEn
 |0: don't trace; 1: trace RHTI_EXIT (trace-on) events - *trcstate* >0 to 0 transitions
 |WARL
 |0
 
 |22
-|[#CORE_ENTER] trTeEvtCOREEnterEn
+a|[#CORE-ENTER] trTeEvtCOREEnterEn
 |0: don't trace; 1: trace CORE_ENTER (trace-off) events - unfilter-to-filtered
 |WARL
 |0
 
 |23
-|[#CORE_EXIT] trTeEvtCOREExitEn
+a|[#CORE-EXIT] trTeEvtCOREExitEn
 |0: don't trace; 1: trace CORE_EXIT (trace-on) events - filtered-to-unfiltered
 |WARL
 |0
@@ -1233,7 +1227,7 @@ This field is common for all signals.
 
 The Event Trace Performance Selector feature supports the conversion of an HPM (Hardware Performance Monitor) selector (mhpmeventX) output assertion into an Event Trace packet, and records the number of additional times this happens (if any) in a user-selectable interval. In other words, the signal from an mhpmeventX is routed to and counted by a standard programmable performance counter and is also routed to the Trace Encoder to be recognized and recorded, with timestamp, in the trace timeline.
 
-Performance counters count these occurrences and are recorded at each EVT event. The Performance Selector trace records the occurrence of the event and timestamp to mark its occurrence in the trace timeline (like a waveform view). 
+Performance counters count these occurrences and are recorded at each EVT event. The Performance Selector trace records the occurrence of the event and timestamp to mark its occurrence in the trace timeline (like a waveform view).
 
 In addition, if the Performance Selector output event occurs frequently, the hardware compresses these into a "first occurrence" and count, recording the number of times the event occurs within the user-specified interval that can be visualized as frequency of occurrence over a time history. The purpose of the interval is to reduce the number of events recorded when the event occurs frequently, for example, counting load instructions.
 

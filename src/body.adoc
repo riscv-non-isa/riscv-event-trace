@@ -1,4 +1,4 @@
-//11-20-26 1am
+//11-20-26 4am
 
 [[body]]
 == Features
@@ -595,7 +595,7 @@ The current RHTI specification cite:[riscv-RHTI-spec-0.83] does not include a si
 
 However, since counting instructions retired is a RISC-V requirement (the *minstret* CSR  is mhpmcounter1, a 64-bit performance counter documented in section 3.1.10 Hardware Performance Monitor, RISC-V Privileged Architecture Manual cite:[riscv-privileged-spec-1.0]), counting instret is already implemented in the core and the wire(s) simply needs to be routed to the Event Trace Encoder PPC.
 
-IMPORTANT: An important part of measuring IPC is the ability to filter counts by privilege level cite: [RISC-V_in_HPC], otherwise, for example, user-level function performance can easily be distorted by interrupts or exceptions that jump the cpu into S or M modes.  Privilege filtering of *mcycle* and *instret* should be provided by +
+IMPORTANT: An important part of measuring IPC is the ability to filter counts by privilege level cite: [RISC-V_in_HPC], otherwise, for example, user-level function performance can easily be distorted by interrupts or exceptions that jump the cpu into S or M modes.  Privilege filtering of *mcycle* and *instret* should be provided by: +
 1) the use of the *mcycle* (mcounter0) and *minstret* (mcounter1) direct outputs *and* implementation of *Smcntrpmf* - Cycle and Instret Privilege Mode Filter, Chapter 7 of Privileged Architecture Manual cite:[riscv-privileged-spec-1.0], which provides privilege filtering or, +
 2) the use of programmable performance counters with cycle and instret inputs to selectors for mcounter3-31, and it could be fixed to mhpmcounter3/4, *and* implementation of *Sscofpmf*.
 

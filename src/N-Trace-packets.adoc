@@ -258,7 +258,7 @@ There are two TCODE message types for function calls and returns: synchronous an
 
 ==== Event Trace Message for Calls and Returns (non-synchronizing)
 .Event Trace Message Fields for Calls and Returns
-[cols="~,~,~", width=70%, options="header"]
+[cols="10%,15%,~", width=80%, options="header"]
 |===
 |Bits |Field |Description
 
@@ -291,7 +291,7 @@ There are two TCODE message types for function calls and returns: synchronous an
 The following table lists all the Call and Return Modes for TCODE=36. All addresses are U-ADDR and timestamp is relative (if enabled). These provide the most compact messages.
 
 .Event Trace Message with CR_MODE assignments for Calls and Returns (non-synchronizing)
-[cols="12%,10%,10%,10%,~", options="header"]
+[cols="12%,12%,10%,10%,~", options="header"]
 |===
 |Name |CR_MODE |Source |Target |Description
 |

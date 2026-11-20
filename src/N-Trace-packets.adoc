@@ -322,7 +322,7 @@ Generated for direct/inferrable call (itype=9) and indirect/uninferrable call or
 *trTeEvtCallMode=2* AND uninferrable call (itype=8) +
 Traces both srcPC and tgtPC.
 
-|RET_IMP [[ret-imp]] 
+|RET_IMP [[ret-imp]]
 |4
 |------
 |------

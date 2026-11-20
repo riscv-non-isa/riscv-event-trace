@@ -1,4 +1,4 @@
-//11-17-26 5am
+//11-20-26 1am
 
 [[body]]
 == Features
@@ -37,7 +37,7 @@ A list of the events types that can be traced with Event Trace is shown in the t
 |*Function Calls, Returns*
 (((Event Types, Function Calls and Returns)))
 |Calls are categorized as Inferrable and Uninferrable types, specifically:
-itype = 8 (indirect call), 9 (direct call), 12 (co-routine swap), 13 (return)
+itype=8 (indirect call), 9 (direct call), 12 (co-routine swap), 13 (return)
 
 |*Exceptions*
 (((Event Types, Exceptions)))
@@ -186,7 +186,7 @@ When the count-down condition is reached, hardware asserts a *sync_needed* flag 
 |===
 ^|Event ^|Cause ^| Outputs
 
-.6+|Trace-on (Sync)
+.6+|Trace-on (Sync) [[trace-on]]
 |Exit from Reset
 | CauseID=EXIT_RESET +
  PRIVILEGE mode, +
@@ -226,7 +226,7 @@ Context ID (Optional) +
 Context ID (Optional) +
  PC of first retired instruction after trace-on transition (Optional)
 
-.6+|Trace-off
+.6+|Trace-off [[trace-off]]
 |Enter Reset
 | CauseID=ENTER_RESET +
 PC = last instruction to execute before reset (Optional)
@@ -272,9 +272,7 @@ PC is the address of the last retired instruction before the interrupt was taken
 |PCdest is address of instruction to begin execution after trap +
 PRIVILEGE mode +
 Context ID (Optional)
-
 |===
-
 
 ////
 values assigned to CauseID
@@ -315,7 +313,7 @@ There are two read-only implementation bits  defined for RHTI and CORE in the *t
 === Function Events
 (((Event Types, function)))
 
-The following table lists the packet types to support function Calls and Returns, with different types and numbers of parameters. ITYPE details can be found in the RHTI spec cite:[riscv-RHTI-spec-0.83] (Table 5).
+The following table lists the packet types to support function Calls and Returns, with different types and numbers of parameters. (4b) itype details can be found in the RHTI spec cite:[riscv-RHTI-spec-0.83] (Table 5).
 
 [#callret-events]
 [#tab:callret-events]
@@ -571,13 +569,13 @@ Event Trace shares performance event selectors and mhpmeventX control registers 
 
 Additional notes:
 
- * The number of wires for each mhpmeventX output depends on the number of ocurrences that can happen per-cycle. For example, a 2-issue cpu that retires up to 2 instructions per cycle would require 2 wires for each mhpmeventX output.
+ * The number of wires for each mhpmeventX output depends on the number of ocurrences that can happen per-cycle. For example, a 2-issue cpu that retires up to 2 instructions per cycle would require 2 wires for each mhpmeventX output (assuming they are symmetrical).
 
 * Sharing selectors and control registers saves hardware costs but places limitations on their use, as it requires the sharing of these HPM performance counter selectors. This sharing still allows for performance counters to be used at the same time as Event Trace uses them, however, it means that the settings for these mhpmeventX selectors have to be the same for both uses.
 
 * Programming the event selectors requires writing to the mhpmeventX CSRs, which then affects what events are counted by both the HPM counters and the Event Trace counters simultaneously.
 
-NOTE: For clarification, there are two uses for the mhpmeventX selector outputs - the first, covered in this section, is for counting perf occurrences with the Profiling Performance Counters (PPCs) and tracing the (delta) counts at every trace event.  The second use is Performance Counter Selector-Based Events, which traces the retired PC at the time of the perf event is a "1" level and, if a duration window is specified, the number of times the perf event has the value "1" during that open window.  The first method counts perf events between Events such as function calls and returns; the second counts perf event occurrences within a user-specified duration window.
+NOTE: For clarification, there are two uses for the mhpmeventX selector outputs - the first, covered in this section, is for counting perf event occurrences with the Profiling Performance Counters (PPCs) and recording these (delta) counts at every trace event.  The second use is Performance Counter Selector-Based Events, which traces the retired PC at the time of the perf event is a "1" level and, if a duration window is specified, the number of times the perf event is counted (has the level value "1") during that open window.  The first method counts perf events between Events such as function calls and returns; the second counts perf event occurrences within a user-specified duration window.
 
 ==== Recommended features of Profiling Performance Counters (PPCs) (non-normative)
 (((Profiling Performance Counters, recommended features)))
@@ -595,11 +593,13 @@ One option for developers is to implement the first PPC (i.e. PPCCounter0) as *P
 
 The current RHTI specification cite:[riscv-RHTI-spec-0.83] does not include a signal set for reporting the number of instructions retired in each cycle. The proposal for adding this signal set is here - <<Instruction-Retired-Count, Instruction Retired Count>>.
 
-However, since counting instructions retired is a RISC-V requirement (the *minstret* CSR  is mhpmcounter1, a 64-bit performance counter documented in section 3.1.10 Hardware Performance Monitor, RISC-V Privileged Architecture Manual cite:[riscv-privileged-spec-1.0]) counting instret is already implemented in the core and the wire(s) simply needs to be routed to the Event Trace Encoder PPC.
+However, since counting instructions retired is a RISC-V requirement (the *minstret* CSR  is mhpmcounter1, a 64-bit performance counter documented in section 3.1.10 Hardware Performance Monitor, RISC-V Privileged Architecture Manual cite:[riscv-privileged-spec-1.0]), counting instret is already implemented in the core and the wire(s) simply needs to be routed to the Event Trace Encoder PPC.
 
-One note is that this fixed instructions-retired counter may not have the ability to filter counts by privilege level. It depends on the capabilities of the underlying *minstret* counter and whether Smcntrpmf (Cycle and Instret Privilege Mode Filter, Chapter 7 of Privileged Architecture Manual cite:[riscv-privileged-spec-1.0]) option is implemented.
+IMPORTANT: An important part of measuring IPC is the ability to filter counts by privilege level cite: [RISC-V_in_HPC], otherwise, for example, user-level function performance can easily be distorted by interrupts or exceptions that jump the cpu into S or M modes.  Privilege filtering of *mcycle* and *instret* should be provided by +
+1) the use of the *mcycle* (mcounter0) and *minstret* (mcounter1) direct outputs *and* implementation of *Smcntrpmf* - Cycle and Instret Privilege Mode Filter, Chapter 7 of Privileged Architecture Manual cite:[riscv-privileged-spec-1.0], which provides privilege filtering or, +
+2) the use of programmable performance counters with cycle and instret inputs to selectors for mcounter3-31, and it could be fixed to mhpmcounter3/4, *and* implementation of *Sscofpmf*.
 
-NOTE: *Counting cycles.* For IPC ratio calculations, the number of cycles between events is also required.  The timestamp may or *may not* be counting cpu cycles.  If it does not, the Event Trace Decoder may need to be informed as to what the fixed ratio of timestamp ticks to CPU cycles so it can convert timestamp counts into cycle counts. Alternatively, a hardware method for recording the timestamp-to-cycle ratio is to implement the <<MTIME-SYNC, Time Sync Packet>>, <<time-sync-message>>.
+NOTE: *Counting cycles.* For IPC ratio calculations, the number of cycles between events is also required.  The timestamp may or *may not* be counting cpu cycles.   If it does not count cycles, the Event Trace Decoder may need to be informed as to what the fixed ratio of timestamp ticks to CPU cycles so it can convert timestamp counts into cycle counts. Alternatively, a hardware method for recording the timestamp-to-cycle ratio is to implement the <<MTIME-SYNC, Time Sync Packet>>, <<time-sync-message>>. (The timestamp also may or may not be filtered by privilege level).
 
 == Event Trace-specific Hardware Filtering
 (((Event Trace, hardware filtering)))
@@ -702,14 +702,14 @@ Note that a change in value will generate a trace-on or trace-off Event Trace pa
 
 |2
 |trTeEvtTrigEn
-|1: Allows *trTeEvtTracing* to be set or cleared by Trace-on and Trace-off signals generated by the corresponding *Trigger Module*.
+|1: Allows *trTeEvtTracing* to be set or cleared by Trace-on and Trace-off signals generated by the corresponding *Trigger Module* cite: [riscv-debug-spec-1.0] (Sdtrig).
 |RW
 |0
 
 |4:3
 |trTeEvtCallMode
 |0: Generate CALL_FULL message which includes both srcPC and tgtPC. Includes more bytes than modes 1, 2, however the decoder can determine the symbolic line # where calls are made and returned to without requiring a binary image. (This mode is required if Call/Ret implemented) +
-1: Generate CALL_TGT for both direct/inferrable (ITYPE=9) and indirect/uninferrable (ITYPE=8) calls. +
+1: Generate CALL_TGT for both direct/inferrable (itype=9) and indirect/uninferrable (itype=8) calls. +
 2: Generates CALL_SRC message for direct/inferrable calls and CALL_TGT for indirect calls. Most aggressive on saving bandwidth +
 3: reserved
 |WARL
@@ -719,7 +719,7 @@ Note that a change in value will generate a trace-on or trace-off Event Trace pa
 |trTeEvtRetMode
 |0: Generate RET_FULL message which includes both srcPC and tgtPC. Includes more bytes than modes 1, 2, however the decoder can determine the symbolic line # where return is made and returned to without requiring a binary image. (Required if Call/Ret implemented) +
 1: generate RET_TGT for returns. +
-2: fewest bytes: uses RET_STACK with no srcPC or tgtPC when return address matches the call, otherwise RET_TGT. (Requires hardware to maintain a call stack to compare and match against return address; depth is user-definable but requires at least one entry) +
+2: fewest bytes: uses RET_IMP (<<ret-imp>>) with no srcPC or tgtPC when return address matches the call, otherwise generates RET_TGT. (Requires hardware to maintain a call stack to compare and match against return address; depth is user-definable but requires at least one entry). cite:[riscv-N-Trace-spec-1.0] (Implicit Return Optimization), cite:[riscv-E-Trace-spec-2.0] (Implicit return mode). +
 3: reserved
 |WARL
 |0
@@ -805,26 +805,26 @@ Note: Context writes are also enabled when the *trTeControl.trTeContext* bit is 
 |0
 
 |20
-a|[#RHTI-ENTER] trTeEvtRHTIEnterEn
-|0: don't trace; 1: trace RHTI_ENTER (trace-off) events - *trcstate* 2'b00 to >0 transitions
+a|[[RHTI-ENTER]] trTeEvtRHTIEnterEn
+|0: don't trace; 1: trace RHTI_ENTER (<<trace-off>>) events - *trcstate* 2'b00 to >0 transitions
 |WARL
 |0
 
 |21
-a|[#RHTI-EXIT] trTeEvtRHTIExitEn
-|0: don't trace; 1: trace RHTI_EXIT (trace-on) events - *trcstate* >0 to 0 transitions
+a|[[RHTI-EXIT]] trTeEvtRHTIExitEn
+|0: don't trace; 1: trace RHTI_EXIT (<<trace-on>>) events - *trcstate* >0 to 0 transitions
 |WARL
 |0
 
 |22
-a|[#CORE-ENTER] trTeEvtCOREEnterEn
-|0: don't trace; 1: trace CORE_ENTER (trace-off) events - unfilter-to-filtered
+a|[[CORE-ENTER]] trTeEvtCOREEnterEn
+|0: don't trace; 1: trace CORE_ENTER (<<trace-off>>) events - unfilter-to-filtered
 |WARL
 |0
 
 |23
-a|[#CORE-EXIT] trTeEvtCOREExitEn
-|0: don't trace; 1: trace CORE_EXIT (trace-on) events - filtered-to-unfiltered
+a|[[CORE-EXIT]] trTeEvtCOREExitEn
+|0: don't trace; 1: trace CORE_EXIT (<<trace-on>>) events - filtered-to-unfiltered
 |WARL
 |0
 
@@ -1067,7 +1067,7 @@ The purpose of the MMIO mapping of these registers is:
 
 2. to be used as independent (outside of Event Trace) perf counters. This extends the usefulness of these counters beyond Event Trace and HPM counters. For example, they can enable memory-based access by another core in the cluster or by JTAG or other external debug port/device for taking performance measurements without cpu intervention.
 
-The registers exist in the design as Capture registers.  When a new Event Trace event occurs, each of the profiling performance counters must be latched in order for the counter to be zeroed and ready to begin counting on the next cycle. Then the Trace Encoder must create a packet packet with each of the PPCs put into the packet, sequentially.  This requires that all the PPCs be latched simultaneously.
+The registers exist in the design as Capture registers.  When a new Event Trace event occurs, each of the profiling performance counters must be latched in order for the counter to be zeroed and ready to begin counting on the next cycle. Then the Trace Encoder must create a packet with each of the PPCs put into the packet, sequentially.  This requires that all the PPCs be latched simultaneously.
 
 If MMIO access is implemented, software can first snapshot the *trTeEvtPPCCounter__i__* counters then read the Capture registers sequentially, until the next snapshot. The snapshot action is done with a write to a specific control register.
 
@@ -1239,6 +1239,7 @@ NOTE: The trace packet requires that the PC (address of latest retired instructi
 
 NOTE: The counter is not accessible as a memory-mapped register. It is part of the Perf Selector Event Trace logic and the value is stored in the packet and reset to zero at the end of the interval. For reasons of access for DV, it may be of interest to make it read/write-able as a memory-mapped register, but this is not part of this specification.
 
+////
 .Event Trace Performance Selector Control - *trTeEvtPerfSelectControl* (32b)
 [%unbreakable]
 [wavedrom, , svg]
@@ -1256,6 +1257,7 @@ NOTE: The counter is not accessible as a memory-mapped register. It is part of t
   {bits: 20, name:'Reserved'},
 ], config:{lanes: 4, hspace:1024}}
 ....
+////
 
 [#Performance-Selector-Control]
 .Event Trace Performance Selector Control - *trTeEvtPerfSelectControl* (32b)

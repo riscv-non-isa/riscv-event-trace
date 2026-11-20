@@ -151,7 +151,7 @@ TRACE_OFF_FILTERED +
 |1
 |PC
 |*cause*
-a|(ITYPE=1) PC is the address of the instruction that incurred the exception, i.e. *xepc CSR* which equals *iaddr*+*iretire* +
+a|(itype=1) PC is the address of the instruction that incurred the exception, i.e. *xepc CSR* which equals *iaddr*+*iretire* +
 *cause* is what is loaded into the Exception Code field of *xcause*. cause signals are defined in Table 1 of RHTI spec cite:[riscv-RHTI-spec-0.83]
 
 |Interrupt
@@ -160,7 +160,7 @@ a|(ITYPE=1) PC is the address of the instruction that incurred the exception, i.
 |1
 |PC
 |*cause*
-|(ITYPE=2) PC is the address of the last retired instruction before the interrupt was taken (*iaddr*) +
+|(itype=2) PC is the address of the last retired instruction before the interrupt was taken (*iaddr*) +
 *cause* is what is loaded into the Exception Code field of *xcause*.
 
 |Return from trap
@@ -271,16 +271,16 @@ There are two TCODE message types for function calls and returns: synchronous an
 |Source Hart of this message (width is trTeSrcBits)
 
 |3
-|MODE
-|See table below for Mode assignments
+|CR_MODE
+|See table below for CR_MODE assignments
 
 |var
 |srcPC
-|U-ADDR (may not be included depending on the MODE field)
+|U-ADDR (may not be included depending on the CR_MODE field)
 
 |var
 |tgtPC
-|U-ADDR (may not be included depending on the MODE field)
+|U-ADDR (may not be included depending on the CR_MODE field)
 
 |var,cfg
 |TSTAMP
@@ -290,10 +290,10 @@ There are two TCODE message types for function calls and returns: synchronous an
 
 The following table lists all the Call and Return Modes for TCODE=36. All addresses are U-ADDR and timestamp is relative (if enabled). These provide the most compact messages.
 
-.Event Trace Message with Mode assignments for Calls and Returns (non-synchronizing)
+.Event Trace Message with CR_MODE assignments for Calls and Returns (non-synchronizing)
 [cols="12%,10%,10%,10%,~", options="header"]
 |===
-|Name |Mode |Source |Target |Description
+|Name |CR_MODE |Source |Target |Description
 |
 |0
 |
@@ -305,29 +305,30 @@ The following table lists all the Call and Return Modes for TCODE=36. All addres
 |srcPC
 |-----
 |*trTeEvtCallMode=2* +
-inferrable call (ITYPE=9) so target obtained from opcode if binary available, otherwise target unknown +
+Inferrable call (itype=9) so target obtained from opcode if binary available, otherwise target unknown +
 
 |CALL_TGT
 |2
 |-----
 |tgtPC
 |*trTeEvtCallMode=1* +
-Generated for direct/inferrable call (ITYPE=9) and indirect/uninferrable call or co-routine swap (ITYPE=8). Means tgtPC recorded but no srcPC so call history determines call stack (and source line # of caller is not determinable).
+Generated for direct/inferrable call (itype=9) and indirect/uninferrable call or co-routine swap (itype=8). Means tgtPC recorded but no srcPC so call history determines call stack (and source line # of caller is not determinable).
 
 |CALL_FULL
 |3
 |srcPC
 |tgtPC
-|*trTeEvtCallMode=0* AND inferrable call (ITYPE=9), or +
-*trTeEvtCallMode=2* AND uninferrable call (ITYPE=8) +
+|*trTeEvtCallMode=0* or +
+*trTeEvtCallMode=2* AND uninferrable call (itype=8) +
 Traces both srcPC and tgtPC.
 
-|RET_STACK
+|RET_IMP [[ret-imp]] 
 |4
 |------
 |------
-|*trTeEvtRetMode=2* +
-Function return (ITYPE=13), no srcPC or tgtPC in message; fewest bytes generated. (Requires hardware to maintain a call stack to compare and match against return address (tgtPC); stack depth is user-definable but requires at least one entry).
+a|*trTeEvtRetMode=2* +
+IMP = IMPLIED. Function return (itype=13), no srcPC or tgtPC in message; fewest bytes generated. This requires hardware, shared with Instruction Trace specifications, to maintain a call stack to compare and match against return address (tgtPC). Stack depth is developer-definable as is the number of address bits to compare, but requires at least one entry. cite:[riscv-N-Trace-spec-1.0] (Implicit Return Optimization), cite:[riscv-E-Trace-spec-2.0] (Implicit return mode). Typical values are 16-deep stack and 16-bit address comparison. +
+If the hardware-maintained call stack does not have a matching entry for the return address, the encoder generates a RET_TGT message.
 
 |
 |5
@@ -340,14 +341,14 @@ Function return (ITYPE=13), no srcPC or tgtPC in message; fewest bytes generated
 |------
 |tgtPC
 |*trTeEvtRetMode=1* +
-Return-to address (tgtPC) (ITYPE=13) i.e. caller (function) is known and can be determined from symbolic address range of target address or from trace history.
+Return-to address (tgtPC) (itype=13) i.e. caller (function) is known and can be determined from symbolic address range of target address or from trace history.
 
 |RET_FULL
 |7
 |srcPC
 |tgtPC
 |*trTeEvtRetMode=0* +
-(ITYPE=13) Traces both srcPC and tgtPC
+(itype=13) Traces both srcPC and tgtPC
 
 |===
 
@@ -464,7 +465,7 @@ The RHTI spec cite:[riscv-RHTI-spec-0.83] (Sec. Trace State) added the Trace Sta
 *2'b10* Inhibiting trace for security reasons +
 *2'b11* Unbounded wait. Pausing trace for an unbounded amount of time (e.g. executing WFI or WFE instructions)
 
-These state values and state transitions are documented in the <<nonfunc-events, nonfunctional events>> section as to the "abstract" trace-on and trace-off messages necessary to generate. It also documents general rules <<List-of-Rules, List of Rules>> for these state transitions.
+These state values and state transitions are documented in the <<nonfunc-events, nonfunctional events>> section as to the "abstract" <<trace-on>> and <<trace-off>> messages necessary to generate. It also documents general rules <<List-of-Rules, List of Rules>> for these state transitions.
 
 === Summary of TCODE Usage (non-normative)
 

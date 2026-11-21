@@ -3,7 +3,7 @@
 == Event Trace Operations (non-normative)
 
 * Event Trace is a mode of the Trace Encoder which is set up with *trTeControl.trTeInstMode=4*. Then, *trTeControl.trTeEnable* is used to enable trace or disable and flush it, with *trTeControl.trTeEmpty* used to indicate when the flush has completed.
-* *trTeEvtControl.trTeEvtTracing* is both a control and status bit. Reading it indicates Event Trace is tracing or not. Writing to it enables native software to start or stop Event Trace dynamically such as turning it off at the beginning of a function and turning it back on at the end, or visa versa.
+* *trTeEvtControl.trTeEvtTracing* is both a control and status bit. Reading it indicates Event Trace is tracing or not. Writing to it enables native software to start or stop Event Trace dynamically such as turning it off at the beginning of a function and turning it back on at the end, or vice versa.
 * Event Trace can be started by native software writing to the Event Trace control registers. This can also be done with a JTAG command writing to the same registers.
 * Event Trace can be first enabled via (for example) a hardware trigger set up to match on a program instruction address then, when the program-to-be-traced starts executing and the trigger match occurs, it in turn sets *trTeEvtControl.trTeEvtTracing*, and event trace starts.
 * Once running, a hardware trigger previously set up to disable trace can, at the occurrence of a trigger match, turn Event Trace off which clears *trTeEvtControl.trTeEvtTracing*. Similar actions are common with Instruction Trace.

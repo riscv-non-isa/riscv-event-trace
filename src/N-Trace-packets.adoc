@@ -93,8 +93,8 @@ Note: EVTSRC+EVTCNT equal 1 byte of N-TRACE message output
 |===
 
 ==== Event Trace non-Function Messages, per-EVTSRC (type)
-[#nonfunc-events]
-[#tab:nonfunc-events]
+[#nonfunc-events-ntrace, nonfunctional N-trace events]
+
 Values assigned to *CauseID* for N-Trace +
 0 - ENTER_DEBUG +
 1 - EXIT_RESET +
@@ -107,7 +107,8 @@ Values assigned to *CauseID* for N-Trace +
 9 - EXIT_UNBOUND_WAIT +
 10 - ENTER_UNBOUND_WAIT +
 11 - TRACE_OFF_FILTERED +
-12 - TRACE_ON_UNFILTERED
+12 - TRACE_ON_UNFILTERED +
+13-15 - Reserved
 
 .Event Trace Message Fields for non-function events
 [cols="12%,10%,10%,10%,11%,~", options="header"]
@@ -190,7 +191,7 @@ Watchpoint wo/TRIG_ID
 |PC
 |---
 |When a debug trigger/watchpoint matches, the PC is normally the address of the instruction that caused the match, although for a watchpoint, it can be after when comparing on the data portion of a load or store. In multi-issue cores, this message may report the address of a later instruction retired in the same cycle. +
-For *trTeEvtFeatures.trTeEvtDbgTrigIDImpl* <<DebugTriggerIDImpl>> = 0, the hardware does not provide the trigger ID; the trace decoder must determine the unique trigger indentification from the PC and from the knowledge of the trigger values that are programmed.
+For *trTeEvtFeatures.trTeEvtDbgTrigIDImpl* <<DebugTriggerIDImpl>> = 0, the hardware does not provide the trigger ID; the trace decoder must determine the unique trigger identification from the PC and from the knowledge of the trigger values that are programmed.
 
 |User Definable Signals
 (((N-Trace, Event, User Definable Signals Message)))
@@ -359,7 +360,7 @@ If the user wants the precise source and target address locations in the decoded
 === Periodic Synchronization Messages
 ((((N-Trace, Periodic Synchronization messages)))
 
-Messages that include the Program Counter (PC) are predominantly U-ADDRes.  Periodically, however, the full address (F-ADDR) must be output to provide a synchronization point for the trace decoder. The period for generating a synchronization message is defined by the N-Trace register *trTeControl.trTeInstSyncMax* cite:[riscv-trace-control-spec-1.0] (Chpt. Trace Encoder Control Interface). The count is 2^(trTeInstSyncMax+4).
+Messages that include the Program Counter (PC) are predominantly U-ADDRs.  Periodically, however, the full address (F-ADDR) must be output to provide a synchronization point for the trace decoder. The period for generating a synchronization message is defined by the N-Trace register *trTeControl.trTeInstSyncMax* cite:[riscv-trace-control-spec-1.0] (Chpt. Trace Encoder Control Interface). The count is 2^(trTeInstSyncMax+4).
 
 Hardware counts the number of Event Trace messages that include a PC and outputs a synchronization message when the count reaches the programmed value. Messages that can include an F-ADDR include all EVT (TCODE=0x23) messages that include a PC address and CALL_SYNC.
 

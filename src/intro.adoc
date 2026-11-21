@@ -6,7 +6,7 @@ Event Trace is an extension to the RISC-V Instruction Trace that provides hardwa
 
 Event Trace extends the existing Instruction Trace while also leveraging its common packet types and trace sink options.
 
-The Event Trace extension introduces new memory-mapped registers for setting up read-only contigurations, dynamical selection of trace events to trace, submodes of operation, hardware filters, and accessing its running status.
+The Event Trace extension introduces new memory-mapped registers for setting up read-only configurations, dynamical selection of trace events to trace, submodes of operation, hardware filters, and accessing its running status.
 
 [[sec:terminology]]
 === Terminology
@@ -55,7 +55,7 @@ machine state is updated and the `minstret` CSR is updated (sometimes referred t
 ’graduate’)
 * *RHTI* RISC-V Hart to Trace Encoder Interface
 * *trace decoder*: see *decoder*
-* *trace encoder*: seee *encoder*
+* *trace encoder*: see *encoder*
 * *trap*: the transfer of control to a trap handler caused by either an exception or an interrupt
 
 

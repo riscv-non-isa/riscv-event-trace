@@ -2,7 +2,7 @@
 == N-Trace Message Definitions
 (((Event Trace, N-Trace messages)))
 
-NOTE: The N-trace specification uses the term "message" to refer to the data output by the trace encoder thus this chapter will also use that term.  Other documents use the term "packet" so the other chapters of this document will use the term "packet" to refer to the data output by the trace encoder.  The terms are interchangeable and both refer to the same thing.
+NOTE: The N-Trace specification uses the term "message" to refer to the data output by the trace encoder thus this chapter will also use that term.  Other documents use the term "packet" so the other chapters of this document will use the term "packet" to refer to the data output by the trace encoder.  The terms are interchangeable and both refer to the same thing.
 
 This chapter (N-Trace-packets.adoc) defines the Event Trace messages that extend N-Trace cite:[riscv-N-Trace-spec-1.0].
 
@@ -93,7 +93,7 @@ Note: EVTSRC+EVTCNT equal 1 byte of N-TRACE message output
 |===
 
 ==== Event Trace non-Function Messages, per-EVTSRC (type)
-[#nonfunc-events-ntrace, nonfunctional N-trace events]
+[#nonfunc-events-ntrace, nonfunctional N-Trace events]
 
 Values assigned to *CauseID* for N-Trace +
 0 - ENTER_DEBUG +
@@ -122,7 +122,7 @@ Values assigned to *CauseID* for N-Trace +
 |PC
 |*CauseID*
 |EVTPC follows the rules <<List-of-Rules>> defined in Chapter 3 +
-PC=instruction responsible for trace-on. +
+PC=instruction responsible for Trace-on. +
 CauseID field: +
 EXIT_RESET +
 EXIT_DEBUG - PC=first instruction to execute after debug mode +
@@ -234,7 +234,7 @@ Generated when external signal edge on this channel (SIG_ID) is detected by the 
 |SEL_DATA
 |PC is the address of the last instruction retired at the time of the first occurrence of the event, which starts the interval counter. +
 *SEL_ID* is the Selector (channel) recorded (0-7). +
- *SEL_COUNT* (24b) is the number of counted cycles that the performance counter selector has been at a high level during the interval window. (Duration defined by *trTeEvtControl.trTeEvtPerfSelInterval* <<select-cycles-interval>>). +
+ *SEL_COUNT* (24b) is the number of cycles counted while the performance counter selector output has been at a high level, during the duration of the interval window (duration defined by *trTeEvtControl.trTeEvtPerfSelInterval* <<select-cycles-interval>>). +
  SEL_DATA = {SEL_COUNT, SEL_ID}
 |===
 
@@ -306,21 +306,21 @@ The following table lists all the Call and Return Modes for TCODE=36. All addres
 |srcPC
 |-----
 |*trTeEvtCallMode=2* +
-Inferrable call (itype=9) so target obtained from opcode if binary available, otherwise target unknown +
+inferable call (itype=9) so target obtained from opcode if binary available, otherwise target unknown +
 
 |CALL_TGT
 |2
 |-----
 |tgtPC
 |*trTeEvtCallMode=1* +
-Generated for direct/inferrable call (itype=9) and indirect/uninferrable call or co-routine swap (itype=8). Means tgtPC recorded but no srcPC so call history determines call stack (and source line # of caller is not determinable).
+Generated for direct/inferable call (itype=9) and indirect/uninferable call or co-routine swap (itype=8). Means tgtPC recorded but no srcPC so call history determines call stack (and source line # of caller is not determinable).
 
 |CALL_FULL
 |3
 |srcPC
 |tgtPC
 |*trTeEvtCallMode=0* or +
-*trTeEvtCallMode=2* AND uninferrable call (itype=8) +
+*trTeEvtCallMode=2* AND uninferable call (itype=8) +
 Traces both srcPC and tgtPC.
 
 |RET_IMP [[ret-imp]]
@@ -358,7 +358,7 @@ For a function return with only the target address recorded (trTeEvtRetMode=1), 
 If the user wants the precise source and target address locations in the decoded output, they must use trTeEvtCallMode=0 and trTeEvtRetMode=0 with the understanding that these messages generate more bytes.
 
 === Periodic Synchronization Messages
-((((N-Trace, Periodic Synchronization messages)))
+(((N-Trace, Periodic Synchronization messages)))
 
 Messages that include the Program Counter (PC) are predominantly U-ADDRs.  Periodically, however, the full address (F-ADDR) must be output to provide a synchronization point for the trace decoder. The period for generating a synchronization message is defined by the N-Trace register *trTeControl.trTeInstSyncMax* cite:[riscv-trace-control-spec-1.0] (Chpt. Trace Encoder Control Interface). The count is 2^(trTeInstSyncMax+4).
 

@@ -371,7 +371,7 @@ This message is used to record the Event Trace Profiling Performance Counter (PP
 
 This message is generally output immediately after an event message when PPCs are enabled for that message. Thus it does not include a timestamp since the event message itself includes a timestamp, if enabled.
 
-The number of PPCs implemented is defined in the control register *trTeEvtFeatures.trTeEvtPPCsImpl* <<PPCsImplemented>>. The number of PPCs to actively record per message is defined by the control register *trTePPCEnables.trTeEvtPPCNumTrace* <<PPCsToTrace>>. (Hardware must limit  the number of PPCs to record does not exceed the number of PPCs implemented.) Thus this message can output a variable number of counters.  The N-Trace message format defines the end of a message. See Chapter "MSEO Sequences" in  cite:[riscv-N-Trace-spec-1.0]
+The number of PPCs implemented is defined in the control register *trTeEvtFeatures.trTeEvtPPCsImpl* <<PPCsImplemented>>. The number of PPCs to actively record per message is defined by the control register *trTePPCEnables.trTeEvtPPCNumTrace* <<PPCsToTrace>>. (Hardware must limit the number of PPCs to record such that it does not exceed the number of PPCs instantiated.) Thus this message can output a variable number of counters.  The N-Trace message format defines the end of a message. See Chapter "MSEO Sequences" in  cite:[riscv-N-Trace-spec-1.0]
 
 .Profiling Performance Counter Recording
 [cols="10%,20%,~", options="header"]

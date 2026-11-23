@@ -6,7 +6,7 @@ Event Trace is an extension to the RISC-V Instruction Trace that provides hardwa
 
 Event Trace extends the existing Instruction Trace while also leveraging its common packet types and trace sink options.
 
-The Event Trace extension introduces new memory-mapped registers for setting up read-only configurations, dynamical selection of trace events to trace, submodes of operation, hardware filters, and accessing its running status.
+The Event Trace extension introduces new memory-mapped registers for setting up read-only configurations, dynamic selection of trace events to trace, submodes of operation, hardware filters, and accessing its running status.
 
 [[sec:terminology]]
 === Terminology
@@ -29,6 +29,7 @@ information from a RISC-V hart and transforms it into trace packets
 * *exception*: an unusual condition occurring at run time associated
 with an instruction in a RISC-V hart
 * *hart*: a RISC-V hardware thread
+* *HPM*: Hardware Performance Monitor
 * *final instruction*: the instruction retired immediately before tracing stops.
 * *last instruction*: in a block of sequentially retired instructions, the instruction at the end of the sequence
 * *interrupt*: an external asynchronous event that may cause a RISC-V
@@ -45,6 +46,7 @@ constant embedded within the jump opcode
 - *uninferable jump*: a jump which is not inferable (see above)
 * *LSB*: least significant bit
 * *MSB*: most significant bit
+* *MSEO*: Message Start/End Out
 * *packet*: the atomic unit of encoded trace information emitted by the
 encoder
 * *PC*: program counter
@@ -53,7 +55,8 @@ instruction being executed
 * *retire*: the final stage of executing an instruction, when the
 machine state is updated and the `minstret` CSR is updated (sometimes referred to as ’commit’ or
 ’graduate’)
-* *RHTI* RISC-V Hart to Trace Encoder Interface
+* *RHTI*: RISC-V Hart to Trace Encoder Interface
+* *SRC*: Source
 * *trace decoder*: see *decoder*
 * *trace encoder*: see *encoder*
 * *trap*: the transfer of control to a trap handler caused by either an exception or an interrupt
@@ -66,4 +69,4 @@ packet.
 
 Items in *_bold italics_* are mnemonics for instructions defined in the RISC-V ISA
 
-Items `lowlighted` are CSRs or other registers defined in the RISC-V ISA
+Items in `fixed-width-font` (surrounded by backticks) are CSRs or other registers defined in the RISC-V ISA

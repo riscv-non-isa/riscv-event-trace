@@ -2,7 +2,7 @@
 == N-Trace Message Definitions
 (((Event Trace, N-Trace messages)))
 
-NOTE: The N-trace specification uses the term "message" to refer to the data output by the trace encoder thus this chapter will also use that term.  Other documents use the term "packet" so the other chapters of this document will use the term "packet" to refer to the data output by the trace encoder.  The terms are interchangeable and both refer to the same thing.
+NOTE: The N-Trace specification uses the term "message" to refer to the data output by the trace encoder thus this chapter will also use that term.  Other documents use the term "packet" so the other chapters of this document will use the term "packet" to refer to the data output by the trace encoder.  The terms are interchangeable and both refer to the same thing.
 
 This chapter (N-Trace-packets.adoc) defines the Event Trace messages that extend N-Trace cite:[riscv-N-Trace-spec-1.0].
 
@@ -93,8 +93,8 @@ Note: EVTSRC+EVTCNT equal 1 byte of N-TRACE message output
 |===
 
 ==== Event Trace non-Function Messages, per-EVTSRC (type)
-[#nonfunc-events]
-[#tab:nonfunc-events]
+[#nonfunc-events-ntrace, nonfunctional N-Trace events]
+
 Values assigned to *CauseID* for N-Trace +
 0 - ENTER_DEBUG +
 1 - EXIT_RESET +
@@ -107,7 +107,8 @@ Values assigned to *CauseID* for N-Trace +
 9 - EXIT_UNBOUND_WAIT +
 10 - ENTER_UNBOUND_WAIT +
 11 - TRACE_OFF_FILTERED +
-12 - TRACE_ON_UNFILTERED
+12 - TRACE_ON_UNFILTERED +
+13-15 - Reserved
 
 .Event Trace Message Fields for non-function events
 [cols="12%,10%,10%,10%,11%,~", options="header"]
@@ -121,7 +122,7 @@ Values assigned to *CauseID* for N-Trace +
 |PC
 |*CauseID*
 |EVTPC follows the rules <<List-of-Rules>> defined in Chapter 3 +
-PC=instruction responsible for trace-on. +
+PC=instruction responsible for Trace-on. +
 CauseID field: +
 EXIT_RESET +
 EXIT_DEBUG - PC=first instruction to execute after debug mode +
@@ -151,7 +152,7 @@ TRACE_OFF_FILTERED +
 |1
 |PC
 |*cause*
-a|(ITYPE=1) PC is the address of the instruction that incurred the exception, i.e. *xepc CSR* which equals *iaddr*+*iretire* +
+a|(itype=1) PC is the address of the instruction that incurred the exception, i.e. *xepc CSR* which equals *iaddr*+*iretire* +
 *cause* is what is loaded into the Exception Code field of *xcause*. cause signals are defined in Table 1 of RHTI spec cite:[riscv-RHTI-spec-0.83]
 
 |Interrupt
@@ -160,7 +161,7 @@ a|(ITYPE=1) PC is the address of the instruction that incurred the exception, i.
 |1
 |PC
 |*cause*
-|(ITYPE=2) PC is the address of the last retired instruction before the interrupt was taken (*iaddr*) +
+|(itype=2) PC is the address of the last retired instruction before the interrupt was taken (*iaddr*) +
 *cause* is what is loaded into the Exception Code field of *xcause*.
 
 |Return from trap
@@ -190,7 +191,7 @@ Watchpoint wo/TRIG_ID
 |PC
 |---
 |When a debug trigger/watchpoint matches, the PC is normally the address of the instruction that caused the match, although for a watchpoint, it can be after when comparing on the data portion of a load or store. In multi-issue cores, this message may report the address of a later instruction retired in the same cycle. +
-For *trTeEvtFeatures.trTeEvtDbgTrigIDImpl* <<DebugTriggerIDImpl>> = 0, the hardware does not provide the trigger ID; the trace decoder must determine the unique trigger indentification from the PC and from the knowledge of the trigger values that are programmed.
+For *trTeEvtFeatures.trTeEvtDbgTrigIDImpl* <<DebugTriggerIDImpl>> = 0, the hardware does not provide the trigger ID; the trace decoder must determine the unique trigger identification from the PC and from the knowledge of the trigger values that are programmed.
 
 |User Definable Signals
 (((N-Trace, Event, User Definable Signals Message)))
@@ -233,7 +234,7 @@ Generated when external signal edge on this channel (SIG_ID) is detected by the 
 |SEL_DATA
 |PC is the address of the last instruction retired at the time of the first occurrence of the event, which starts the interval counter. +
 *SEL_ID* is the Selector (channel) recorded (0-7). +
- *SEL_COUNT* (24b) is the number of counted cycles that the performance counter selector has been at a high level during the interval window. (Duration defined by *trTeEvtControl.trTeEvtPerfSelInterval* <<select-cycles-interval>>). +
+ *SEL_COUNT* (24b) is the number of cycles counted while the performance counter selector output has been at a high level, during the duration of the interval window (duration defined by *trTeEvtControl.trTeEvtPerfSelInterval* <<select-cycles-interval>>). +
  SEL_DATA = {SEL_COUNT, SEL_ID}
 |===
 
@@ -258,7 +259,7 @@ There are two TCODE message types for function calls and returns: synchronous an
 
 ==== Event Trace Message for Calls and Returns (non-synchronizing)
 .Event Trace Message Fields for Calls and Returns
-[cols="~,~,~", width=70%, options="header"]
+[cols="10%,15%,~", width=80%, options="header"]
 |===
 |Bits |Field |Description
 
@@ -271,16 +272,16 @@ There are two TCODE message types for function calls and returns: synchronous an
 |Source Hart of this message (width is trTeSrcBits)
 
 |3
-|MODE
-|See table below for Mode assignments
+|CR_MODE
+|See table below for CR_MODE assignments
 
 |var
 |srcPC
-|U-ADDR (may not be included depending on the MODE field)
+|U-ADDR (may not be included depending on the CR_MODE field)
 
 |var
 |tgtPC
-|U-ADDR (may not be included depending on the MODE field)
+|U-ADDR (may not be included depending on the CR_MODE field)
 
 |var,cfg
 |TSTAMP
@@ -290,10 +291,10 @@ There are two TCODE message types for function calls and returns: synchronous an
 
 The following table lists all the Call and Return Modes for TCODE=36. All addresses are U-ADDR and timestamp is relative (if enabled). These provide the most compact messages.
 
-.Event Trace Message with Mode assignments for Calls and Returns (non-synchronizing)
-[cols="12%,10%,10%,10%,~", options="header"]
+.Event Trace Message with CR_MODE assignments for Calls and Returns (non-synchronizing)
+[cols="12%,12%,10%,10%,~", options="header"]
 |===
-|Name |Mode |Source |Target |Description
+|Name |CR_MODE |Source |Target |Description
 |
 |0
 |
@@ -305,29 +306,30 @@ The following table lists all the Call and Return Modes for TCODE=36. All addres
 |srcPC
 |-----
 |*trTeEvtCallMode=2* +
-inferrable call (ITYPE=9) so target obtained from opcode if binary available, otherwise target unknown +
+inferable call (itype=9) so target obtained from opcode if binary available, otherwise target unknown +
 
 |CALL_TGT
 |2
 |-----
 |tgtPC
 |*trTeEvtCallMode=1* +
-Generated for direct/inferrable call (ITYPE=9) and indirect/uninferrable call or co-routine swap (ITYPE=8). Means tgtPC recorded but no srcPC so call history determines call stack (and source line # of caller is not determinable).
+Generated for direct/inferable call (itype=9) and indirect/uninferable call or co-routine swap (itype=8). Means tgtPC recorded but no srcPC so call history determines call stack (and source line # of caller is not determinable).
 
 |CALL_FULL
 |3
 |srcPC
 |tgtPC
-|*trTeEvtCallMode=0* AND inferrable call (ITYPE=9), or +
-*trTeEvtCallMode=2* AND uninferrable call (ITYPE=8) +
+|*trTeEvtCallMode=0* or +
+*trTeEvtCallMode=2* AND uninferable call (itype=8) +
 Traces both srcPC and tgtPC.
 
-|RET_STACK
+|RET_IMP [[ret-imp]]
 |4
 |------
 |------
-|*trTeEvtRetMode=2* +
-Function return (ITYPE=13), no srcPC or tgtPC in message; fewest bytes generated. (Requires hardware to maintain a call stack to compare and match against return address (tgtPC); stack depth is user-definable but requires at least one entry).
+a|*trTeEvtRetMode=2* +
+IMP = IMPLIED. Function return (itype=13), no srcPC or tgtPC in message; fewest bytes generated. This requires hardware, shared with Instruction Trace specifications, to maintain a call stack to compare and match against return address (tgtPC). Stack depth is developer-definable as is the number of address bits to compare, but requires at least one entry. cite:[riscv-N-Trace-spec-1.0] (Implicit Return Optimization), cite:[riscv-E-Trace-spec-2.0] (Implicit return mode). Typical values are 16-deep stack and 16-bit address comparison. +
+If the hardware-maintained call stack does not have a matching entry for the return address, the encoder generates a RET_TGT message.
 
 |
 |5
@@ -340,14 +342,14 @@ Function return (ITYPE=13), no srcPC or tgtPC in message; fewest bytes generated
 |------
 |tgtPC
 |*trTeEvtRetMode=1* +
-Return-to address (tgtPC) (ITYPE=13) i.e. caller (function) is known and can be determined from symbolic address range of target address or from trace history.
+Return-to address (tgtPC) (itype=13) i.e. caller (function) is known and can be determined from symbolic address range of target address or from trace history.
 
 |RET_FULL
 |7
 |srcPC
 |tgtPC
 |*trTeEvtRetMode=0* +
-(ITYPE=13) Traces both srcPC and tgtPC
+(itype=13) Traces both srcPC and tgtPC
 
 |===
 
@@ -356,9 +358,9 @@ For a function return with only the target address recorded (trTeEvtRetMode=1), 
 If the user wants the precise source and target address locations in the decoded output, they must use trTeEvtCallMode=0 and trTeEvtRetMode=0 with the understanding that these messages generate more bytes.
 
 === Periodic Synchronization Messages
-((((N-Trace, Periodic Synchronization messages)))
+(((N-Trace, Periodic Synchronization messages)))
 
-Messages that include the Program Counter (PC) are predominantly U-ADDRes.  Periodically, however, the full address (F-ADDR) must be output to provide a synchronization point for the trace decoder. The period for generating a synchronization message is defined by the N-Trace register *trTeControl.trTeInstSyncMax* cite:[riscv-trace-control-spec-1.0] (Chpt. Trace Encoder Control Interface). The count is 2^(trTeInstSyncMax+4).
+Messages that include the Program Counter (PC) are predominantly U-ADDRs.  Periodically, however, the full address (F-ADDR) must be output to provide a synchronization point for the trace decoder. The period for generating a synchronization message is defined by the N-Trace register *trTeControl.trTeInstSyncMax* cite:[riscv-trace-control-spec-1.0] (Chpt. Trace Encoder Control Interface). The count is 2^(trTeInstSyncMax+4).
 
 Hardware counts the number of Event Trace messages that include a PC and outputs a synchronization message when the count reaches the programmed value. Messages that can include an F-ADDR include all EVT (TCODE=0x23) messages that include a PC address and CALL_SYNC.
 
@@ -369,7 +371,7 @@ This message is used to record the Event Trace Profiling Performance Counter (PP
 
 This message is generally output immediately after an event message when PPCs are enabled for that message. Thus it does not include a timestamp since the event message itself includes a timestamp, if enabled.
 
-The number of PPCs implemented is defined in the control register *trTeEvtFeatures.trTeEvtPPCsImpl* <<PPCsImplemented>>. The number of PPCs to actively record per message is defined by the control register *trTePPCEnables.trTeEvtPPCNumTrace* <<PPCsToTrace>>. (Hardware must limit  the number of PPCs to record does not exceed the number of PPCs implemented.) Thus this message can output a variable number of counters.  The N-Trace message format defines the end of a message. See Chapter "MSEO Sequences" in  cite:[riscv-N-Trace-spec-1.0]
+The number of PPCs implemented is defined in the control register *trTeEvtFeatures.trTeEvtPPCsImpl* <<PPCsImplemented>>. The number of PPCs to actively record per message is defined by the control register *trTePPCEnables.trTeEvtPPCNumTrace* <<PPCsToTrace>>. (Hardware must limit the number of PPCs to record such that it does not exceed the number of PPCs instantiated.) Thus this message can output a variable number of counters.  The N-Trace message format defines the end of a message. See Chapter "MSEO Sequences" in  cite:[riscv-N-Trace-spec-1.0]
 
 .Profiling Performance Counter Recording
 [cols="10%,20%,~", options="header"]
@@ -464,7 +466,7 @@ The RHTI spec cite:[riscv-RHTI-spec-0.83] (Sec. Trace State) added the Trace Sta
 *2'b10* Inhibiting trace for security reasons +
 *2'b11* Unbounded wait. Pausing trace for an unbounded amount of time (e.g. executing WFI or WFE instructions)
 
-These state values and state transitions are documented in the <<nonfunc-events, nonfunctional events>> section as to the "abstract" trace-on and trace-off messages necessary to generate. It also documents general rules <<List-of-Rules, List of Rules>> for these state transitions.
+These state values and state transitions are documented in the <<nonfunc-events, nonfunctional events>> section as to the "abstract" <<trace-on>> and <<trace-off>> messages necessary to generate. It also documents general rules <<List-of-Rules, List of Rules>> for these state transitions.
 
 === Summary of TCODE Usage (non-normative)
 

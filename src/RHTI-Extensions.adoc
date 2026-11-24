@@ -2,7 +2,7 @@
 == RHTI Extensions for Event Trace
 (((Event Trace, RHTI extensions)))
 
-This file (RHTI-Extensions.adoc) defines extensions to the "RISC-V Hart to Trace Interface Specification"   cite:[riscv-RHTI-spec-0.83] to support several features for Event Trace.  While an implementer can wire up these signals "on their own", RHTI defines them, along with all the existing signal definitions for Instruction Trace, to provide the named signals for Event Trace use.
+This chapter (RHTI-Extensions.adoc) defines extensions to the "RISC-V Hart to Trace Interface Specification"   cite:[riscv-RHTI-spec-0.83] to support several features for Event Trace.  While an implementer can wire up these signals "on their own", RHTI defines them, along with all the existing signal definitions for Instruction Trace, to provide the named signals for Event Trace use.
 
 [#Trigger/Watchpoint-ID, Trigger/Watchpoint ID]
 === Trigger/Watchpoint ID
@@ -26,7 +26,7 @@ There are two cases for multiple triggers matching on the same cycle: +
 1) multiple triggers with the same match condition, which could include address-range triggers that overlap. (Also there is nothing to prevent a user from programming multiple triggers with the same match condition), or +
 2) multiple triggers that occur when multiple instructions retire in the same cycle.
 
-The Event Trace debug trigger/watchpoint event is limited to one trigger match per cycle. In the case of multiple matches, for Case 1, the RHTI hardware must use numeric precedence to transmit (over this TriggerID field) the lowest ID value.  For Case 2, each of the potential matches on each of the retired instructions has its own, internal, 4-bit field. Logic in the core ORes the occurrence bits and also uses precedence to select the lowest numbered triggerID to transmit over the RHTI signal field.
+The Event Trace debug trigger/watchpoint event is limited to one trigger match per cycle. In the case of multiple matches, for Case 1, the RHTI hardware must use numeric precedence to transmit (over this TriggerID field) the lowest ID value.  For Case 2, each of the potential matches on each of the retired instructions has its own, internal, 4-bit field. Logic in the core ORs the occurrence bits and also uses precedence to select the lowest numbered triggerID to transmit over the RHTI signal field.
 |===
 
 [#Performance-Counter-Selector-Output, Performance Counter Selector Output]

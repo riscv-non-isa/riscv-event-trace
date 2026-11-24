@@ -18,12 +18,12 @@ Format 3 packets are used for synchronization, traps, reporting context
 and supporting information. There are 4 sub-formats.
 
 [[sec:format33]]
-=== Format 3 subformat 3 - Support
+==== Format 3 subformat 3 - Support
 
 The structure of this packet is identical to the instruction trace sync-support packet as defined by the Standard Support Extension to E-trace.  However, the *encoder_mode* field will be set to 1 to indicate Event Trace.
 
 [[sec:format30]]
-=== Format 3 subformat 0 - Event
+==== Format 3 subformat 0 - Event
 
 This packet format is used whenever a full address is required, and the event being reported is not a trap.  This includes privilege changes resulting from trap returns, as well as precise and asynchronous discontinuity context changes (see RHTI *ctype* signal).
 
@@ -66,7 +66,7 @@ This packet type is used for *CALL_FULL*, *CALL_SRC*, *CALL_TGT*, *RET_FULL*, *R
 
 
 [[sec:format31]]
-=== Format 3 subformat 1 - Trap
+==== Format 3 subformat 1 - Trap
 
 This packet structure is identical to the instruction trace sync-trap packet, except that the *branch* bit has no purpose and can be considered redefined as 'reserved'.
 
@@ -74,7 +74,7 @@ For Event Trace, the *thaddr* field will always be set to 1 for exceptions and 0
 
 
 [[sec:format32]]
-=== Format 3 subformat 2 - Context
+==== Format 3 subformat 2 - Context
 
 This packet is identical to the instruction trace sync-context packet, and is used to report imprecise context changes.
 
